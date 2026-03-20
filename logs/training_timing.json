@@ -1,0 +1,8 @@
+{
+  "Data Preprocessing": 0.20720815658569336,
+  "XGBoost Training": 28.543386936187744,
+  "Random Forest Training": 18.21135711669922,
+  "Neural Network Training": 390.03172612190247,
+  "Ensemble Stacking": 8.22939419746399,
+  "Final Evaluation on Test Set": 2.7192440032958984
+}

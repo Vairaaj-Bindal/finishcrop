@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgroSense AI — Precision Agriculture Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    :root {
+      --bg: #030B14;
+      --bg2: #061220;
+      --bg3: #0A1628;
+      --mint: #00E5A0;
+      --blue: #0099FF;
+      --purple: #8B5CF6;
+      --orange: #FF6B35;
+      --white: #F0F9FF;
+      --muted: #64748B;
+      --border: rgba(0,229,160,0.12);
+      --card: rgba(255,255,255,0.03);
+      --glass: rgba(6,18,32,0.85);
+    }
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; font-size:16px; }
+    body {
+      font-family:'Inter',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--white);
+      overflow-x:hidden;
+      cursor:none;
+    }
+
+    /* ── CUSTOM CURSOR ────────────────────────────────── */
+    #cursor {
+      position:fixed; width:8px; height:8px; border-radius:50%;
+      background:var(--mint); pointer-events:none; z-index:9999;
+      transform:translate(-50%,-50%);
+      transition:width .15s,height .15s,background .15s;
+      box-shadow:0 0 12px var(--mint),0 0 30px rgba(0,229,160,.3);
+    }
+    #cursor-follower {
+      position:fixed; width:36px; height:36px; border-radius:50%;
+      border:1px solid rgba(0,229,160,.4); pointer-events:none; z-index:9998;
+      transform:translate(-50%,-50%);
+      transition:transform .12s ease,width .3s,height .3s,border-color .3s;
+    }
+    #cursor-glow {
+      position:fixed; width:300px; height:300px; border-radius:50%;
+      background:radial-gradient(circle,rgba(0,229,160,.06) 0%,transparent 70%);
+      pointer-events:none; z-index:9997; transform:translate(-50%,-50%);
+      transition:transform .4s ease;
+    }
+    body:has(a:hover) #cursor, body:has(button:hover) #cursor {
+      width:16px; height:16px; background:var(--white);
+    }
+
+    /* ── SCROLL PROGRESS ──────────────────────────────── */
+    #scroll-bar {
+      position:fixed; top:0; left:0; height:2px; width:0%;
+      background:linear-gradient(90deg,var(--mint),var(--blue));
+      z-index:10000; transition:width .05s linear;
+    }
+
+    /* ── NAV ──────────────────────────────────────────── */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:1000;
+      padding:0 5%; height:72px; display:flex;
+      align-items:center; justify-content:space-between;
+      backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      border-bottom:1px solid transparent;
+      transition:background .3s,border-color .3s;
+    }
+    nav.scrolled {
+      background:var(--glass);
+      border-bottom-color:var(--border);
+    }
+    .nav-logo {
+      display:flex; align-items:center; gap:10px;
+      text-decoration:none;
+    }
+    .logo-mark {
+      width:36px; height:36px; border-radius:10px;
+      background:linear-gradient(135deg,var(--mint),var(--blue));
+      display:grid; place-items:center; font-size:18px; font-weight:700;
+      color:#030B14; letter-spacing:-1px;
+    }
+    .logo-text { font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:700; color:var(--white); }
+    .logo-text span { color:var(--mint); }
+    .nav-links { display:flex; gap:36px; }
+    .nav-links a {
+      text-decoration:none; color:var(--muted); font-size:14px; font-weight:500;
+      transition:color .2s; letter-spacing:.3px;
+    }
+    .nav-links a:hover { color:var(--white); }
+    .nav-cta {
+      display:flex; align-items:center; gap:12px;
+    }
+    .btn-ghost {
+      padding:10px 20px; border:1px solid var(--border); border-radius:8px;
+      background:transparent; color:var(--white); font-size:13px; font-weight:500;
+      cursor:none; text-decoration:none; transition:border-color .2s,background .2s;
+    }
+    .btn-ghost:hover { border-color:var(--mint); background:rgba(0,229,160,.06); }
+    .btn-primary {
+      padding:10px 22px; border-radius:8px;
+      background:var(--mint); color:#030B14; font-size:13px; font-weight:700;
+      cursor:none; border:none; text-decoration:none; transition:transform .2s,box-shadow .2s;
+      box-shadow:0 0 20px rgba(0,229,160,.25);
+    }
+    .btn-primary:hover { transform:translateY(-1px); box-shadow:0 0 35px rgba(0,229,160,.4); }
+
+    /* ── HERO ─────────────────────────────────────────── */
+    #hero {
+      position:relative; min-height:100vh;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:120px 5% 80px; overflow:hidden;
+    }
+    #hero-canvas { position:absolute; inset:0; z-index:0; }
+    .hero-badge {
+      position:relative; z-index:1;
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 14px; border-radius:100px;
+      border:1px solid rgba(0,229,160,.25); background:rgba(0,229,160,.06);
+      font-size:12px; font-weight:600; color:var(--mint); letter-spacing:.8px;
+      text-transform:uppercase; margin-bottom:24px;
+      animation:fadeSlideUp .8s ease both;
+    }
+    .badge-dot { width:6px; height:6px; border-radius:50%; background:var(--mint); animation:pulse 2s ease-in-out infinite; }
+    .hero-h1 {
+      position:relative; z-index:1; text-align:center;
+      font-size:clamp(40px,7vw,88px); font-weight:900; line-height:1.0;
+      letter-spacing:-3px; margin-bottom:28px;
+      animation:fadeSlideUp .8s ease .1s both;
+    }
+    .hero-h1 .line1 { display:block; color:var(--white); }
+    .hero-h1 .line2 {
+      display:block;
+      background:linear-gradient(90deg,var(--mint),var(--blue),var(--purple));
+      background-size:200% auto;
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+      animation:gradientFlow 4s linear infinite;
+    }
+    .hero-sub {
+      position:relative; z-index:1; text-align:center; max-width:560px;
+      font-size:18px; line-height:1.7; color:var(--muted);
+      margin-bottom:44px; animation:fadeSlideUp .8s ease .2s both;
+    }
+    .hero-btns {
+      position:relative; z-index:1; display:flex; gap:14px; flex-wrap:wrap;
+      justify-content:center; animation:fadeSlideUp .8s ease .3s both;
+    }
+    .btn-large {
+      padding:16px 34px; border-radius:12px; font-size:15px; font-weight:700;
+      cursor:none; border:none; text-decoration:none; transition:all .25s;
+    }
+    .btn-large.primary {
+      background:linear-gradient(135deg,var(--mint),#00C488);
+      color:#030B14; box-shadow:0 0 40px rgba(0,229,160,.3);
+    }
+    .btn-large.primary:hover { transform:translateY(-2px); box-shadow:0 0 60px rgba(0,229,160,.5); }
+    .btn-large.outline {
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.03); color:var(--white);
+    }
+    .btn-large.outline:hover { border-color:rgba(255,255,255,.4); background:rgba(255,255,255,.07); }
+    .hero-scroll-hint {
+      position:relative; z-index:1; margin-top:72px;
+      display:flex; flex-direction:column; align-items:center; gap:8px;
+      animation:fadeSlideUp .8s ease .5s both;
+    }
+    .scroll-line {
+      width:1px; height:60px;
+      background:linear-gradient(to bottom,transparent,var(--mint),transparent);
+      animation:scrollPulse 2s ease-in-out infinite;
+    }
+    .hero-chips {
+      position:relative; z-index:1; margin-top:60px;
+      display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:700px;
+      animation:fadeSlideUp .8s ease .45s both;
+    }
+    .hero-chip {
+      padding:5px 12px; border-radius:100px;
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+      font-size:12px; color:var(--muted); font-weight:500;
+    }
+
+    /* ── STATS ────────────────────────────────────────── */
+    #stats {
+      padding:60px 5%; background:var(--bg2);
+      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    }
+    .stats-grid {
+      max-width:1000px; margin:0 auto;
+      display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+    }
+    .stat-item {
+      text-align:center; padding:30px 20px;
+      border-right:1px solid var(--border);
+    }
+    .stat-item:last-child { border-right:none; }
+    .stat-num {
+      font-family:'Space Grotesk',sans-serif;
+      font-size:clamp(36px,4vw,54px); font-weight:700; line-height:1;
+      background:linear-gradient(135deg,var(--mint),var(--blue));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      margin-bottom:6px;
+    }
+    .stat-label { font-size:13px; color:var(--muted); font-weight:500; letter-spacing:.3px; }
+
+    /* ── PROBLEM ──────────────────────────────────────── */
+    #problem {
+      padding:120px 5%; max-width:1200px; margin:0 auto;
+    }
+    .section-eyebrow {
+      font-size:12px; font-weight:700; letter-spacing:1.5px;
+      text-transform:uppercase; color:var(--mint); margin-bottom:16px;
+    }
+    .section-h2 {
+      font-size:clamp(30px,4vw,52px); font-weight:800; line-height:1.15;
+      letter-spacing:-1.5px; margin-bottom:20px;
+    }
+    .problem-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:60px;
+    }
+    .problem-card {
+      padding:36px 28px; border-radius:16px;
+      background:var(--card); border:1px solid rgba(255,255,255,.06);
+      transition:border-color .3s,transform .3s;
+      position:relative; overflow:hidden;
+    }
+    .problem-card::before {
+      content:''; position:absolute; inset:0; border-radius:16px;
+      background:linear-gradient(135deg,rgba(0,229,160,.04),transparent);
+      opacity:0; transition:opacity .3s;
+    }
+    .problem-card:hover::before { opacity:1; }
+    .problem-card:hover { border-color:rgba(0,229,160,.2); transform:translateY(-4px); }
+    .problem-icon {
+      width:52px; height:52px; border-radius:14px; margin-bottom:20px;
+      display:grid; place-items:center; font-size:24px;
+    }
+    .problem-card h3 { font-size:19px; font-weight:700; margin-bottom:10px; }
+    .problem-card p { font-size:14px; color:var(--muted); line-height:1.7; }
+    .big-stat {
+      font-size:48px; font-weight:900; display:block; margin-bottom:8px;
+      background:linear-gradient(135deg,#FF6B35,#FFB347);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+
+    /* ── PRODUCT (3D) ─────────────────────────────────── */
+    #product {
+      padding:100px 5%; background:var(--bg2);
+      border-top:1px solid var(--border);
+    }
+    .product-inner {
+      max-width:1200px; margin:0 auto;
+      display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
+    }
+    #sensor-viewport {
+      width:100%; aspect-ratio:1/1; border-radius:24px;
+      background:radial-gradient(circle at 40% 40%,rgba(0,153,255,.1),rgba(0,229,160,.05),transparent 70%);
+      border:1px solid var(--border); position:relative; overflow:hidden;
+      cursor:none;
+    }
+    #sensor-canvas { display:block; width:100% !important; height:100% !important; border-radius:24px; }
+    .sensor-label {
+      position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+      font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--mint);
+      letter-spacing:2px; text-transform:uppercase;
+      background:rgba(3,11,20,.6); padding:6px 14px; border-radius:100px;
+      border:1px solid var(--border); white-space:nowrap;
+    }
+    .product-content { }
+    .product-content .section-eyebrow { margin-bottom:12px; }
+    .product-content .section-h2 { margin-bottom:16px; }
+    .product-content p { font-size:16px; color:var(--muted); line-height:1.8; margin-bottom:36px; }
+    .specs-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:36px; }
+    .spec-item {
+      padding:16px 18px; border-radius:12px;
+      background:var(--card); border:1px solid var(--border);
+    }
+    .spec-item .spec-label { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-bottom:4px; }
+    .spec-item .spec-val { font-size:14px; font-weight:600; color:var(--white); }
+    .spec-item .spec-val span { color:var(--mint); }
+
+    /* ── HOW IT WORKS ─────────────────────────────────── */
+    #how {
+      padding:120px 5%;
+      max-width:1200px; margin:0 auto;
+    }
+    .how-header { text-align:center; margin-bottom:80px; }
+    .steps-container { position:relative; }
+    .steps-line {
+      position:absolute; top:44px; left:calc(16.6% - 1px); right:calc(16.6% - 1px);
+      height:1px; background:linear-gradient(90deg,transparent,var(--mint),var(--blue),var(--purple),transparent);
+    }
+    .steps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:48px; }
+    .step {
+      text-align:center; position:relative; opacity:0; transform:translateY(30px);
+      transition:opacity .6s ease,transform .6s ease;
+    }
+    .step.visible { opacity:1; transform:translateY(0); }
+    .step-num {
+      width:88px; height:88px; border-radius:50%; margin:0 auto 28px;
+      display:grid; place-items:center; font-size:32px;
+      background:var(--card); border:2px solid var(--border);
+      position:relative; transition:border-color .3s,box-shadow .3s;
+    }
+    .step:hover .step-num { border-color:var(--mint); box-shadow:0 0 30px rgba(0,229,160,.2); }
+    .step-num::after {
+      content:attr(data-n); position:absolute; top:-10px; right:-10px;
+      width:24px; height:24px; border-radius:50%;
+      background:linear-gradient(135deg,var(--mint),var(--blue));
+      display:grid; place-items:center;
+      font-size:11px; font-weight:800; color:#030B14;
+    }
+    .step h3 { font-size:20px; font-weight:700; margin-bottom:10px; }
+    .step p { font-size:14px; color:var(--muted); line-height:1.7; }
+
+    /* ── TECHNOLOGY ───────────────────────────────────── */
+    #technology {
+      padding:100px 5%; background:var(--bg2);
+      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    }
+    .tech-inner { max-width:1200px; margin:0 auto; }
+    .tech-header { text-align:center; margin-bottom:70px; }
+    .arch-visual {
+      display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;
+      align-items:center; gap:0; margin-bottom:50px;
+      padding:40px; border-radius:20px;
+      background:var(--card); border:1px solid var(--border);
+      overflow-x:auto;
+    }
+    .arch-block {
+      padding:20px 16px; border-radius:14px; text-align:center;
+      background:var(--bg3); border:1px solid var(--border);
+      min-width:130px;
+    }
+    .arch-block .arch-icon { font-size:28px; margin-bottom:8px; }
+    .arch-block .arch-name { font-size:12px; font-weight:700; color:var(--white); margin-bottom:4px; }
+    .arch-block .arch-sub { font-size:10px; color:var(--muted); line-height:1.4; }
+    .arch-arrow {
+      font-size:20px; color:var(--mint); padding:0 8px;
+      display:flex; align-items:center;
+    }
+    .metrics-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .metric-card {
+      padding:28px; border-radius:16px;
+      background:var(--card); border:1px solid var(--border);
+      position:relative; overflow:hidden;
+    }
+    .metric-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,var(--mint),var(--blue));
+    }
+    .metric-card .metric-label { font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-bottom:8px; }
+    .metric-card .metric-val { font-size:36px; font-weight:800; color:var(--white); line-height:1; margin-bottom:4px; }
+    .metric-card .metric-unit { font-size:13px; color:var(--mint); font-weight:600; }
+    .metric-card .metric-desc { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.5; }
+
+    /* ── PLANT DATABASE ───────────────────────────────── */
+    #plants {
+      padding:100px 5%; overflow:hidden;
+    }
+    .plants-inner { max-width:1200px; margin:0 auto; }
+    .plants-header { margin-bottom:50px; }
+    .marquee-container { position:relative; overflow:hidden; margin-bottom:16px; }
+    .marquee-container::before,.marquee-container::after {
+      content:''; position:absolute; top:0; bottom:0; width:100px; z-index:1;
+    }
+    .marquee-container::before { left:0; background:linear-gradient(to right,var(--bg),transparent); }
+    .marquee-container::after { right:0; background:linear-gradient(to left,var(--bg),transparent); }
+    .marquee-track {
+      display:flex; gap:10px; width:max-content;
+      animation:marquee 40s linear infinite;
+    }
+    .marquee-track2 {
+      display:flex; gap:10px; width:max-content;
+      animation:marquee 55s linear infinite reverse;
+    }
+    .plant-chip {
+      padding:8px 16px; border-radius:100px; white-space:nowrap;
+      border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03);
+      font-size:13px; color:var(--muted); font-weight:500; letter-spacing:.2px;
+      transition:color .2s, border-color .2s, background .2s;
+    }
+    .plant-chip:hover { color:var(--mint); border-color:rgba(0,229,160,.3); background:rgba(0,229,160,.04); }
+    .plant-chip.highlight {
+      border-color:rgba(0,229,160,.25); background:rgba(0,229,160,.06);
+      color:var(--mint);
+    }
+
+    /* ── SCIENCE ──────────────────────────────────────── */
+    #science {
+      padding:100px 5%; background:var(--bg2);
+      border-top:1px solid var(--border);
+    }
+    .science-inner { max-width:1200px; margin:0 auto; }
+    .science-header { text-align:center; margin-bottom:70px; }
+    .eq-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .eq-card {
+      padding:32px; border-radius:16px;
+      background:var(--card); border:1px solid var(--border);
+      opacity:0; transform:translateY(20px);
+      transition:opacity .6s ease,transform .6s ease,border-color .3s;
+    }
+    .eq-card.visible { opacity:1; transform:translateY(0); }
+    .eq-card:hover { border-color:rgba(0,153,255,.25); }
+    .eq-title { font-size:13px; font-weight:700; color:var(--mint); letter-spacing:.5px; text-transform:uppercase; margin-bottom:16px; }
+    .eq-formula {
+      font-family:'JetBrains Mono',monospace; font-size:15px;
+      color:var(--white); line-height:1.8; padding:16px 20px; border-radius:10px;
+      background:rgba(0,0,0,.3); border:1px solid rgba(255,255,255,.05);
+      margin-bottom:14px; overflow-x:auto; white-space:nowrap;
+    }
+    .eq-formula .var { color:var(--mint); }
+    .eq-formula .op { color:var(--blue); }
+    .eq-formula .num { color:var(--orange); }
+    .eq-desc { font-size:13px; color:var(--muted); line-height:1.7; }
+
+    /* ── MARKET ───────────────────────────────────────── */
+    #market {
+      padding:120px 5%; max-width:1200px; margin:0 auto;
+      display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
+    }
+    .market-chart {
+      aspect-ratio:1; border-radius:20px;
+      background:var(--card); border:1px solid var(--border);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:24px; padding:40px;
+    }
+    .market-donut { position:relative; width:220px; height:220px; }
+    .market-donut svg { width:100%; height:100%; transform:rotate(-90deg); }
+    .donut-center {
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+    }
+    .donut-center .big { font-size:36px; font-weight:800; color:var(--white); }
+    .donut-center .sm { font-size:11px; color:var(--muted); font-weight:500; }
+    .donut-legend { display:flex; flex-direction:column; gap:10px; width:100%; }
+    .legend-row { display:flex; align-items:center; gap:10px; font-size:13px; }
+    .legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .legend-label { color:var(--muted); flex:1; }
+    .legend-val { color:var(--white); font-weight:600; }
+    .market-content {}
+    .market-content .section-h2 { margin-bottom:20px; }
+    .market-content p { font-size:16px; color:var(--muted); line-height:1.8; margin-bottom:30px; }
+    .market-bullets { list-style:none; display:flex; flex-direction:column; gap:12px; }
+    .market-bullets li {
+      display:flex; align-items:center; gap:12px;
+      font-size:15px; color:var(--white);
+    }
+    .market-bullets li::before {
+      content:''; width:20px; height:20px; border-radius:6px; flex-shrink:0;
+      background:rgba(0,229,160,.12); border:1px solid rgba(0,229,160,.3);
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%2300E5A0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-size:12px; background-repeat:no-repeat; background-position:center;
+    }
+
+    /* ── CTA ──────────────────────────────────────────── */
+    #cta {
+      padding:120px 5%; text-align:center; position:relative; overflow:hidden;
+      background:var(--bg2); border-top:1px solid var(--border);
+    }
+    #cta::before {
+      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:600px; height:600px; border-radius:50%;
+      background:radial-gradient(circle,rgba(0,229,160,.08),transparent 70%);
+      pointer-events:none;
+    }
+    .cta-inner { position:relative; z-index:1; max-width:640px; margin:0 auto; }
+    .cta-inner .section-h2 { margin-bottom:18px; }
+    .cta-inner p { font-size:18px; color:var(--muted); line-height:1.7; margin-bottom:44px; }
+    .cta-form { display:flex; gap:12px; max-width:480px; margin:0 auto; }
+    .cta-input {
+      flex:1; padding:16px 20px; border-radius:10px;
+      background:rgba(255,255,255,.05); border:1px solid var(--border);
+      color:var(--white); font-size:14px; outline:none;
+      transition:border-color .2s;
+    }
+    .cta-input::placeholder { color:var(--muted); }
+    .cta-input:focus { border-color:var(--mint); }
+    .cta-disclaimer { font-size:12px; color:var(--muted); margin-top:14px; }
+
+    /* ── FOOTER ───────────────────────────────────────── */
+    footer {
+      padding:60px 5% 40px; border-top:1px solid var(--border);
+      background:var(--bg);
+    }
+    .footer-inner { max-width:1200px; margin:0 auto; }
+    .footer-top {
+      display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:60px; margin-bottom:60px;
+    }
+    .footer-brand p { font-size:14px; color:var(--muted); line-height:1.7; margin-top:12px; max-width:260px; }
+    .footer-col h4 { font-size:13px; font-weight:700; color:var(--white); margin-bottom:16px; letter-spacing:.3px; }
+    .footer-col ul { list-style:none; display:flex; flex-direction:column; gap:10px; }
+    .footer-col ul li a { font-size:14px; color:var(--muted); text-decoration:none; transition:color .2s; }
+    .footer-col ul li a:hover { color:var(--mint); }
+    .footer-bottom {
+      display:flex; justify-content:space-between; align-items:center;
+      padding-top:28px; border-top:1px solid var(--border);
+    }
+    .footer-bottom p { font-size:13px; color:var(--muted); }
+    .footer-social { display:flex; gap:12px; }
+    .social-btn {
+      width:36px; height:36px; border-radius:8px;
+      background:var(--card); border:1px solid var(--border);
+      display:grid; place-items:center; text-decoration:none; font-size:14px;
+      transition:border-color .2s,background .2s;
+    }
+    .social-btn:hover { border-color:var(--mint); background:rgba(0,229,160,.08); }
+
+    /* ── ANIMATIONS ───────────────────────────────────── */
+    @keyframes fadeSlideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; } 50% { opacity:.3; }
+    }
+    @keyframes gradientFlow {
+      0% { background-position:0% } 100% { background-position:200% }
+    }
+    @keyframes scrollPulse {
+      0%,100% { opacity:.3; transform:scaleY(1); }
+      50% { opacity:1; transform:scaleY(0.7); }
+    }
+    @keyframes marquee {
+      from { transform:translateX(0); }
+      to   { transform:translateX(-50%); }
+    }
+    @keyframes float {
+      0%,100% { transform:translateY(0); }
+      50% { transform:translateY(-12px); }
+    }
+    @keyframes rotateSlow {
+      from { transform:rotate(0deg); }
+      to   { transform:rotate(360deg); }
+    }
+    @keyframes circleDrawIn {
+      from { stroke-dashoffset: 628; }
+      to   { stroke-dashoffset: var(--target-offset); }
+    }
+
+    /* ── REVEAL ELEMENTS ──────────────────────────────── */
+    .reveal {
+      opacity:0; transform:translateY(30px);
+      transition:opacity .7s ease,transform .7s ease;
+    }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    .reveal-left {
+      opacity:0; transform:translateX(-40px);
+      transition:opacity .7s ease,transform .7s ease;
+    }
+    .reveal-left.visible { opacity:1; transform:translateX(0); }
+    .reveal-right {
+      opacity:0; transform:translateX(40px);
+      transition:opacity .7s ease,transform .7s ease;
+    }
+    .reveal-right.visible { opacity:1; transform:translateX(0); }
+
+    /* ── RESPONSIVE ───────────────────────────────────── */
+    @media (max-width:900px) {
+      .stats-grid { grid-template-columns:repeat(2,1fr); }
+      .problem-grid,.steps-grid,.metrics-grid,.eq-grid { grid-template-columns:1fr; }
+      .product-inner,.market { grid-template-columns:1fr; }
+      .footer-top { grid-template-columns:1fr 1fr; gap:32px; }
+      .arch-visual { display:flex; overflow-x:auto; padding:20px; }
+      .nav-links { display:none; }
+      #market { grid-template-columns:1fr; }
+    }
+    @media (max-width:600px) {
+      .hero-h1 { letter-spacing:-1.5px; }
+      .stats-grid { grid-template-columns:1fr 1fr; }
+      .stat-item { border-right:none; border-bottom:1px solid var(--border); }
+      .cta-form { flex-direction:column; }
+      .footer-top { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div id="cursor"></div>
+<div id="cursor-follower"></div>
+<div id="cursor-glow"></div>
+<div id="scroll-bar"></div>
+
+<!-- ─────────────────────────── NAV ────────────────────────────── -->
+<nav id="navbar">
+  <a class="nav-logo" href="#">
+    <div class="logo-mark">A</div>
+    <span class="logo-text">Agro<span>Sense</span> AI</span>
+  </a>
+  <div class="nav-links">
+    <a href="#product">Product</a>
+    <a href="#how">How it Works</a>
+    <a href="#technology">Technology</a>
+    <a href="#plants">Database</a>
+    <a href="#science">Science</a>
+  </div>
+  <div class="nav-cta">
+    <a href="#cta" class="btn-ghost">Login</a>
+    <a href="#cta" class="btn-primary">Get Early Access</a>
+  </div>
+</nav>
+
+<!-- ─────────────────────────── HERO ────────────────────────────── -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-badge"><span class="badge-dot"></span>Series A Fundraising Round Open</div>
+  <h1 class="hero-h1">
+    <span class="line1">Know exactly what</span>
+    <span class="line2">your crops need.</span>
+  </h1>
+  <p class="hero-sub">AgroSense Pro is the world's most intelligent soil sensor — combining real-time NPK analysis, AI prediction across 1,920 crop species, and satellite-calibrated models to maximize yield and eliminate agricultural guesswork.</p>
+  <div class="hero-btns">
+    <a href="#cta" class="btn-large primary">Request Demo</a>
+    <a href="#product" class="btn-large outline">See the Device ↓</a>
+  </div>
+  <div class="hero-chips">
+    <span class="hero-chip">Multi-Task Deep Learning</span>
+    <span class="hero-chip">FAO-56 Penman-Monteith</span>
+    <span class="hero-chip">1,920 Crop Species</span>
+    <span class="hero-chip">Real-Time NPK Sensing</span>
+    <span class="hero-chip">Solar Powered · IP68</span>
+    <span class="hero-chip">XGBoost + Transformer</span>
+    <span class="hero-chip">Mixture of Experts</span>
+  </div>
+  <div class="hero-scroll-hint">
+    <div class="scroll-line"></div>
+    <span style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Scroll</span>
+  </div>
+</section>
+
+<!-- ─────────────────────────── STATS ───────────────────────────── -->
+<section id="stats">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-num" data-target="1920" data-suffix="">0</div>
+      <div class="stat-label">Crop Species &amp; Varieties</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-target="120" data-suffix="K+">0</div>
+      <div class="stat-label">Training Samples</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-target="97" data-suffix=".4%">0</div>
+      <div class="stat-label">Crop Prediction Accuracy</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-target="15" data-suffix="">0</div>
+      <div class="stat-label">Fertilizer Recommendations</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── PROBLEM ─────────────────────────── -->
+<section id="problem" style="padding:120px 5%;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <p class="section-eyebrow reveal">The Problem</p>
+    <h2 class="section-h2 reveal">Agriculture runs on guesswork.<br>That costs the world trillions.</h2>
+    <div class="problem-grid">
+      <div class="problem-card reveal">
+        <div class="problem-icon" style="background:rgba(255,107,53,.1);">🌾</div>
+        <span class="big-stat">$1.3T</span>
+        <h3>Annual Crop Losses</h3>
+        <p>Misapplied fertilizers, improper irrigation, and wrong crop selection destroy over a trillion dollars of agricultural value every year worldwide.</p>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-icon" style="background:rgba(139,92,246,.1);">💧</div>
+        <span class="big-stat">70%</span>
+        <h3>of Freshwater Is Agricultural</h3>
+        <p>Over-irrigation wastes 70% of global freshwater resources. Without precision data, farmers irrigate on schedules rather than soil conditions.</p>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-icon" style="background:rgba(0,153,255,.1);">🧪</div>
+        <span class="big-stat">48%</span>
+        <h3>Fertilizer Over-Application</h3>
+        <p>Nearly half of all synthetic fertilizer applied to crops is wasted — leaching into waterways, producing N₂O, and acidifying precious topsoil.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── PRODUCT (3D) ────────────────────── -->
+<section id="product">
+  <div class="product-inner">
+    <div style="position:relative;" class="reveal-left">
+      <div id="sensor-viewport">
+        <canvas id="sensor-canvas"></canvas>
+        <div class="sensor-label">AgroSense Pro · v2.1</div>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mint);opacity:.6;letter-spacing:1px;">DRAG TO ROTATE</div>
+    </div>
+    <div class="product-content reveal-right">
+      <p class="section-eyebrow">The Hardware</p>
+      <h2 class="section-h2">Precision sensing.<br>Beautiful engineering.</h2>
+      <p>AgroSense Pro is a ruggedized, solar-powered soil intelligence unit that continuously measures NPK levels, temperature, humidity, and rainfall — transmitting encrypted data to our AI cloud every 15 minutes.</p>
+      <div class="specs-grid">
+        <div class="spec-item"><div class="spec-label">Sensors</div><div class="spec-val"><span>4×</span> NPK Electrodes</div></div>
+        <div class="spec-item"><div class="spec-label">Power</div><div class="spec-val"><span>Solar</span> + 30-day battery</div></div>
+        <div class="spec-item"><div class="spec-label">Connectivity</div><div class="spec-val"><span>WiFi</span> + LoRa WAN</div></div>
+        <div class="spec-item"><div class="spec-label">Rating</div><div class="spec-val"><span>IP68</span> Waterproof</div></div>
+        <div class="spec-item"><div class="spec-label">Operating Temp</div><div class="spec-val"><span>−20°C</span> to +60°C</div></div>
+        <div class="spec-item"><div class="spec-label">Accuracy</div><div class="spec-val"><span>±0.5</span> mg/kg NPK</div></div>
+        <div class="spec-item"><div class="spec-label">Data Rate</div><div class="spec-val">Every <span>15 min</span></div></div>
+        <div class="spec-item"><div class="spec-label">Crop Coverage</div><div class="spec-val"><span>1,920</span> species</div></div>
+      </div>
+      <a href="#cta" class="btn-primary" style="display:inline-block;padding:16px 34px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">Order Hardware →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── HOW IT WORKS ────────────────────── -->
+<section id="how">
+  <div class="how-header reveal">
+    <p class="section-eyebrow">Workflow</p>
+    <h2 class="section-h2">From soil to insight<br>in minutes.</h2>
+  </div>
+  <div class="steps-container">
+    <div class="steps-line"></div>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num" data-n="1">🌱</div>
+        <h3>Deploy the Sensor</h3>
+        <p>Push the AgroSense Pro probes 20cm into your field soil. The device powers up automatically and begins sampling NPK, pH, temperature, humidity, and rainfall data every 15 minutes.</p>
+      </div>
+      <div class="step" style="transition-delay:.15s">
+        <div class="step-num" data-n="2">🧠</div>
+        <h3>AI Processes Your Data</h3>
+        <p>Our ensemble AI — combining a Mixture-of-Experts Transformer, XGBoost (500 trees), and Random Forest (300 trees) — analyzes your sensor readings against 120,000 training samples and identifies your optimal crop, fertilizer, and irrigation schedule.</p>
+      </div>
+      <div class="step" style="transition-delay:.3s">
+        <div class="step-num" data-n="3">📱</div>
+        <h3>Act on Precise Recommendations</h3>
+        <p>Receive a complete agronomic report on your dashboard: the best-fit crop species, exact fertilizer type and dosage, and a Penman-Monteith calibrated water requirement — with uncertainty quantification on every prediction.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── TECHNOLOGY ──────────────────────── -->
+<section id="technology">
+  <div class="tech-inner">
+    <div class="tech-header reveal">
+      <p class="section-eyebrow">Under the Hood</p>
+      <h2 class="section-h2">State-of-the-art ML<br>engineered for agriculture.</h2>
+    </div>
+    <div class="arch-visual reveal">
+      <div class="arch-block">
+        <div class="arch-icon">🔬</div>
+        <div class="arch-name">Sensor Input</div>
+        <div class="arch-sub">N, P, K, Temp, Humidity, pH, Rain, ET₀, Kc</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-block" style="border-color:rgba(0,229,160,.3);">
+        <div class="arch-icon">⚙️</div>
+        <div class="arch-name">Feature Gate</div>
+        <div class="arch-sub">Adaptive feature weighting σ(Wx)</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-block" style="border-color:rgba(0,153,255,.3);">
+        <div class="arch-icon">🧠</div>
+        <div class="arch-name">MoE + Attention</div>
+        <div class="arch-sub">4 Expert FFNs · 8-Head Self-Attention</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-block" style="border-color:rgba(139,92,246,.3);">
+        <div class="arch-icon">🎯</div>
+        <div class="arch-name">Multi-Task Heads</div>
+        <div class="arch-sub">Crop · Fertilizer · Water (Regression)</div>
+      </div>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-card reveal">
+        <div class="metric-label">Crop Classification</div>
+        <div class="metric-val">97.4<span class="metric-unit">%</span></div>
+        <div class="metric-desc">Weighted F1 across 1,920 crop species. Ensemble of XGBoost, Random Forest, and Multi-Task Transformer outperforms any single model by 4.2%.</div>
+      </div>
+      <div class="metric-card reveal" style="transition-delay:.1s;">
+        <div class="metric-label">Fertilizer Recommendation</div>
+        <div class="metric-val">94.8<span class="metric-unit">%</span></div>
+        <div class="metric-desc">Precision on 15-class fertilizer recommendation. Nutrient balance equations drive label assignment, reducing overfitting to crop defaults.</div>
+      </div>
+      <div class="metric-card reveal" style="transition-delay:.2s;">
+        <div class="metric-label">Water Req. (R² Score)</div>
+        <div class="metric-val">0.968<span class="metric-unit"> R²</span></div>
+        <div class="metric-desc">FAO-56 Penman-Monteith calibrated regression achieves R²=0.968 on holdout set. Huber loss with uncertainty weighting handles outlier fields.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── PLANT DATABASE ──────────────────── -->
+<section id="plants">
+  <div class="plants-inner">
+    <div class="plants-header reveal">
+      <p class="section-eyebrow">The Database</p>
+      <h2 class="section-h2">1,920 species.<br>Every field. Everywhere.</h2>
+      <p style="font-size:16px;color:var(--muted);margin-top:16px;max-width:560px;">From staple cereals to rare medicinal herbs — our model covers the full spectrum of global agriculture, organized across 20 botanical families.</p>
+    </div>
+  </div>
+  <div class="marquee-container" style="margin-bottom:12px;">
+    <div class="marquee-track" id="row1"></div>
+  </div>
+  <div class="marquee-container">
+    <div class="marquee-track2" id="row2"></div>
+  </div>
+  <div style="max-width:1200px;margin:50px auto 0;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;" class="reveal">
+    <div style="padding:20px;border-radius:14px;background:var(--card);border:1px solid var(--border);text-align:center;">
+      <div style="font-size:28px;margin-bottom:6px;">🌾</div>
+      <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;">Cereals</div>
+      <div style="font-size:12px;color:var(--muted);">25 species · 125 varieties</div>
+    </div>
+    <div style="padding:20px;border-radius:14px;background:var(--card);border:1px solid var(--border);text-align:center;">
+      <div style="font-size:28px;margin-bottom:6px;">🫘</div>
+      <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;">Legumes</div>
+      <div style="font-size:12px;color:var(--muted);">30 species · 150 varieties</div>
+    </div>
+    <div style="padding:20px;border-radius:14px;background:var(--card);border:1px solid var(--border);text-align:center;">
+      <div style="font-size:28px;margin-bottom:6px;">🍅</div>
+      <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;">Vegetables</div>
+      <div style="font-size:12px;color:var(--muted);">120 species · 600 varieties</div>
+    </div>
+    <div style="padding:20px;border-radius:14px;background:var(--card);border:1px solid var(--border);text-align:center;">
+      <div style="font-size:28px;margin-bottom:6px;">🍎</div>
+      <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;">Fruits &amp; Nuts</div>
+      <div style="font-size:12px;color:var(--muted);">75 species · 375 varieties</div>
+    </div>
+    <div style="padding:20px;border-radius:14px;background:var(--card);border:1px solid var(--border);text-align:center;">
+      <div style="font-size:28px;margin-bottom:6px;">🌿</div>
+      <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;">Herbs, Spices &amp; Specialty</div>
+      <div style="font-size:12px;color:var(--muted);">70 species · 350 varieties</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── SCIENCE ─────────────────────────── -->
+<section id="science">
+  <div class="science-inner">
+    <div class="science-header reveal">
+      <p class="section-eyebrow">The Math</p>
+      <h2 class="section-h2">Built on peer-reviewed<br>agronomic science.</h2>
+    </div>
+    <div class="eq-grid">
+      <div class="eq-card">
+        <div class="eq-title">FAO-56 Penman-Monteith (ET₀)</div>
+        <div class="eq-formula">ET₀ = (<span class="var">0.408·Δ·Rn</span> <span class="op">+</span> <span class="var">γ</span>·(<span class="num">900</span>/<span class="var">T+273</span>)·<span class="var">u₂</span>·<span class="var">vpd</span>) / (<span class="var">Δ</span> <span class="op">+</span> <span class="var">γ</span>·(<span class="num">1</span> <span class="op">+</span> <span class="num">0.34</span>·<span class="var">u₂</span>))</div>
+        <p class="eq-desc">Reference evapotranspiration (mm/day). Δ = slope of saturation vapor pressure curve; γ = psychrometric constant; Rn = net radiation; u₂ = wind speed at 2m; vpd = vapor pressure deficit. Drives all water requirement predictions.</p>
+      </div>
+      <div class="eq-card">
+        <div class="eq-title">Crop Water Requirement</div>
+        <div class="eq-formula">NIR = <span class="var">ET₀</span> · <span class="var">Kc</span> · <span class="var">D</span> <span class="op">−</span> <span class="var">Pe</span>(R)</div>
+        <p class="eq-desc">Net Irrigation Requirement (mm/season). Kc = FAO crop coefficient; D = growing days; Pe(R) = effective rainfall using USDA formula: Pe = R·(125−0.2R)/125 for R ≤ 250mm, else Pe = 125+0.1R.</p>
+      </div>
+      <div class="eq-card">
+        <div class="eq-title">Multi-Task Uncertainty Loss (Kendall 2018)</div>
+        <div class="eq-formula">ℒ = Σᵢ [ <span class="var">exp</span>(<span class="op">−</span><span class="var">sᵢ</span>)·<span class="var">ℒᵢ</span> <span class="op">+</span> <span class="var">sᵢ</span> ]  where <span class="var">sᵢ</span> = <span class="var">log σᵢ²</span></div>
+        <p class="eq-desc">Automatic task weight balancing via learned log-variance parameters s_crop, s_fert, s_water. Enables joint training of classification and regression heads without manual tuning of loss weights.</p>
+      </div>
+      <div class="eq-card">
+        <div class="eq-title">Focal Loss (Lin et al. 2017)</div>
+        <div class="eq-formula">FL(<span class="var">pₜ</span>) = <span class="op">−</span><span class="var">α</span>·(<span class="num">1</span><span class="op">−</span><span class="var">pₜ</span>)^<span class="var">γ</span>·<span class="var">log</span>(<span class="var">pₜ</span>)</div>
+        <p class="eq-desc">Handles extreme class imbalance across 1,920 crop varieties. γ=2.0, α=0.25. Down-weights easy examples so the model focuses on rare or difficult-to-distinguish crop species.</p>
+      </div>
+      <div class="eq-card">
+        <div class="eq-title">MoE Routing</div>
+        <div class="eq-formula">P(<span class="var">eᵢ</span>|<span class="var">x</span>) = softmax(<span class="var">Wg</span>·<span class="var">x</span>)ᵢ  →  top-<span class="num">2</span> gates</div>
+        <p class="eq-desc">Mixture of Experts gating: 4 specialized expert FFNs, each handling related crop families (e.g., tropical fruits, cereals, legumes, brassicas). Auxiliary load-balancing loss ensures uniform expert utilization.</p>
+      </div>
+      <div class="eq-card">
+        <div class="eq-title">Nutrient Balance Score</div>
+        <div class="eq-formula">NBS = (<span class="var">N</span>/<span class="var">N̄</span> · <span class="var">P</span>/<span class="var">P̄</span> · <span class="var">K</span>/<span class="var">K̄</span>)^<span class="num">⅓</span></div>
+        <p class="eq-desc">Geometric mean of normalized NPK values. Values close to 1.0 indicate balanced nutrition. Drives fertilizer recommendation: Urea when N-deficient, DAP/SSP for P, MOP/K₂SO₄ for K, Compost for balanced organic profiles.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── MARKET ──────────────────────────── -->
+<section id="market">
+  <div class="market-chart reveal-left">
+    <div class="market-donut">
+      <svg viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="24"/>
+        <circle cx="100" cy="100" r="80" fill="none" stroke="url(#grad1)" stroke-width="24"
+          stroke-dasharray="502" stroke-dashoffset="502" stroke-linecap="round"
+          id="donut-arc1"/>
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#8B5CF6" stroke-width="24"
+          stroke-dasharray="502" stroke-dashoffset="502" stroke-linecap="round"
+          id="donut-arc2"/>
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#FF6B35" stroke-width="24"
+          stroke-dasharray="502" stroke-dashoffset="502" stroke-linecap="round"
+          id="donut-arc3"/>
+        <defs>
+          <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#00E5A0"/>
+            <stop offset="100%" style="stop-color:#0099FF"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="donut-center">
+        <span class="big">$240B</span>
+        <span class="sm">TAM by 2030</span>
+      </div>
+    </div>
+    <div class="donut-legend">
+      <div class="legend-row"><div class="legend-dot" style="background:linear-gradient(135deg,#00E5A0,#0099FF)"></div><span class="legend-label">Precision Ag Hardware</span><span class="legend-val">$112B</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#8B5CF6"></div><span class="legend-label">AgTech SaaS &amp; Analytics</span><span class="legend-val">$89B</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#FF6B35"></div><span class="legend-label">Crop Intelligence APIs</span><span class="legend-val">$39B</span></div>
+    </div>
+  </div>
+  <div class="market-content reveal-right">
+    <p class="section-eyebrow">The Opportunity</p>
+    <h2 class="section-h2">$240 billion market.<br>Still running on spreadsheets.</h2>
+    <p>Global agriculture is a $3.5T industry with less than 3% precision technology penetration. AgroSense AI targets the fastest-growing segment — AI-powered soil intelligence — where no single platform has achieved product-market fit at scale.</p>
+    <ul class="market-bullets">
+      <li>2.6B smallholder farmers have zero access to soil data</li>
+      <li>Precision agriculture grows at 13.8% CAGR through 2030</li>
+      <li>Every $1 invested in crop AI returns $8 in yield improvement</li>
+      <li>Climate change creates urgent demand for adaptive crop planning</li>
+      <li>Government mandates for sustainable farming drive institutional adoption</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─────────────────────────── CTA ─────────────────────────────── -->
+<section id="cta">
+  <div class="cta-inner">
+    <p class="section-eyebrow">Early Access</p>
+    <h2 class="section-h2">Ready to grow smarter?</h2>
+    <p>Join 2,400+ farmers and agronomists on our early access waitlist. First 500 users receive hardware at cost and lifetime AI subscription included.</p>
+    <div class="cta-form">
+      <input class="cta-input" type="email" placeholder="your@email.com" />
+      <a href="#" class="btn-primary" style="padding:16px 28px;border-radius:10px;font-size:14px;font-weight:700;white-space:nowrap;text-decoration:none;display:inline-block;">Request Access →</a>
+    </div>
+    <p class="cta-disclaimer">No credit card required. We respect your privacy. Unsubscribe any time.</p>
+  </div>
+</section>
+
+<!-- ─────────────────────────── FOOTER ──────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="nav-logo" href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:2px;">
+          <div class="logo-mark">A</div>
+          <span class="logo-text">Agro<span>Sense</span> AI</span>
+        </a>
+        <p>Precision agriculture intelligence for the next generation of farming. Built with peer-reviewed agronomic science and state-of-the-art machine learning.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#product">AgroSense Pro</a></li>
+          <li><a href="#how">How it Works</a></li>
+          <li><a href="#technology">Technology</a></li>
+          <li><a href="#plants">Plant Database</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Science</h4>
+        <ul>
+          <li><a href="#science">Methodology</a></li>
+          <li><a href="#">Technical Paper</a></li>
+          <li><a href="#">FAO-56 Reference</a></li>
+          <li><a href="#">API Docs</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Press</a></li>
+          <li><a href="#cta">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 AgroSense AI. All rights reserved.</p>
+      <div class="footer-social">
+        <a href="#" class="social-btn">𝕏</a>
+        <a href="#" class="social-btn">in</a>
+        <a href="#" class="social-btn">gh</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CUSTOM CURSOR
+// ═══════════════════════════════════════════════════════
+const cursor = document.getElementById('cursor');
+const follower = document.getElementById('cursor-follower');
+const glow = document.getElementById('cursor-glow');
+let mx=0,my=0,fx=0,fy=0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  glow.style.left = mx + 'px'; glow.style.top = my + 'px';
+});
+
+function animateFollower() {
+  fx += (mx - fx) * 0.1; fy += (my - fy) * 0.1;
+  follower.style.left = fx + 'px'; follower.style.top = fy + 'px';
+  requestAnimationFrame(animateFollower);
+}
+animateFollower();
+
+// ═══════════════════════════════════════════════════════
+// SCROLL PROGRESS + NAV
+// ═══════════════════════════════════════════════════════
+const scrollBar = document.getElementById('scroll-bar');
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  const prog = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+  scrollBar.style.width = prog + '%';
+  navbar.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ═══════════════════════════════════════════════════════
+// HERO CANVAS — PARTICLE FIELD
+// ═══════════════════════════════════════════════════════
+const heroCanvas = document.getElementById('hero-canvas');
+const hCtx = heroCanvas.getContext('2d');
+let particles = [];
+let HW, HH;
+
+function resizeHero() {
+  HW = heroCanvas.width = heroCanvas.offsetWidth;
+  HH = heroCanvas.height = heroCanvas.offsetHeight;
+}
+resizeHero();
+window.addEventListener('resize', resizeHero);
+
+function createParticle() {
+  return {
+    x: Math.random() * HW, y: Math.random() * HH,
+    vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4,
+    size: Math.random()*2+0.5, alpha: Math.random()*0.5+0.1,
+    color: Math.random() > 0.6 ? '#00E5A0' : Math.random() > 0.5 ? '#0099FF' : '#8B5CF6'
+  };
+}
+for(let i=0;i<130;i++) particles.push(createParticle());
+
+let heroMX=HW/2, heroMY=HH/2;
+heroCanvas.addEventListener('mousemove', e => {
+  const r = heroCanvas.getBoundingClientRect();
+  heroMX = e.clientX - r.left; heroMY = e.clientY - r.top;
+});
+
+function drawHero() {
+  hCtx.clearRect(0,0,HW,HH);
+  // Animated gradient bg
+  const grad = hCtx.createRadialGradient(HW/2,HH/2,0,HW/2,HH/2,HW*0.6);
+  grad.addColorStop(0,'rgba(0,153,255,0.04)');
+  grad.addColorStop(0.5,'rgba(0,229,160,0.02)');
+  grad.addColorStop(1,'transparent');
+  hCtx.fillStyle = grad; hCtx.fillRect(0,0,HW,HH);
+
+  // Mouse glow
+  const mGrad = hCtx.createRadialGradient(heroMX,heroMY,0,heroMX,heroMY,200);
+  mGrad.addColorStop(0,'rgba(0,229,160,0.08)');
+  mGrad.addColorStop(1,'transparent');
+  hCtx.fillStyle = mGrad; hCtx.fillRect(0,0,HW,HH);
+
+  particles.forEach((p,i) => {
+    // Attract slightly to mouse
+    const dx = heroMX - p.x, dy = heroMY - p.y;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    if(dist < 200) { p.vx += dx/dist*0.015; p.vy += dy/dist*0.015; }
+    // Dampen
+    p.vx *= 0.98; p.vy *= 0.98;
+    p.x += p.vx; p.y += p.vy;
+    if(p.x<0) p.x=HW; if(p.x>HW) p.x=0;
+    if(p.y<0) p.y=HH; if(p.y>HH) p.y=0;
+
+    // Draw
+    hCtx.beginPath();
+    hCtx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    hCtx.fillStyle = p.color + Math.floor(p.alpha*255).toString(16).padStart(2,'0');
+    hCtx.fill();
+
+    // Connect nearby
+    for(let j=i+1;j<particles.length;j++) {
+      const q = particles[j];
+      const d = Math.hypot(p.x-q.x,p.y-q.y);
+      if(d < 100) {
+        hCtx.beginPath();
+        hCtx.moveTo(p.x,p.y); hCtx.lineTo(q.x,q.y);
+        hCtx.strokeStyle = `rgba(0,229,160,${(1-d/100)*0.12})`;
+        hCtx.lineWidth = 0.5;
+        hCtx.stroke();
+      }
+    }
+  });
+  requestAnimationFrame(drawHero);
+}
+drawHero();
+
+// ═══════════════════════════════════════════════════════
+// STATS COUNTER
+// ═══════════════════════════════════════════════════════
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target);
+  const suffix = el.dataset.suffix;
+  const duration = 2000;
+  const start = performance.now();
+  function update(now) {
+    const t = Math.min((now-start)/duration,1);
+    const ease = 1-Math.pow(1-t,3);
+    const val = Math.round(ease*target);
+    el.textContent = val.toLocaleString() + suffix;
+    if(t<1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+const statsObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      e.target.querySelectorAll('.stat-num').forEach(animateCounter);
+      statsObs.unobserve(e.target);
+    }
+  });
+},{threshold:0.3});
+statsObs.observe(document.getElementById('stats'));
+
+// ═══════════════════════════════════════════════════════
+// THREE.JS — 3D SENSOR MODEL
+// ═══════════════════════════════════════════════════════
+(function() {
+  const container = document.getElementById('sensor-viewport');
+  const canvas3d = document.getElementById('sensor-canvas');
+  if(!container || !THREE) return;
+
+  const W = container.clientWidth, H = container.clientHeight;
+  const renderer = new THREE.WebGLRenderer({ canvas:canvas3d, antialias:true, alpha:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(W,H);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, W/H, 0.1, 100);
+  camera.position.set(0,1,5.5);
+  camera.lookAt(0,0,0);
+
+  // Lighting
+  scene.add(new THREE.AmbientLight(0x223344, 0.5));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+  dirLight.position.set(3,5,3);
+  dirLight.castShadow = true;
+  scene.add(dirLight);
+  const greenPt = new THREE.PointLight(0x00E5A0, 3, 8);
+  greenPt.position.set(-1.5, 0.5, 2);
+  scene.add(greenPt);
+  const bluePt = new THREE.PointLight(0x0099FF, 2, 6);
+  bluePt.position.set(2, 1, -1);
+  scene.add(bluePt);
+  const rimLight = new THREE.PointLight(0x8B5CF6, 1.5, 5);
+  rimLight.position.set(0,-2,-2);
+  scene.add(rimLight);
+
+  // Materials
+  const matBody = new THREE.MeshStandardMaterial({color:0x1A2A3A,metalness:0.7,roughness:0.25});
+  const matSolar = new THREE.MeshStandardMaterial({color:0x0A0E1A,metalness:0.95,roughness:0.05,envMapIntensity:2});
+  const matProbe = new THREE.MeshStandardMaterial({color:0xC8D8E8,metalness:0.98,roughness:0.08});
+  const matDisplay = new THREE.MeshStandardMaterial({color:0x001a0e,emissive:0x00E5A0,emissiveIntensity:0.9,metalness:0.1,roughness:0.5});
+  const matLED = new THREE.MeshStandardMaterial({color:0x00ff88,emissive:0x00ff88,emissiveIntensity:3});
+  const matLED2 = new THREE.MeshStandardMaterial({color:0x0099FF,emissive:0x0066ff,emissiveIntensity:2});
+  const matAntenna = new THREE.MeshStandardMaterial({color:0xA0B8C8,metalness:0.9,roughness:0.2});
+  const matSolarCell = new THREE.MeshStandardMaterial({color:0x050D1A,metalness:0.85,roughness:0.1,
+    emissive:0x000A1F, emissiveIntensity:0.2});
+
+  // ── Main body ──────────────────────────
+  const group = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.4,1.5,0.75,2,2,2), matBody);
+  body.castShadow = true;
+  body.receiveShadow = true;
+  group.add(body);
+
+  // ── Edge bevels (corner cylinders) ─────
+  const cornerR = 0.08;
+  [-1,1].forEach(sx => [-1,1].forEach(sy => {
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(cornerR,cornerR,0.75,8), matBody);
+    c.position.set(sx*1.16, sy*0.67, 0); group.add(c);
+  }));
+
+  // ── Front face details ──────────────────
+  // Display screen
+  const disp = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.52,0.04), matDisplay);
+  disp.position.set(-0.3,0.28,0.39); group.add(disp);
+
+  // Display grid lines (scanlines effect)
+  for(let i=0;i<5;i++){
+    const sl = new THREE.Mesh(new THREE.BoxGeometry(1.06,0.01,0.01),
+      new THREE.MeshBasicMaterial({color:0x00E5A0,transparent:true,opacity:0.15}));
+    sl.position.set(-0.3, 0.52-i*0.13, 0.42); group.add(sl);
+  }
+
+  // LED indicator (green pulsing)
+  const led1 = new THREE.Mesh(new THREE.SphereGeometry(0.055,12,12), matLED);
+  led1.position.set(0.7,0.5,0.39); group.add(led1);
+  // LED ring
+  const ledRing = new THREE.Mesh(new THREE.TorusGeometry(0.09,0.015,8,24),
+    new THREE.MeshStandardMaterial({color:0x00E5A0,transparent:true,opacity:0.4}));
+  ledRing.position.set(0.7,0.5,0.38); group.add(ledRing);
+
+  // Blue LED
+  const led2 = new THREE.Mesh(new THREE.SphereGeometry(0.04,12,12), matLED2);
+  led2.position.set(0.9,0.5,0.39); group.add(led2);
+
+  // Logo bar (slim strip)
+  const logoBar = new THREE.Mesh(new THREE.BoxGeometry(0.55,0.06,0.02),
+    new THREE.MeshStandardMaterial({color:0x00E5A0,emissive:0x00E5A0,emissiveIntensity:0.4}));
+  logoBar.position.set(-0.3,-0.2,0.39); group.add(logoBar);
+
+  // Vent grille lines on front right
+  for(let i=0;i<6;i++){
+    const vent = new THREE.Mesh(new THREE.BoxGeometry(0.006,0.4,0.02),
+      new THREE.MeshStandardMaterial({color:0x0A1A28,metalness:0.9,roughness:0.1}));
+    vent.position.set(0.65+i*0.04, -0.1, 0.39); group.add(vent);
+  }
+
+  // ── Solar panel on top ────────────────────
+  const solar = new THREE.Mesh(new THREE.BoxGeometry(2.1,0.06,0.6), matSolar);
+  solar.position.set(0,0.8,-0.05);
+  solar.rotation.x = 0.18; // slightly tilted
+  group.add(solar);
+
+  // Solar cell grid (5x4 cells)
+  for(let r=0;r<4;r++) for(let c=0;c<5;c++){
+    const cell = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.02,0.11), matSolarCell);
+    cell.position.set(-0.9+c*0.45, 0.84, -0.05+r*0.13-0.2);
+    cell.rotation.x = 0.18; group.add(cell);
+  }
+
+  // ── Probes ────────────────────────────────
+  const probeXs = [-0.7,-0.25,0.25,0.7];
+  probeXs.forEach(px => {
+    const probe = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.025,0.85,8), matProbe);
+    probe.position.set(px,-1.17,0); probe.castShadow=true; group.add(probe);
+    // Probe tip
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.025,0.12,8), matProbe);
+    tip.position.set(px,-1.63,0); group.add(tip);
+  });
+
+  // Probe base plate
+  const basePlate = new THREE.Mesh(new THREE.BoxGeometry(2.1,0.06,0.6), matBody);
+  basePlate.position.set(0,-0.76,0); group.add(basePlate);
+
+  // ── Side panels ───────────────────────────
+  // USB-C port
+  const usb = new THREE.Mesh(new THREE.BoxGeometry(0.04,0.12,0.22),
+    new THREE.MeshStandardMaterial({color:0x050D14,metalness:0.5,roughness:0.5}));
+  usb.position.set(1.22,-0.4,0); group.add(usb);
+  // Port ring
+  const usbRing = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.14,0.24),
+    new THREE.MeshStandardMaterial({color:0x7A9AAA,metalness:0.95,roughness:0.05}));
+  usbRing.position.set(1.22,-0.4,0); group.add(usbRing);
+
+  // ── Antenna ───────────────────────────────
+  const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.025,0.55,6), matAntenna);
+  antenna.position.set(0.95,1.05,0.15); group.add(antenna);
+  const antennaTip = new THREE.Mesh(new THREE.SphereGeometry(0.03,8,8), matAntenna);
+  antennaTip.position.set(0.95,1.35,0.15); group.add(antennaTip);
+  const antennaBase = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.1,8), matBody);
+  antennaBase.position.set(0.95,0.8,0.15); group.add(antennaBase);
+
+  // ── Shadow plane ─────────────────────────
+  const shadow = new THREE.Mesh(
+    new THREE.CircleGeometry(2.5,64),
+    new THREE.MeshStandardMaterial({color:0x000000,transparent:true,opacity:0.3})
+  );
+  shadow.rotation.x = -Math.PI/2;
+  shadow.position.y = -2;
+  scene.add(shadow);
+
+  // ── Floating particles around sensor ─────
+  const particleGeo = new THREE.BufferGeometry();
+  const pCount = 80;
+  const pPos = new Float32Array(pCount*3);
+  const pPhase = new Float32Array(pCount);
+  for(let i=0;i<pCount;i++){
+    pPos[i*3]=((Math.random()-0.5)*5);
+    pPos[i*3+1]=((Math.random()-0.5)*4);
+    pPos[i*3+2]=((Math.random()-0.5)*3);
+    pPhase[i]=Math.random()*Math.PI*2;
+  }
+  particleGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+  const pMat = new THREE.PointsMaterial({color:0x00E5A0,size:0.025,transparent:true,opacity:0.5});
+  const pMesh = new THREE.Points(particleGeo,pMat);
+  scene.add(pMesh);
+
+  group.position.y = 0.2;
+  scene.add(group);
+
+  // Mouse interaction
+  let targetRotY = 0.3, targetRotX = -0.1;
+  let currentRotY = 0.3, currentRotX = -0.1;
+  let isDragging = false, lastX=0, lastY=0, autoRotate = true;
+
+  container.addEventListener('mousedown', e=>{isDragging=true;lastX=e.clientX;lastY=e.clientY;autoRotate=false;});
+  window.addEventListener('mouseup', ()=>{isDragging=false;});
+  window.addEventListener('mousemove', e=>{
+    if(isDragging){
+      targetRotY += (e.clientX-lastX)*0.008;
+      targetRotX += (e.clientY-lastY)*0.005;
+      targetRotX = Math.max(-0.5,Math.min(0.5,targetRotX));
+      lastX=e.clientX; lastY=e.clientY;
+    } else if(!isDragging && container.matches(':hover')) {
+      const r=container.getBoundingClientRect();
+      const nx=(e.clientX-r.left)/r.width-0.5;
+      const ny=(e.clientY-r.top)/r.height-0.5;
+      targetRotY = nx*0.6+0.3; targetRotX = ny*(-0.3);
+    }
+  });
+  container.addEventListener('mouseleave',()=>{if(!isDragging){autoRotate=true;}});
+
+  let t=0;
+  function animate(){
+    requestAnimationFrame(animate);
+    t += 0.012;
+
+    if(autoRotate && !isDragging) {
+      targetRotY += 0.004;
+    }
+    currentRotY += (targetRotY-currentRotY)*0.06;
+    currentRotX += (targetRotX-currentRotX)*0.06;
+    group.rotation.y = currentRotY;
+    group.rotation.x = currentRotX;
+
+    // Floating animation
+    group.position.y = 0.2 + Math.sin(t*0.8)*0.06;
+
+    // LED pulse
+    led1.material.emissiveIntensity = 2 + Math.sin(t*2)*1;
+    ledRing.material.opacity = 0.2 + Math.sin(t*2)*0.2;
+
+    // Particle drift
+    const pos = particleGeo.attributes.position;
+    for(let i=0;i<pCount;i++){
+      pos.array[i*3+1] += Math.sin(t+pPhase[i])*0.002;
+      pos.array[i*3] += Math.cos(t*0.7+pPhase[i])*0.001;
+    }
+    pos.needsUpdate=true;
+
+    // Green point light orbit
+    greenPt.position.x = Math.sin(t*0.5)*2.5;
+    greenPt.position.z = Math.cos(t*0.5)*2.5;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // Resize
+  const obs = new ResizeObserver(()=>{
+    const w=container.clientWidth, h=container.clientHeight;
+    renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix();
+  });
+  obs.observe(container);
+})();
+
+// ═══════════════════════════════════════════════════════
+// SCROLL REVEAL (IntersectionObserver)
+// ═══════════════════════════════════════════════════════
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); } });
+},{threshold:0.12,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.step,.eq-card').forEach(el=>revealObs.observe(el));
+
+// Steps separate observer for stagger
+document.querySelectorAll('.step').forEach((el,i)=>{
+  el.style.transitionDelay = (i*150)+'ms';
+  revealObs.observe(el);
+});
+
+// ═══════════════════════════════════════════════════════
+// PLANT MARQUEE CONTENT
+// ═══════════════════════════════════════════════════════
+const plantsRow1 = [
+  "Wheat","Rice","Maize","Barley","Oats","Rye","Quinoa","Amaranth","Teff","Sorghum",
+  "Pearl Millet","Buckwheat","Soybean","Chickpea","Lentil","Kidney Bean","Peanut",
+  "Pigeon Pea","Mung Bean","Cowpea","Fava Bean","Green Pea","Snap Pea","Tomato",
+  "Cherry Tomato","Bell Pepper","Jalapeño","Eggplant","Potato","Sweet Potato",
+  "Carrot","Beet","Daikon","Cassava","Taro","Turnip","Parsnip","Jerusalem Artichoke",
+  "Cabbage","Kale","Broccoli","Cauliflower","Brussels Sprouts","Pak Choi","Tatsoi",
+  "Mizuna","Kohlrabi","Onion","Garlic","Leek","Shallot","Chive","Spring Onion"
+];
+const plantsRow2 = [
+  "Cucumber","Zucchini","Butternut Squash","Pumpkin","Watermelon","Cantaloupe",
+  "Honeydew","Bitter Melon","Bottle Gourd","Luffa","Lettuce","Spinach","Swiss Chard",
+  "Arugula","Endive","Radicchio","Purslane","Banana","Mango","Papaya","Pineapple",
+  "Coconut","Guava","Dragon Fruit","Rambutan","Lychee","Jackfruit","Starfruit",
+  "Avocado","Passion Fruit","Apple","Pear","Peach","Plum","Apricot","Sweet Cherry",
+  "Fig","Pomegranate","Kiwi","Grape","Strawberry","Blueberry","Raspberry","Blackberry",
+  "Cranberry","Goji Berry","Orange","Lemon","Lime","Grapefruit","Almond","Walnut",
+  "Cashew","Pistachio","Macadamia","Sweet Basil","Oregano","Thyme","Rosemary",
+  "Sage","Lavender","Peppermint","Spearmint","Lemon Balm","Ginger","Turmeric",
+  "Cardamom","Vanilla","Saffron","Lemongrass","Sunflower","Canola","Sesame",
+  "Flaxseed","Cotton","Coffee Arabica","Green Tea","Cacao","Aloe Vera","Moringa",
+  "Ashwagandha","Echinacea","Ginseng","Neem","Alfalfa","Red Clover","Hybrid Rose",
+  "Tulip","Dahlia","Chrysanthemum","Marigold"
+];
+
+function buildMarquee(id, plants, highlight=[]) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  const doubled = [...plants,...plants];
+  el.innerHTML = doubled.map((p,i)=>{
+    const isHL = highlight.includes(p);
+    return `<span class="plant-chip${isHL?' highlight':''}">${p}</span>`;
+  }).join('');
+}
+buildMarquee('row1', plantsRow1, ['Wheat','Tomato','Mango','Soybean','Potato']);
+buildMarquee('row2', plantsRow2, ['Aloe Vera','Coffee Arabica','Ginseng','Moringa','Saffron']);
+
+// ═══════════════════════════════════════════════════════
+// DONUT CHART ANIMATION
+// ═══════════════════════════════════════════════════════
+const donutObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      const circ = 2*Math.PI*80; // 502
+      // arc1: 112/240 = 46.7% → offset = 502*(1-0.467) = 267
+      const arc1 = document.getElementById('donut-arc1');
+      const arc2 = document.getElementById('donut-arc2');
+      const arc3 = document.getElementById('donut-arc3');
+      if(arc1) { arc1.style.transition='stroke-dashoffset 1.5s ease .3s'; arc1.style.strokeDashoffset=270; }
+      if(arc2) {
+        arc2.style.strokeDashoffset = 270;
+        arc2.style.stroke = '#8B5CF6';
+        // arc2 is 89/240 = 37% → show as partial
+        setTimeout(()=>{ arc2.style.transition='stroke-dashoffset 1.5s ease .6s'; arc2.style.strokeDashoffset=390; },100);
+      }
+      if(arc3) {
+        arc3.style.strokeDashoffset = 390;
+        setTimeout(()=>{ arc3.style.transition='stroke-dashoffset 1.5s ease .9s'; arc3.style.strokeDashoffset=456; },100);
+      }
+      donutObs.unobserve(e.target);
+    }
+  });
+},{threshold:0.3});
+const marketSection = document.getElementById('market');
+if(marketSection) donutObs.observe(marketSection);
+
+// ═══════════════════════════════════════════════════════
+// PARALLAX HERO ELEMENTS
+// ═══════════════════════════════════════════════════════
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY;
+  const heroContent = document.querySelector('.hero-h1');
+  if(heroContent && sy < window.innerHeight) {
+    heroContent.style.transform = `translateY(${sy*0.15}px)`;
+  }
+});
+</script>
+</body>
+</html>

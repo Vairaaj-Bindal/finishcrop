@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Data (large files — keep out of git)
+data/*.csv
+data/*.json
+
+# Farmer profiles (private data)
+farmer_profiles/
+
+# Logs (optional — keep training_results.json)
+# logs/
+
+# Node modules (for pitch deck script)
+node_modules/
+
+# Models — OPTIONAL: uncomment to exclude large model files from git
+# models/*.pkl
+# models/*.pt
+# (If excluding, add to a release or use Git LFS)
