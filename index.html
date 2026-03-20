@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AgroSense AI — Precision Agriculture Intelligence</title>
+  <title>GrowSmart — Precision Agriculture Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -23,37 +23,70 @@
       --glass: rgba(6,18,32,0.85);
     }
     *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior:smooth; font-size:16px; }
+    html { scroll-behavior:smooth; font-size:16px; cursor:none !important; }
     body {
       font-family:'Inter',system-ui,sans-serif;
       background:var(--bg);
       color:var(--white);
       overflow-x:hidden;
-      cursor:none;
+      cursor:none !important;
     }
+    a, button, input, [role="button"] { cursor:none !important; }
 
     /* ── CUSTOM CURSOR ────────────────────────────────── */
     #cursor {
-      position:fixed; width:8px; height:8px; border-radius:50%;
-      background:var(--mint); pointer-events:none; z-index:9999;
+      position:fixed; width:6px; height:6px; border-radius:50%;
+      background:var(--mint); pointer-events:none; z-index:99999;
       transform:translate(-50%,-50%);
-      transition:width .15s,height .15s,background .15s;
-      box-shadow:0 0 12px var(--mint),0 0 30px rgba(0,229,160,.3);
+      will-change:left,top;
+      box-shadow:0 0 10px var(--mint),0 0 24px rgba(0,229,160,.4);
+      transition:width .2s cubic-bezier(.34,1.56,.64,1),
+                 height .2s cubic-bezier(.34,1.56,.64,1),
+                 background .2s, opacity .2s, box-shadow .2s;
+    }
+    #cursor.is-hover {
+      width:14px; height:14px;
+      background:var(--white);
+      box-shadow:0 0 20px rgba(255,255,255,.5);
+    }
+    #cursor.is-click {
+      width:4px; height:4px;
+      background:var(--mint);
     }
     #cursor-follower {
-      position:fixed; width:36px; height:36px; border-radius:50%;
-      border:1px solid rgba(0,229,160,.4); pointer-events:none; z-index:9998;
+      position:fixed; width:38px; height:38px; border-radius:50%;
+      border:1.5px solid rgba(0,229,160,.45); pointer-events:none; z-index:99998;
       transform:translate(-50%,-50%);
-      transition:transform .12s ease,width .3s,height .3s,border-color .3s;
+      will-change:left,top,width,height;
+      background:transparent;
+      transition:width .4s cubic-bezier(.34,1.56,.64,1),
+                 height .4s cubic-bezier(.34,1.56,.64,1),
+                 border-color .25s, background .25s;
+    }
+    #cursor-follower.is-hover {
+      width:56px; height:56px;
+      border-color:rgba(0,229,160,.75);
+      background:rgba(0,229,160,.05);
+    }
+    #cursor-follower.is-click {
+      width:28px; height:28px;
     }
     #cursor-glow {
-      position:fixed; width:300px; height:300px; border-radius:50%;
-      background:radial-gradient(circle,rgba(0,229,160,.06) 0%,transparent 70%);
-      pointer-events:none; z-index:9997; transform:translate(-50%,-50%);
-      transition:transform .4s ease;
+      position:fixed; width:400px; height:400px; border-radius:50%;
+      background:radial-gradient(circle,rgba(0,229,160,.055) 0%,transparent 68%);
+      pointer-events:none; z-index:99997; transform:translate(-50%,-50%);
+      will-change:left,top;
+      transition:opacity .3s;
     }
-    body:has(a:hover) #cursor, body:has(button:hover) #cursor {
-      width:16px; height:16px; background:var(--white);
+    /* ripple on click */
+    .cursor-ripple {
+      position:fixed; border-radius:50%; pointer-events:none; z-index:99996;
+      border:1.5px solid rgba(0,229,160,.6);
+      transform:translate(-50%,-50%) scale(0);
+      animation:rippleOut .55s ease-out forwards;
+    }
+    @keyframes rippleOut {
+      to { transform:translate(-50%,-50%) scale(3.5); opacity:0; }
     }
 
     /* ── SCROLL PROGRESS ──────────────────────────────── */
@@ -592,8 +625,8 @@
 <!-- ─────────────────────────── NAV ────────────────────────────── -->
 <nav id="navbar">
   <a class="nav-logo" href="#">
-    <div class="logo-mark">A</div>
-    <span class="logo-text">Agro<span>Sense</span> AI</span>
+    <div class="logo-mark">G</div>
+    <span class="logo-text">Grow<span>Smart</span></span>
   </a>
   <div class="nav-links">
     <a href="#product">Product</a>
@@ -616,7 +649,7 @@
     <span class="line1">Know exactly what</span>
     <span class="line2">your crops need.</span>
   </h1>
-  <p class="hero-sub">AgroSense Pro is the world's most intelligent soil sensor — combining real-time NPK analysis, AI prediction across 1,920 crop species, and satellite-calibrated models to maximize yield and eliminate agricultural guesswork.</p>
+  <p class="hero-sub">GrowSmart Pro is the world's most intelligent soil sensor — combining real-time NPK analysis, AI prediction across 1,920 crop species, and satellite-calibrated models to maximize yield and eliminate agricultural guesswork.</p>
   <div class="hero-btns">
     <a href="demo.html" class="btn-large primary">Try Live Demo ↗</a>
     <a href="#product" class="btn-large outline">See the Device ↓</a>
@@ -692,14 +725,14 @@
     <div style="position:relative;" class="reveal-left">
       <div id="sensor-viewport">
         <canvas id="sensor-canvas"></canvas>
-        <div class="sensor-label">AgroSense Pro · v2.1</div>
+        <div class="sensor-label">GrowSmart Pro · v2.1</div>
       </div>
       <div style="position:absolute;top:20px;right:20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mint);opacity:.6;letter-spacing:1px;">DRAG TO ROTATE</div>
     </div>
     <div class="product-content reveal-right">
       <p class="section-eyebrow">The Hardware</p>
       <h2 class="section-h2">Precision sensing.<br>Beautiful engineering.</h2>
-      <p>AgroSense Pro is a ruggedized, solar-powered soil intelligence unit that continuously measures NPK levels, temperature, humidity, and rainfall — transmitting encrypted data to our AI cloud every 15 minutes.</p>
+      <p>GrowSmart Pro is a ruggedized, solar-powered soil intelligence unit that continuously measures NPK levels, temperature, humidity, and rainfall — transmitting encrypted data to our AI cloud every 15 minutes.</p>
       <div class="specs-grid">
         <div class="spec-item"><div class="spec-label">Sensors</div><div class="spec-val"><span>4×</span> NPK Electrodes</div></div>
         <div class="spec-item"><div class="spec-label">Power</div><div class="spec-val"><span>Solar</span> + 30-day battery</div></div>
@@ -727,7 +760,7 @@
       <div class="step">
         <div class="step-num" data-n="1">🌱</div>
         <h3>Deploy the Sensor</h3>
-        <p>Push the AgroSense Pro probes 20cm into your field soil. The device powers up automatically and begins sampling NPK, pH, temperature, humidity, and rainfall data every 15 minutes.</p>
+        <p>Push the GrowSmart Pro probes 20cm into your field soil. The device powers up automatically and begins sampling NPK, pH, temperature, humidity, and rainfall data every 15 minutes.</p>
       </div>
       <div class="step" style="transition-delay:.15s">
         <div class="step-num" data-n="2">🧠</div>
@@ -917,7 +950,7 @@
   <div class="market-content reveal-right">
     <p class="section-eyebrow">The Opportunity</p>
     <h2 class="section-h2">$240 billion market.<br>Still running on spreadsheets.</h2>
-    <p>Global agriculture is a $3.5T industry with less than 3% precision technology penetration. AgroSense AI targets the fastest-growing segment — AI-powered soil intelligence — where no single platform has achieved product-market fit at scale.</p>
+    <p>Global agriculture is a $3.5T industry with less than 3% precision technology penetration. GrowSmart targets the fastest-growing segment — AI-powered soil intelligence — where no single platform has achieved product-market fit at scale.</p>
     <ul class="market-bullets">
       <li>2.6B smallholder farmers have zero access to soil data</li>
       <li>Precision agriculture grows at 13.8% CAGR through 2030</li>
@@ -948,15 +981,15 @@
     <div class="footer-top">
       <div class="footer-brand">
         <a class="nav-logo" href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:2px;">
-          <div class="logo-mark">A</div>
-          <span class="logo-text">Agro<span>Sense</span> AI</span>
+          <div class="logo-mark">G</div>
+          <span class="logo-text">Grow<span>Smart</span></span>
         </a>
         <p>Precision agriculture intelligence for the next generation of farming. Built with peer-reviewed agronomic science and state-of-the-art machine learning.</p>
       </div>
       <div class="footer-col">
         <h4>Product</h4>
         <ul>
-          <li><a href="#product">AgroSense Pro</a></li>
+          <li><a href="#product">GrowSmart Pro</a></li>
           <li><a href="#how">How it Works</a></li>
           <li><a href="#technology">Technology</a></li>
           <li><a href="#plants">Plant Database</a></li>
@@ -982,7 +1015,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 AgroSense AI. All rights reserved.</p>
+      <p>© 2026 GrowSmart. All rights reserved.</p>
       <div class="footer-social">
         <a href="#" class="social-btn">𝕏</a>
         <a href="#" class="social-btn">in</a>
@@ -994,25 +1027,103 @@
 
 <script>
 // ═══════════════════════════════════════════════════════
-// CUSTOM CURSOR
+// CUSTOM CURSOR — Spring physics + magnetic buttons
 // ═══════════════════════════════════════════════════════
-const cursor = document.getElementById('cursor');
+const cursor   = document.getElementById('cursor');
 const follower = document.getElementById('cursor-follower');
-const glow = document.getElementById('cursor-glow');
-let mx=0,my=0,fx=0,fy=0;
+const glow     = document.getElementById('cursor-glow');
+
+// Current mouse position
+let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+// Follower position + velocity (spring physics)
+let fx = mx, fy = my, vx = 0, vy = 0;
+// Whether cursor has entered the viewport yet
+let cursorVisible = false;
+
+// Hide until first mousemove
+cursor.style.opacity   = '0';
+follower.style.opacity = '0';
+glow.style.opacity     = '0';
 
 document.addEventListener('mousemove', e => {
-  mx = e.clientX; my = e.clientY;
-  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
-  glow.style.left = mx + 'px'; glow.style.top = my + 'px';
+  mx = e.clientX;
+  my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top  = my + 'px';
+  glow.style.left   = mx + 'px';
+  glow.style.top    = my + 'px';
+  if (!cursorVisible) {
+    cursorVisible = true;
+    cursor.style.opacity   = '1';
+    follower.style.opacity = '1';
+    glow.style.opacity     = '1';
+  }
 });
 
+// Spring constants — tweak for feel
+const SPRING  = 0.13;   // stiffness
+const DAMPING = 0.78;   // energy loss per frame
+
 function animateFollower() {
-  fx += (mx - fx) * 0.1; fy += (my - fy) * 0.1;
-  follower.style.left = fx + 'px'; follower.style.top = fy + 'px';
+  const dx = mx - fx;
+  const dy = my - fy;
+  vx = (vx + dx * SPRING) * DAMPING;
+  vy = (vy + dy * SPRING) * DAMPING;
+  fx += vx;
+  fy += vy;
+  follower.style.left = fx + 'px';
+  follower.style.top  = fy + 'px';
   requestAnimationFrame(animateFollower);
 }
 animateFollower();
+
+// ── Hover states ──────────────────────────────────────
+const magneticEls = document.querySelectorAll(
+  'a, button, .btn-large, .btn-primary, .btn-ghost, ' +
+  '.problem-card, .spec-item, .metric-card, .eq-card, .step-num, .plant-chip'
+);
+magneticEls.forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.classList.add('is-hover');
+    follower.classList.add('is-hover');
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.classList.remove('is-hover');
+    follower.classList.remove('is-hover');
+    el.style.transform = '';
+  });
+
+  // Magnetic pull — element moves slightly toward cursor
+  el.addEventListener('mousemove', e => {
+    const rect = el.getBoundingClientRect();
+    const cx   = rect.left + rect.width  / 2;
+    const cy   = rect.top  + rect.height / 2;
+    const dx   = (e.clientX - cx) * 0.18;
+    const dy   = (e.clientY - cy) * 0.18;
+    // Only apply to compact elements so big sections don't shift
+    if (rect.width < 300) {
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+      el.style.transition = 'transform 0.15s ease';
+    }
+  });
+});
+
+// ── Click ripple ──────────────────────────────────────
+document.addEventListener('mousedown', () => {
+  cursor.classList.add('is-click');
+  follower.classList.add('is-click');
+});
+document.addEventListener('mouseup', () => {
+  cursor.classList.remove('is-click');
+  follower.classList.remove('is-click');
+
+  // Spawn a ripple ring at click position
+  const ripple = document.createElement('div');
+  ripple.className = 'cursor-ripple';
+  ripple.style.cssText = `left:${mx}px;top:${my}px;width:38px;height:38px;`;
+  document.body.appendChild(ripple);
+  ripple.addEventListener('animationend', () => ripple.remove());
+});
 
 // ═══════════════════════════════════════════════════════
 // SCROLL PROGRESS + NAV
