@@ -13,7 +13,7 @@ Dataset schema (26 columns):
   Categorical   : soil_type, season, region_climate
   Targets       : crop_label, fertilizer_recommendation, water_requirement_mm
 
-1,920 crop species/varieties · 120,000 training rows · 15 fertilizer types
+1,920 crop species/varieties · 120,000 training rows · 13 fertilizer types
 =============================================================================
 """
 

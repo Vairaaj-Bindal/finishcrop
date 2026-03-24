@@ -6,7 +6,7 @@ Handles:
   - Loading and cleaning data (120,000 rows × 26 columns)
   - Feature engineering: nutrient balance score, water stress index, GDD
   - Graceful pass-through for pre-computed CSV columns
-  - Label encoding for categorical targets (1,920 crop classes, 15 fert types)
+  - Label encoding for categorical targets (1,920 crop classes, 13 fert types)
   - One-hot encoding for categorical features
   - RobustScaler feature scaling (handles outliers better than StandardScaler)
   - Stratified train/val/test split

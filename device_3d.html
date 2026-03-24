@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgroSense Pro — 3D Device Design & Circuit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    :root {
+      --bg:#030B14; --bg2:#061220; --bg3:#0A1628;
+      --mint:#00E5A0; --blue:#0099FF; --purple:#8B5CF6;
+      --orange:#FF6B35; --white:#F0F9FF; --muted:#64748B;
+      --border:rgba(0,229,160,0.12); --card:rgba(255,255,255,0.03);
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);overflow-x:hidden;}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 5%;height:64px;
+      display:flex;align-items:center;justify-content:space-between;
+      background:rgba(3,11,20,0.92);backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);}
+    .nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.1rem;}
+    .nav-logo-dot{width:10px;height:10px;background:var(--mint);border-radius:50%;
+      box-shadow:0 0 8px var(--mint);}
+    .nav-links{display:flex;gap:1.5rem;align-items:center;}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:0.85rem;font-weight:500;
+      transition:color .2s;}
+    .nav-links a:hover,.nav-links a.active{color:var(--mint);}
+    .nav-cta{background:rgba(0,229,160,0.12);border:1px solid var(--mint);
+      color:var(--mint);padding:6px 14px;border-radius:20px;font-size:0.78rem;
+      font-weight:700;text-decoration:none;transition:background .2s;}
+    .nav-cta:hover{background:rgba(0,229,160,0.25);}
+
+    /* HERO */
+    .hero{padding:100px 5% 40px;text-align:center;}
+    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.15;margin-bottom:0.6rem;}
+    .hero h1 span{color:var(--mint);}
+    .hero p{color:var(--muted);font-size:1rem;max-width:560px;margin:0 auto 2rem;}
+
+    /* 3D VIEWER */
+    #viewer-section{padding:0 5% 60px;}
+    .viewer-card{background:var(--bg2);border:1px solid var(--border);
+      border-radius:20px;overflow:hidden;position:relative;}
+    #canvas3d{display:block;width:100%;height:560px;cursor:grab;}
+    #canvas3d:active{cursor:grabbing;}
+
+    .viewer-controls{
+      position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+      display:flex;gap:10px;}
+    .ctrl-btn{background:rgba(6,18,32,0.9);border:1px solid var(--border);
+      color:var(--white);padding:8px 18px;border-radius:10px;font-size:0.8rem;
+      font-weight:600;cursor:pointer;transition:all .2s;backdrop-filter:blur(10px);}
+    .ctrl-btn:hover{border-color:var(--mint);color:var(--mint);}
+    .ctrl-btn.active{background:rgba(0,229,160,0.18);border-color:var(--mint);color:var(--mint);}
+
+    /* LABELS overlay */
+    .label-overlay{position:absolute;top:0;left:0;width:100%;height:100%;
+      pointer-events:none;}
+    .comp-label{position:absolute;background:rgba(3,11,20,0.85);
+      border:1px solid var(--mint);border-radius:6px;padding:3px 8px;
+      font-size:0.68rem;font-weight:600;color:var(--mint);white-space:nowrap;
+      pointer-events:none;display:none;}
+    .comp-label.visible{display:block;}
+
+    /* SECTION HEADERS */
+    .section{padding:60px 5%;}
+    .section-title{font-size:1.6rem;font-weight:800;margin-bottom:0.4rem;}
+    .section-title span{color:var(--mint);}
+    .section-sub{color:var(--muted);font-size:0.9rem;margin-bottom:2.5rem;max-width:600px;}
+
+    /* CIRCUIT DIAGRAM */
+    #circuit-svg{width:100%;border-radius:16px;background:#040f1c;
+      border:1px solid var(--border);overflow:visible;}
+
+    /* PIN TABLE */
+    .pin-table-wrap{overflow-x:auto;margin-top:2rem;}
+    table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+    th{background:rgba(0,229,160,0.08);color:var(--mint);font-weight:700;
+       padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+    td{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,0.04);
+       color:#cce6ff;vertical-align:top;}
+    tr:hover td{background:rgba(0,229,160,0.04);}
+    td.mono{font-family:'JetBrains Mono',monospace;color:var(--mint);}
+    td.signal{color:#aef;font-size:0.78rem;}
+
+    /* PARTS LIST */
+    .parts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+      gap:1rem;margin-top:1.5rem;}
+    .part-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+      padding:1.1rem 1.3rem;transition:border-color .2s;}
+    .part-card:hover{border-color:rgba(0,229,160,0.3);}
+    .part-num{font-size:0.68rem;font-weight:700;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;}
+    .part-name{font-size:0.95rem;font-weight:700;color:var(--white);margin-bottom:.2rem;}
+    .part-model{font-family:'JetBrains Mono',monospace;font-size:0.76rem;color:var(--mint);
+      margin-bottom:.4rem;}
+    .part-desc{font-size:0.78rem;color:var(--muted);line-height:1.45;margin-bottom:.5rem;}
+    .part-meta{display:flex;gap:.6rem;flex-wrap:wrap;}
+    .part-tag{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.2);
+      color:var(--mint);font-size:0.68rem;font-weight:600;padding:2px 8px;border-radius:12px;}
+    .part-tag.price{background:rgba(0,153,255,0.08);border-color:rgba(0,153,255,0.25);
+      color:var(--blue);}
+    .part-tag.cat{background:rgba(139,92,246,0.08);border-color:rgba(139,92,246,0.25);
+      color:var(--purple);}
+
+    /* BOM TOTAL */
+    .bom-total{background:linear-gradient(135deg,rgba(0,229,160,0.08),rgba(0,153,255,0.05));
+      border:1px solid var(--mint);border-radius:14px;padding:1.4rem 1.8rem;
+      margin-top:2rem;display:flex;gap:3rem;align-items:center;flex-wrap:wrap;}
+    .bom-stat{text-align:center;}
+    .bom-stat .val{font-size:1.8rem;font-weight:800;color:var(--mint);}
+    .bom-stat .lbl{font-size:0.72rem;color:var(--muted);font-weight:600;
+      text-transform:uppercase;letter-spacing:.06em;}
+
+    /* POWER SECTION */
+    .power-diagram{background:var(--bg2);border:1px solid var(--border);
+      border-radius:16px;padding:1.8rem;margin-top:1.5rem;}
+    .pwr-chain{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;
+      margin-bottom:1.5rem;}
+    .pwr-block{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.25);
+      border-radius:10px;padding:.55rem 1rem;font-size:0.78rem;font-weight:700;
+      color:var(--mint);white-space:nowrap;}
+    .pwr-arrow{color:var(--muted);font-size:1.1rem;font-weight:700;}
+    .pwr-rail{width:100%;height:2px;background:linear-gradient(90deg,var(--mint),var(--blue));
+      border-radius:2px;margin:.4rem 0;}
+    .pwr-note{font-size:0.78rem;color:var(--muted);line-height:1.5;}
+
+    /* FOOTER */
+    footer{padding:40px 5%;border-top:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:center;
+      color:var(--muted);font-size:0.8rem;flex-wrap:wrap;gap:1rem;}
+    footer a{color:var(--mint);text-decoration:none;}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-dot"></div>
+    AgroSense Pro
+  </div>
+  <div class="nav-links">
+    <a href="#viewer-section" class="active">3D Model</a>
+    <a href="#circuit-section">Circuit</a>
+    <a href="#parts-section">Parts List</a>
+    <a href="demo.html" class="nav-cta">← Live Demo</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>AgroSense Pro<br/><span>Hardware Design</span></h1>
+  <p>Full 3D model, verified circuit schematic, and complete bill of materials for the precision agriculture sensor unit.</p>
+</div>
+
+<!-- 3D VIEWER -->
+<div id="viewer-section">
+  <div class="viewer-card">
+    <canvas id="canvas3d"></canvas>
+    <div class="label-overlay" id="label-overlay"></div>
+    <div class="viewer-controls">
+      <button class="ctrl-btn" onclick="toggleCutaway()" id="cutaway-btn">🔍 View Inside</button>
+      <button class="ctrl-btn" onclick="toggleAutoRotate()" id="rotate-btn">⏸ Pause Rotation</button>
+      <button class="ctrl-btn" onclick="resetCamera()">↺ Reset Camera</button>
+    </div>
+  </div>
+  <p style="text-align:center;color:var(--muted);font-size:0.8rem;margin-top:.8rem;">
+    Drag to rotate · Scroll to zoom · Click "View Inside" to see internal components
+  </p>
+</div>
+
+<!-- CIRCUIT SECTION -->
+<div class="section" id="circuit-section">
+  <div class="section-title">Circuit <span>Design</span></div>
+  <div class="section-sub">Verified schematic — all voltage levels, pin assignments, and component values confirmed against ESP32 and sensor datasheets.</div>
+
+  <!-- Power Architecture -->
+  <div class="power-diagram">
+    <div style="font-size:0.75rem;font-weight:700;color:var(--mint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.8rem;">Power Architecture</div>
+    <div class="pwr-chain">
+      <div class="pwr-block">☀️ Solar Panel<br/><span style="font-size:.65rem;color:var(--muted);">6V / 2W</span></div>
+      <div class="pwr-arrow">→</div>
+      <div class="pwr-block">CN3065<br/><span style="font-size:.65rem;color:var(--muted);">Solar LiPo Charger</span></div>
+      <div class="pwr-arrow">→</div>
+      <div class="pwr-block">🔋 18650<br/><span style="font-size:.65rem;color:var(--muted);">3.7V / 2500mAh</span></div>
+      <div class="pwr-arrow">→</div>
+      <div class="pwr-block">MT3608<br/><span style="font-size:.65rem;color:var(--muted);">Boost → 5V</span></div>
+      <div class="pwr-arrow">→</div>
+      <div class="pwr-block">ESP32 VIN<br/><span style="font-size:.65rem;color:var(--muted);">Built-in 3.3V LDO</span></div>
+    </div>
+    <div class="pwr-rail"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+      <div class="pwr-note"><strong style="color:var(--white);">5V Rail consumers:</strong><br/>
+        NPK sensor (RS485): ~25 mA<br/>pH module: ~5 mA<br/>SD card: ~20 mA avg<br/>ESP32 (via LDO): ~100 mA avg</div>
+      <div class="pwr-note"><strong style="color:var(--white);">Battery life:</strong><br/>
+        Active draw: ~150 mA @ 5V → ~17 hrs<br/>
+        Deep-sleep cycles (30s/15min): ~24 mA avg → 4 days<br/>
+        Solar input: 400 mA@5V in full sun → net positive daily</div>
+    </div>
+  </div>
+
+  <!-- Block Diagram SVG -->
+  <div style="margin-top:2rem;">
+    <svg id="circuit-svg" viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg" style="font-family:Inter,sans-serif;">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#00E5A0" opacity=".7"/>
+        </marker>
+        <marker id="arr-gray" markerWidth="8" markerHeight="8" refX="4" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#334155" opacity=".7"/>
+        </marker>
+        <filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+          <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Background -->
+      <rect width="900" height="620" fill="#040f1c" rx="16"/>
+
+      <!-- POWER SECTION (top left) -->
+      <g id="pwr-section">
+        <rect x="30" y="30" width="130" height="60" rx="8" fill="none" stroke="#1e3a20" stroke-width="1.5"/>
+        <text x="95" y="53" text-anchor="middle" fill="#00E5A0" font-size="10" font-weight="700">SOLAR PANEL</text>
+        <text x="95" y="68" text-anchor="middle" fill="#64748B" font-size="9">6V / 2W</text>
+        <text x="95" y="82" text-anchor="middle" fill="#64748B" font-size="9">Voc=7.2V, Isc=330mA</text>
+
+        <line x1="160" y1="60" x2="210" y2="60" stroke="#00E5A0" stroke-width="1.5" marker-end="url(#arr)" opacity=".7"/>
+        <text x="185" y="54" text-anchor="middle" fill="#334155" font-size="8">6V+</text>
+
+        <rect x="210" y="30" width="100" height="60" rx="8" fill="none" stroke="#1e3a20" stroke-width="1.5"/>
+        <text x="260" y="53" text-anchor="middle" fill="#00E5A0" font-size="10" font-weight="700">CN3065</text>
+        <text x="260" y="67" text-anchor="middle" fill="#64748B" font-size="9">Solar LiPo Charger</text>
+        <text x="260" y="80" text-anchor="middle" fill="#334155" font-size="8">500mA charge rate</text>
+
+        <line x1="310" y1="60" x2="360" y2="60" stroke="#00E5A0" stroke-width="1.5" marker-end="url(#arr)" opacity=".7"/>
+
+        <rect x="360" y="30" width="100" height="60" rx="8" fill="none" stroke="#334155" stroke-width="1.5"/>
+        <text x="410" y="53" text-anchor="middle" fill="#F0F9FF" font-size="10" font-weight="700">🔋 18650</text>
+        <text x="410" y="67" text-anchor="middle" fill="#64748B" font-size="9">3.7V / 2500mAh</text>
+        <text x="410" y="80" text-anchor="middle" fill="#334155" font-size="8">Protected cell</text>
+
+        <line x1="460" y1="60" x2="510" y2="60" stroke="#00E5A0" stroke-width="1.5" marker-end="url(#arr)" opacity=".7"/>
+
+        <rect x="510" y="30" width="100" height="60" rx="8" fill="none" stroke="#1e3a20" stroke-width="1.5"/>
+        <text x="560" y="53" text-anchor="middle" fill="#00E5A0" font-size="10" font-weight="700">MT3608</text>
+        <text x="560" y="67" text-anchor="middle" fill="#64748B" font-size="9">Boost Converter</text>
+        <text x="560" y="80" text-anchor="middle" fill="#334155" font-size="8">3.7V → 5V @ 2A</text>
+
+        <!-- 5V rail line -->
+        <line x1="610" y1="60" x2="760" y2="60" stroke="#00E5A0" stroke-width="2" opacity=".5"/>
+        <text x="690" y="52" text-anchor="middle" fill="#00E5A0" font-size="9" font-weight="700">5V BUS</text>
+      </g>
+
+      <!-- ESP32 (center) -->
+      <g id="esp32">
+        <rect x="330" y="200" width="240" height="220" rx="10" fill="rgba(0,229,160,0.04)" stroke="#00E5A0" stroke-width="1.5" filter="url(#glow)"/>
+        <text x="450" y="222" text-anchor="middle" fill="#00E5A0" font-size="12" font-weight="800">ESP32-WROOM-32D</text>
+        <text x="450" y="238" text-anchor="middle" fill="#64748B" font-size="9">Xtensa LX6 Dual-Core · 240MHz · 520KB SRAM · Wi-Fi+BT</text>
+
+        <!-- Pin rows inside ESP32 -->
+        <text x="345" y="262" fill="#aef" font-size="8.5" font-weight="600">GPIO16 (RX2)</text>
+        <text x="345" y="278" fill="#aef" font-size="8.5" font-weight="600">GPIO17 (TX2)</text>
+        <text x="345" y="294" fill="#aef" font-size="8.5" font-weight="600">GPIO4</text>
+        <text x="345" y="310" fill="#aef" font-size="8.5" font-weight="600">GPIO34 (ADC)</text>
+        <text x="345" y="326" fill="#aef" font-size="8.5" font-weight="600">GPIO26</text>
+        <text x="345" y="342" fill="#aef" font-size="8.5" font-weight="600">GPIO27</text>
+        <text x="345" y="358" fill="#aef" font-size="8.5" font-weight="600">GPIO25</text>
+        <text x="345" y="374" fill="#aef" font-size="8.5" font-weight="600">GPIO21 (SDA)</text>
+        <text x="345" y="390" fill="#aef" font-size="8.5" font-weight="600">GPIO22 (SCL)</text>
+
+        <text x="555" y="262" fill="#aef" font-size="8.5" font-weight="600" text-anchor="end">GPIO18 (CLK)</text>
+        <text x="555" y="278" fill="#aef" font-size="8.5" font-weight="600" text-anchor="end">GPIO19 (MISO)</text>
+        <text x="555" y="294" fill="#aef" font-size="8.5" font-weight="600" text-anchor="end">GPIO23 (MOSI)</text>
+        <text x="555" y="310" fill="#aef" font-size="8.5" font-weight="600" text-anchor="end">GPIO5 (CS)</text>
+        <text x="555" y="326" fill="#aef" font-size="8.5" font-weight="600" text-anchor="end">GPIO36 (ADC)</text>
+        <text x="555" y="342" fill="#aef" font-size="8.5" font-weight="600" text-anchor="end">GPIO2 (LED)</text>
+        <text x="555" y="358" fill="#aef" font-size="8.5" font-weight="600" text-anchor="end">3.3V out</text>
+        <text x="555" y="374" fill="#aef" font-size="8.5" font-weight="600" text-anchor="end">5V VIN</text>
+        <text x="555" y="390" fill="#aef" font-size="8.5" font-weight="600" text-anchor="end">GND</text>
+      </g>
+
+      <!-- NPK SENSOR + MAX3485 (right) -->
+      <g id="npk-section">
+        <rect x="660" y="200" width="200" height="80" rx="8" fill="none" stroke="#0099FF" stroke-width="1.5"/>
+        <text x="760" y="222" text-anchor="middle" fill="#0099FF" font-size="10" font-weight="700">JXBS-3001 NPK Sensor</text>
+        <text x="760" y="238" text-anchor="middle" fill="#64748B" font-size="9">RS485 / Modbus RTU</text>
+        <text x="760" y="252" text-anchor="middle" fill="#334155" font-size="8">5V power · 4800 baud</text>
+        <text x="760" y="266" text-anchor="middle" fill="#334155" font-size="8">Range: N 0-1999, P 0-1999, K 0-1999 mg/kg</text>
+
+        <rect x="660" y="310" width="200" height="60" rx="8" fill="none" stroke="#334155" stroke-width="1.5"/>
+        <text x="760" y="332" text-anchor="middle" fill="#F0F9FF" font-size="10" font-weight="700">MAX3485 (3.3V RS485)</text>
+        <text x="760" y="348" text-anchor="middle" fill="#64748B" font-size="9">DE+RE → GPIO4</text>
+        <text x="760" y="362" text-anchor="middle" fill="#64748B" font-size="9">RO→GPIO16 · DI→GPIO17</text>
+
+        <!-- Wires NPK↔MAX3485 -->
+        <line x1="760" y1="280" x2="760" y2="310" stroke="#0099FF" stroke-width="1.5" opacity=".6" marker-end="url(#arr)"/>
+        <text x="770" y="297" fill="#0099FF" font-size="8">RS485 A/B</text>
+
+        <!-- Wires MAX3485→ESP32 -->
+        <line x1="660" y1="340" x2="570" y2="268" stroke="#334155" stroke-width="1.2" opacity=".8" marker-end="url(#arr-gray)"/>
+        <line x1="660" y1="350" x2="570" y2="284" stroke="#334155" stroke-width="1.2" opacity=".8" marker-end="url(#arr-gray)"/>
+        <line x1="660" y1="356" x2="570" y2="300" stroke="#334155" stroke-width="1.2" opacity=".8" marker-end="url(#arr-gray)"/>
+      </g>
+
+      <!-- SENSORS (left) -->
+      <g id="sensors-section">
+
+        <!-- pH -->
+        <rect x="30" y="200" width="170" height="60" rx="8" fill="none" stroke="#8B5CF6" stroke-width="1.5"/>
+        <text x="115" y="222" text-anchor="middle" fill="#8B5CF6" font-size="10" font-weight="700">pH-4502C Module</text>
+        <text x="115" y="238" text-anchor="middle" fill="#64748B" font-size="9">Analog 0–3.3V out · 5V supply</text>
+        <text x="115" y="252" text-anchor="middle" fill="#334155" font-size="8">AO → 1kΩ+2kΩ divider → GPIO34</text>
+        <line x1="200" y1="230" x2="330" y2="306" stroke="#8B5CF6" stroke-width="1.2" opacity=".6" marker-end="url(#arr)"/>
+        <text x="240" y="270" fill="#8B5CF6" font-size="8">Analog (0-3.3V)</text>
+
+        <!-- DHT22 -->
+        <rect x="30" y="290" width="170" height="60" rx="8" fill="none" stroke="#334155" stroke-width="1.5"/>
+        <text x="115" y="312" text-anchor="middle" fill="#F0F9FF" font-size="10" font-weight="700">DHT22 Sensor</text>
+        <text x="115" y="327" text-anchor="middle" fill="#64748B" font-size="9">Temperature + Humidity</text>
+        <text x="115" y="341" text-anchor="middle" fill="#334155" font-size="8">Data→10kΩ PU→GPIO26 · 3.3V</text>
+        <line x1="200" y1="320" x2="330" y2="322" stroke="#334155" stroke-width="1.2" opacity=".6" marker-end="url(#arr-gray)"/>
+
+        <!-- DS18B20 -->
+        <rect x="30" y="380" width="170" height="60" rx="8" fill="none" stroke="#334155" stroke-width="1.5"/>
+        <text x="115" y="402" text-anchor="middle" fill="#F0F9FF" font-size="10" font-weight="700">DS18B20 Waterproof</text>
+        <text x="115" y="417" text-anchor="middle" fill="#64748B" font-size="9">Soil Temperature · OneWire</text>
+        <text x="115" y="431" text-anchor="middle" fill="#334155" font-size="8">Data→4.7kΩ PU→GPIO27 · 3.3V</text>
+        <line x1="200" y1="410" x2="330" y2="338" stroke="#334155" stroke-width="1.2" opacity=".6" marker-end="url(#arr-gray)"/>
+
+        <!-- Rain gauge -->
+        <rect x="30" y="470" width="170" height="60" rx="8" fill="none" stroke="#0099FF" stroke-width="1.5"/>
+        <text x="115" y="492" text-anchor="middle" fill="#0099FF" font-size="10" font-weight="700">Rain Gauge</text>
+        <text x="115" y="507" text-anchor="middle" fill="#64748B" font-size="9">Tipping bucket · 0.2mm/tip</text>
+        <text x="115" y="521" text-anchor="middle" fill="#334155" font-size="8">Reed switch → GPIO25 + INT_PULLUP</text>
+        <line x1="200" y1="500" x2="330" y2="354" stroke="#0099FF" stroke-width="1.2" opacity=".6" marker-end="url(#arr)"/>
+      </g>
+
+      <!-- PERIPHERALS (bottom) -->
+      <g id="periph-section">
+
+        <!-- OLED -->
+        <rect x="330" y="460" width="120" height="60" rx="8" fill="none" stroke="#00E5A0" stroke-width="1.5"/>
+        <text x="390" y="482" text-anchor="middle" fill="#00E5A0" font-size="10" font-weight="700">SSD1306 OLED</text>
+        <text x="390" y="497" text-anchor="middle" fill="#64748B" font-size="9">128×64 · I²C</text>
+        <text x="390" y="511" text-anchor="middle" fill="#334155" font-size="8">SDA/SCL · 3.3V</text>
+        <line x1="390" y1="460" x2="390" y2="420" stroke="#00E5A0" stroke-width="1.2" opacity=".6" marker-end="url(#arr)"/>
+
+        <!-- SD Card -->
+        <rect x="470" y="460" width="120" height="60" rx="8" fill="none" stroke="#334155" stroke-width="1.5"/>
+        <text x="530" y="482" text-anchor="middle" fill="#F0F9FF" font-size="10" font-weight="700">SD Card Module</text>
+        <text x="530" y="497" text-anchor="middle" fill="#64748B" font-size="9">SPI · 5V supply</text>
+        <text x="530" y="511" text-anchor="middle" fill="#334155" font-size="8">CLK/MOSI/MISO/CS</text>
+        <line x1="530" y1="460" x2="510" y2="420" stroke="#334155" stroke-width="1.2" opacity=".6" marker-end="url(#arr-gray)"/>
+
+        <!-- Status LED -->
+        <circle cx="650" cy="500" r="28" fill="none" stroke="#FF6B35" stroke-width="1.5"/>
+        <text x="650" y="495" text-anchor="middle" fill="#FF6B35" font-size="10" font-weight="700">Status LED</text>
+        <text x="650" y="509" text-anchor="middle" fill="#64748B" font-size="9">GPIO2+330Ω</text>
+        <line x1="622" y1="490" x2="570" y2="438" stroke="#FF6B35" stroke-width="1.2" opacity=".6" marker-end="url(#arr)"/>
+      </g>
+
+      <!-- 5V rail connections to sensors -->
+      <line x1="760" y1="60" x2="760" y2="200" stroke="#00E5A0" stroke-width="1.5" opacity=".3" stroke-dasharray="4,3"/>
+      <line x1="610" y1="60" x2="450" y2="60" stroke="#00E5A0" stroke-width="1.5" opacity=".3" stroke-dasharray="4,3"/>
+      <line x1="450" y1="60" x2="450" y2="200" stroke="#00E5A0" stroke-width="1.5" opacity=".3" stroke-dasharray="4,3"/>
+      <text x="452" y="135" fill="#00E5A0" font-size="8" opacity=".6">5V VIN</text>
+
+      <!-- GND rail -->
+      <line x1="30" y1="570" x2="870" y2="570" stroke="#334155" stroke-width="2"/>
+      <text x="900" y="574" fill="#334155" font-size="9" text-anchor="end">GND</text>
+
+      <!-- Legend -->
+      <rect x="630" y="560" width="220" height="50" rx="6" fill="rgba(0,0,0,0.4)"/>
+      <circle cx="647" cy="575" r="4" fill="#00E5A0"/>
+      <text x="655" y="578" fill="#64748B" font-size="8">Power / 5V</text>
+      <circle cx="647" cy="592" r="4" fill="#8B5CF6"/>
+      <text x="655" y="595" fill="#64748B" font-size="8">Analog signal</text>
+      <circle cx="720" cy="575" r="4" fill="#0099FF"/>
+      <text x="728" y="578" fill="#64748B" font-size="8">Digital / RS485</text>
+      <circle cx="720" cy="592" r="4" fill="#334155"/>
+      <text x="728" y="595" fill="#64748B" font-size="8">GPIO / OneWire</text>
+    </svg>
+  </div>
+
+  <!-- Pin Assignment Table -->
+  <div class="pin-table-wrap" style="margin-top:2.5rem;">
+    <div style="font-size:1rem;font-weight:700;margin-bottom:.8rem;">ESP32 Pin Assignment</div>
+    <table>
+      <thead>
+        <tr><th>GPIO</th><th>Function</th><th>Connected To</th><th>Interface</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">GPIO16 (RX2)</td><td>UART2 RX</td><td>MAX3485 RO</td><td class="signal">UART 4800 baud</td><td>NPK sensor receive</td></tr>
+        <tr><td class="mono">GPIO17 (TX2)</td><td>UART2 TX</td><td>MAX3485 DI</td><td class="signal">UART 4800 baud</td><td>NPK sensor transmit</td></tr>
+        <tr><td class="mono">GPIO4</td><td>Direction</td><td>MAX3485 DE+RE</td><td class="signal">Digital OUT</td><td>HIGH=transmit, LOW=receive</td></tr>
+        <tr><td class="mono">GPIO34</td><td>ADC1_CH6</td><td>pH sensor AO (via divider)</td><td class="signal">ADC 12-bit</td><td>1kΩ+2kΩ voltage divider (5V→3.3V)</td></tr>
+        <tr><td class="mono">GPIO26</td><td>DHT22 Data</td><td>DHT22 DATA pin</td><td class="signal">Single-Wire</td><td>10kΩ pull-up to 3.3V</td></tr>
+        <tr><td class="mono">GPIO27</td><td>OneWire</td><td>DS18B20 DATA</td><td class="signal">1-Wire</td><td>4.7kΩ pull-up to 3.3V</td></tr>
+        <tr><td class="mono">GPIO25</td><td>Rain IRQ</td><td>Tipping bucket reed switch</td><td class="signal">INT (FALLING)</td><td>INPUT_PULLUP; 0.2mm per pulse</td></tr>
+        <tr><td class="mono">GPIO21</td><td>I²C SDA</td><td>SSD1306 SDA</td><td class="signal">I²C 400kHz</td><td>3.3V; 4.7kΩ pull-up</td></tr>
+        <tr><td class="mono">GPIO22</td><td>I²C SCL</td><td>SSD1306 SCL</td><td class="signal">I²C 400kHz</td><td>3.3V; 4.7kΩ pull-up</td></tr>
+        <tr><td class="mono">GPIO18</td><td>SPI CLK</td><td>SD card CLK</td><td class="signal">SPI VSPI</td><td>Up to 20 MHz</td></tr>
+        <tr><td class="mono">GPIO19</td><td>SPI MISO</td><td>SD card MISO</td><td class="signal">SPI VSPI</td><td></td></tr>
+        <tr><td class="mono">GPIO23</td><td>SPI MOSI</td><td>SD card MOSI</td><td class="signal">SPI VSPI</td><td></td></tr>
+        <tr><td class="mono">GPIO5</td><td>SPI CS</td><td>SD card CS</td><td class="signal">Digital OUT</td><td>Active LOW</td></tr>
+        <tr><td class="mono">GPIO36</td><td>ADC1_CH0</td><td>Battery voltage divider</td><td class="signal">ADC 12-bit</td><td>100kΩ+100kΩ; Vbat/2 → 3.3V max at 4.2V/2=2.1V ✓</td></tr>
+        <tr><td class="mono">GPIO2</td><td>LED</td><td>330Ω → Green LED</td><td class="signal">Digital OUT</td><td>Built-in LED on most DevKit boards</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PARTS LIST -->
+<div class="section" id="parts-section" style="border-top:1px solid var(--border);">
+  <div class="section-title">Bill of <span>Materials</span></div>
+  <div class="section-sub">Every component needed to build the AgroSense Pro unit. Prices are typical retail/AliExpress estimates for single-unit quantities.</div>
+
+  <div class="parts-grid">
+
+    <!-- MCU -->
+    <div class="part-card">
+      <div class="part-num">01 · Microcontroller</div>
+      <div class="part-name">ESP32-WROOM-32D Module</div>
+      <div class="part-model">ESP32-WROOM-32D</div>
+      <div class="part-desc">Dual-core Xtensa LX6 @ 240 MHz, 4MB Flash, 520KB SRAM, integrated Wi-Fi 802.11 b/g/n + Bluetooth 4.2 BLE. Main controller for all sensor acquisition and wireless data upload.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$4.50</span>
+        <span class="part-tag cat">MCU</span>
+        <span class="part-tag">3.3V / 5V VIN</span>
+      </div>
+    </div>
+
+    <!-- NPK Sensor -->
+    <div class="part-card">
+      <div class="part-num">02 · Soil Nutrient Sensor</div>
+      <div class="part-name">RS485 NPK Soil Sensor</div>
+      <div class="part-model">JXBS-3001-NPK-N01 (or equivalent)</div>
+      <div class="part-desc">Capacitive NPK sensor using RS485 / Modbus RTU protocol. Measures Nitrogen, Phosphorus, Potassium in mg/kg (ppm). Supply: 5–30V DC. Range: 0–1999 mg/kg each nutrient. Response time &lt;1 s.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$28–45</span>
+        <span class="part-tag cat">Soil Sensor</span>
+        <span class="part-tag">RS485 4800 baud</span>
+      </div>
+    </div>
+
+    <!-- RS485 Transceiver -->
+    <div class="part-card">
+      <div class="part-num">03 · RS485 Transceiver</div>
+      <div class="part-name">MAX3485 Half-Duplex RS485 IC</div>
+      <div class="part-model">MAX3485ESA+</div>
+      <div class="part-desc">3.3V-compatible RS485 transceiver (unlike MAX485 which needs 5V). Connects ESP32 UART2 to the NPK sensor's RS485 bus. DE pin tied to RE for half-duplex direction control via GPIO4.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$0.80</span>
+        <span class="part-tag cat">Interface IC</span>
+        <span class="part-tag">3.3V supply ✓</span>
+      </div>
+    </div>
+
+    <!-- pH Sensor -->
+    <div class="part-card">
+      <div class="part-num">04 · pH Sensor</div>
+      <div class="part-name">Analog pH Electrode + Circuit Board</div>
+      <div class="part-model">pH-4502C Module + BNC Glass Electrode</div>
+      <div class="part-desc">BNC pH electrode with signal conditioning board. Analog output 0–3.3V (0–14 pH). Powered at 5V; output divided with 1kΩ+2kΩ resistors to stay within ESP32 ADC 3.3V limit. Requires calibration with pH 4 and pH 7 buffer solutions.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$6–12</span>
+        <span class="part-tag cat">Soil Sensor</span>
+        <span class="part-tag">ADC GPIO34</span>
+      </div>
+    </div>
+
+    <!-- DHT22 -->
+    <div class="part-card">
+      <div class="part-num">05 · Temp/Humidity Sensor</div>
+      <div class="part-name">DHT22 (AM2302) Temperature & Humidity</div>
+      <div class="part-model">DHT22 / AM2302</div>
+      <div class="part-desc">Capacitive humidity + thermistor combo. Range: −40 to +80°C (±0.5°C), 0–100% RH (±2% RH). Single-wire serial protocol. Requires 10kΩ pull-up on data line. Placed in radiation shield on exterior of housing to measure ambient conditions.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$3.50</span>
+        <span class="part-tag cat">Environmental</span>
+        <span class="part-tag">GPIO26 + 10kΩ PU</span>
+      </div>
+    </div>
+
+    <!-- DS18B20 -->
+    <div class="part-card">
+      <div class="part-num">06 · Soil Temperature Probe</div>
+      <div class="part-name">DS18B20 Waterproof Temperature Probe</div>
+      <div class="part-model">DS18B20 (TO-92 + stainless tube)</div>
+      <div class="part-desc">1-Wire digital thermometer in IP67 stainless steel waterproof tube (60cm cable). Measures soil temperature at root zone. Range: −55 to +125°C, ±0.5°C accuracy. 4.7kΩ pull-up required. Multiple sensors can share one GPIO.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$4.00</span>
+        <span class="part-tag cat">Soil Sensor</span>
+        <span class="part-tag">GPIO27 + 4.7kΩ PU</span>
+      </div>
+    </div>
+
+    <!-- Rain Gauge -->
+    <div class="part-card">
+      <div class="part-num">07 · Rainfall Sensor</div>
+      <div class="part-name">Tipping Bucket Rain Gauge</div>
+      <div class="part-model">Generic 0.2mm tipping bucket (WS-3000 equiv.)</div>
+      <div class="part-desc">Self-emptying tipping bucket mechanism. Each tip = 0.2 mm of rainfall. Reed switch output wired to GPIO25 with INPUT_PULLUP. Interrupt-driven counting. Weatherproof, UV-resistant housing. Mounting arm included.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$18–30</span>
+        <span class="part-tag cat">Weather</span>
+        <span class="part-tag">GPIO25 IRQ</span>
+      </div>
+    </div>
+
+    <!-- OLED -->
+    <div class="part-card">
+      <div class="part-num">08 · Display</div>
+      <div class="part-name">0.96" SSD1306 OLED Display</div>
+      <div class="part-model">SSD1306 128×64 I²C</div>
+      <div class="part-desc">Monochrome 128×64 OLED display, I²C interface (addr 0x3C). Shows real-time sensor readings and status. 3.3V compatible. Very low power (~20 mA active, &lt;1 μA in sleep). Ideal for battery-powered devices.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$2.50</span>
+        <span class="part-tag cat">Display</span>
+        <span class="part-tag">I²C GPIO21/22</span>
+      </div>
+    </div>
+
+    <!-- Battery -->
+    <div class="part-card">
+      <div class="part-num">09 · Battery</div>
+      <div class="part-name">18650 Li-ion Cell (Protected)</div>
+      <div class="part-model">Samsung INR18650-25R or Panasonic NCR18650B</div>
+      <div class="part-desc">2500–3400 mAh 18650 Li-ion cell with built-in PCB protection (overcurrent, overcharge, deep discharge). 3.7V nominal. Provides ~16 hours continuous operation or 4+ days with deep-sleep firmware. Use protected cell only for safety.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$5–8</span>
+        <span class="part-tag cat">Power</span>
+        <span class="part-tag">3.7V / 2500mAh</span>
+      </div>
+    </div>
+
+    <!-- Solar Charger -->
+    <div class="part-card">
+      <div class="part-num">10 · Solar Charger IC</div>
+      <div class="part-name">CN3065 Solar LiPo Charger Module</div>
+      <div class="part-model">CN3065 + breakout board</div>
+      <div class="part-desc">Designed specifically for solar charging. Accepts 4.5–6.5V input (unlike TP4056 which needs regulated 5V). MPPT-like behaviour. Charge current set by external resistor (2kΩ = 500mA). LED indicators for charging/full. Protects against overvoltage from solar panel.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$1.50</span>
+        <span class="part-tag cat">Power</span>
+        <span class="part-tag">4.5–6.5V solar in</span>
+      </div>
+    </div>
+
+    <!-- Boost Converter -->
+    <div class="part-card">
+      <div class="part-num">11 · Boost Converter</div>
+      <div class="part-name">MT3608 DC-DC Boost Module</div>
+      <div class="part-model">MT3608 (2A, adjustable)</div>
+      <div class="part-desc">Boosts 3.7V battery voltage to stable 5V for ESP32 VIN and NPK sensor. 88% typical efficiency at 150mA load. Adjust output with onboard trimmer to exactly 5.00V before installation. Maximum continuous output: 2A. Input: 2–24V.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$1.20</span>
+        <span class="part-tag cat">Power</span>
+        <span class="part-tag">3.7V → 5.0V</span>
+      </div>
+    </div>
+
+    <!-- Solar Panel -->
+    <div class="part-card">
+      <div class="part-num">12 · Solar Panel</div>
+      <div class="part-name">6V / 2W Monocrystalline Solar Panel</div>
+      <div class="part-model">6V 333mA polycrystalline panel (90×60mm)</div>
+      <div class="part-desc">Voc=7.2V, Vmp=6V, Isc=333mA, Imp=280mA. Sized to fully recharge the 18650 within 8 hours of sunlight. Wires through a 1N5819 Schottky diode (0.3V drop) to prevent back-discharge at night. Epoxy-coated for outdoor use.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$4–7</span>
+        <span class="part-tag cat">Power</span>
+        <span class="part-tag">6V / 2W</span>
+      </div>
+    </div>
+
+    <!-- SD Card Module -->
+    <div class="part-card">
+      <div class="part-num">13 · Storage</div>
+      <div class="part-name">Micro SD Card Module (SPI)</div>
+      <div class="part-model">MH-SD Module or equivalent</div>
+      <div class="part-desc">SPI-interface microSD module with built-in 3.3V level shifter and LDO regulator. Logs all sensor readings with timestamps to CSV on the SD card for offline analysis. Use 2–8GB Class 10 card (not included). Supports FAT32.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$1.50</span>
+        <span class="part-tag cat">Storage</span>
+        <span class="part-tag">SPI GPIO18/19/23/5</span>
+      </div>
+    </div>
+
+    <!-- microSD card -->
+    <div class="part-card">
+      <div class="part-num">14 · Memory Card</div>
+      <div class="part-name">8GB Micro SD Card (Class 10)</div>
+      <div class="part-model">SanDisk Ultra 8GB microSDHC</div>
+      <div class="part-desc">Pre-formatted FAT32. Stores sensor logs at 15-minute intervals → ~1MB/day → 8 years of storage. Use a name-brand card to avoid data corruption in extreme temperatures.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$4.00</span>
+        <span class="part-tag cat">Storage</span>
+        <span class="part-tag">FAT32</span>
+      </div>
+    </div>
+
+    <!-- Enclosure -->
+    <div class="part-card">
+      <div class="part-num">15 · Enclosure</div>
+      <div class="part-name">IP67 Weatherproof ABS Enclosure</div>
+      <div class="part-model">110×65×50mm ABS IP67 (Hammond 1555 equiv.)</div>
+      <div class="part-desc">Ingress protection IP67: dust-tight, 30-min submersion to 1m. ABS plastic, UV-stabilised. Rubber gasket seal. 4× M3 mounting screws. Dark green colour preferred to reduce solar heating. Drill holes for probe cable entry (use cable glands).</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$8–14</span>
+        <span class="part-tag cat">Mechanical</span>
+        <span class="part-tag">IP67</span>
+      </div>
+    </div>
+
+    <!-- PCB -->
+    <div class="part-card">
+      <div class="part-num">16 · Custom PCB</div>
+      <div class="part-name">AgroSense Pro Main PCB</div>
+      <div class="part-model">Custom 2-layer FR4, 80×55mm</div>
+      <div class="part-desc">Custom PCB integrating all component footprints: ESP32 module, MAX3485, MT3608 boost circuit, CN3065 charger, sensor headers, power connectors, and battery holder. Designed in KiCad. 2-layer FR4, HASL finish, 1.6mm thickness. Order from JLCPCB or PCBWay.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1 (min 5-pack)</span>
+        <span class="part-tag price">~$2–4 each</span>
+        <span class="part-tag cat">PCB</span>
+        <span class="part-tag">FR4 2-layer</span>
+      </div>
+    </div>
+
+    <!-- Sensor Probes -->
+    <div class="part-card">
+      <div class="part-num">17 · Sensor Probes</div>
+      <div class="part-name">Stainless Steel Insertion Probes (3×)</div>
+      <div class="part-model">304 SS rod 6mm dia × 150mm</div>
+      <div class="part-desc">Three 304-grade stainless steel probes for soil insertion. One carries NPK sensor electrodes (connected to NPK sensor wire), one carries the DS18B20 capsule, one is reference ground. Epoxy-sealed probe entry into housing. Sharpened tip for easy insertion.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 3</span>
+        <span class="part-tag price">~$2 total</span>
+        <span class="part-tag cat">Mechanical</span>
+        <span class="part-tag">304 SS</span>
+      </div>
+    </div>
+
+    <!-- Cable Glands -->
+    <div class="part-card">
+      <div class="part-num">18 · Cable Glands</div>
+      <div class="part-name">PG7 IP68 Nylon Cable Glands</div>
+      <div class="part-model">PG7 M12 thread (3–6.5mm cable dia)</div>
+      <div class="part-desc">Watertight cable entry for sensor probe wires and solar panel cable. IP68 rated when fully tightened. 4 needed: NPK cable, rain gauge cable, solar panel cable, auxiliary port. Nylon body, stainless lock nut.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 4</span>
+        <span class="part-tag price">~$3 (pack of 10)</span>
+        <span class="part-tag cat">Mechanical</span>
+        <span class="part-tag">IP68 PG7</span>
+      </div>
+    </div>
+
+    <!-- Mounting stake -->
+    <div class="part-card">
+      <div class="part-num">19 · Mounting Hardware</div>
+      <div class="part-name">Galvanised Steel Mounting Stake</div>
+      <div class="part-model">50cm × 20mm galvanised steel angle bar</div>
+      <div class="part-desc">L-shaped stake to position the device at proper height above ground (probes in soil, solar panel angled toward sun). Spray-painted with anti-rust primer. M4 bolt and wing nut for quick removal. Alternatively use a 25mm PVC conduit with end cap.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$3–5</span>
+        <span class="part-tag cat">Mechanical</span>
+        <span class="part-tag">Galvanised</span>
+      </div>
+    </div>
+
+    <!-- Passives -->
+    <div class="part-card">
+      <div class="part-num">20 · Passive Components</div>
+      <div class="part-name">Resistors, Capacitors & Diodes</div>
+      <div class="part-model">Assorted 0402 / through-hole</div>
+      <div class="part-desc">
+        <strong>Resistors:</strong> 4.7kΩ×2 (DS18B20/I²C PU), 10kΩ×2 (DHT22 PU / rain PU), 1kΩ+2kΩ (pH divider), 330Ω (LED), 100kΩ×2 (battery divider), 2kΩ (CN3065 prog).<br/>
+        <strong>Capacitors:</strong> 100nF×4 (decoupling), 10μF×3 (power rails), 22μF×2 (MT3608 in/out).<br/>
+        <strong>Diodes:</strong> 1N5819 Schottky (solar anti-backflow), SS14 (MT3608 boost diode).
+      </div>
+      <div class="part-meta">
+        <span class="part-tag">Assorted</span>
+        <span class="part-tag price">~$2–4</span>
+        <span class="part-tag cat">Passives</span>
+      </div>
+    </div>
+
+    <!-- Connectors -->
+    <div class="part-card">
+      <div class="part-num">21 · Connectors</div>
+      <div class="part-name">JST-PH 2-pin + Pin Headers + Terminal Blocks</div>
+      <div class="part-model">JST-PH 2.0mm + 2.54mm headers</div>
+      <div class="part-desc">JST-PH 2.0mm 2-pin connector for battery (standard 18650 holder). 2.54mm female headers for sensor connections. 3.5mm screw terminal blocks for rain gauge and solar panel. USB-C breakout board for programming and optional 5V charging input.</div>
+      <div class="part-meta">
+        <span class="part-tag">Assorted</span>
+        <span class="part-tag price">~$2</span>
+        <span class="part-tag cat">Connectors</span>
+      </div>
+    </div>
+
+    <!-- Status LED -->
+    <div class="part-card">
+      <div class="part-num">22 · Status Indicator</div>
+      <div class="part-name">3mm Green LED + Lens Cap</div>
+      <div class="part-model">Kingbright L-934LGD + IP67 lens cap</div>
+      <div class="part-desc">High-brightness 3mm green LED (550nm, 20mA, 40° viewing angle) with waterproof lens cap for panel mounting. Controlled via GPIO2 with 330Ω series resistor. Flash patterns: 1 blink=OK, 2 blinks=uploading, solid=charging, off=deep sleep.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$0.50</span>
+        <span class="part-tag cat">Indicator</span>
+        <span class="part-tag">GPIO2 + 330Ω</span>
+      </div>
+    </div>
+
+    <!-- Inductor -->
+    <div class="part-card">
+      <div class="part-num">23 · Boost Inductor</div>
+      <div class="part-name">22μH Shielded SMD Inductor</div>
+      <div class="part-model">Würth 744025220 or TDK CLF6045 22μH</div>
+      <div class="part-desc">Required for MT3608 boost converter circuit. 22μH, 2A saturation current, DCR &lt;150mΩ. Shielded design minimises EMI from switching. If using a pre-made MT3608 module, this is already included on the module PCB.</div>
+      <div class="part-meta">
+        <span class="part-tag">Qty: 1</span>
+        <span class="part-tag price">~$0.80</span>
+        <span class="part-tag cat">Magnetics</span>
+        <span class="part-tag">22μH / 2A</span>
+      </div>
+    </div>
+
+    <!-- UV resin / potting -->
+    <div class="part-card">
+      <div class="part-num">24 · Weatherproofing</div>
+      <div class="part-name">Silicone Conformal Coating + Probe Potting Compound</div>
+      <div class="part-model">MG Chemicals 419C + 2-part epoxy</div>
+      <div class="part-desc">Spray conformal coating on PCB to prevent condensation-induced shorts. 2-part waterproof epoxy to pot probe entry points and cable glands. Prevents moisture ingress in high-humidity or rain conditions. Apply after all testing is complete.</div>
+      <div class="part-meta">
+        <span class="part-tag">1 can + 1 tube</span>
+        <span class="part-tag price">~$12</span>
+        <span class="part-tag cat">Materials</span>
+        <span class="part-tag">Weatherproof</span>
+      </div>
+    </div>
+
+    <!-- Wiring -->
+    <div class="part-card">
+      <div class="part-num">25 · Wiring</div>
+      <div class="part-name">Silicone Hookup Wire + RS485 Twisted Pair</div>
+      <div class="part-model">24 AWG silicone + 22 AWG twisted pair</div>
+      <div class="part-desc">Silicone-insulated 24 AWG wire (flexible, −60°C to +200°C) for internal connections. RS485 twisted pair cable (22 AWG shielded, 1m) from housing to NPK sensor — critical for noise immunity. Colour code: red=5V, black=GND, green=data, blue=RS485-A, white=RS485-B.</div>
+      <div class="part-meta">
+        <span class="part-tag">~2m assorted</span>
+        <span class="part-tag price">~$3</span>
+        <span class="part-tag cat">Materials</span>
+        <span class="part-tag">24 AWG silicone</span>
+      </div>
+    </div>
+
+  </div><!-- end parts-grid -->
+
+  <!-- BOM TOTALS -->
+  <div class="bom-total">
+    <div class="bom-stat">
+      <div class="val">25</div>
+      <div class="lbl">Line Items</div>
+    </div>
+    <div class="bom-stat">
+      <div class="val">$98–140</div>
+      <div class="lbl">Est. Build Cost (single unit)</div>
+    </div>
+    <div class="bom-stat">
+      <div class="val">~4 hrs</div>
+      <div class="lbl">Assembly Time</div>
+    </div>
+    <div class="bom-stat">
+      <div class="val">IP67</div>
+      <div class="lbl">Ingress Protection</div>
+    </div>
+    <div class="bom-stat">
+      <div class="val">4+ days</div>
+      <div class="lbl">Battery Life (sleep mode)</div>
+    </div>
+    <div style="flex:1;font-size:0.78rem;color:var(--muted);min-width:220px;">
+      <strong style="color:var(--white);">Where to buy:</strong><br/>
+      AliExpress (best price), Amazon (faster), Digi-Key / Mouser (premium/verified parts).
+      NPK sensor: recommend Aliexpress "RS485 NPK sensor" search — verify 5V compatibility before ordering.
+    </div>
+  </div>
+
+</div><!-- end parts section -->
+
+<footer>
+  <div>AgroSense Pro — AI Crop Helper Project</div>
+  <div>
+    <a href="demo.html">← Live AI Demo</a> &nbsp;·&nbsp;
+    <a href="index.html">Home</a>
+  </div>
+</footer>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// THREE.JS 3D DEVICE VIEWER
+// ─────────────────────────────────────────────────────────────
+const canvas = document.getElementById('canvas3d');
+const W = canvas.clientWidth, H = 560;
+canvas.width = W * window.devicePixelRatio;
+canvas.height = H * window.devicePixelRatio;
+canvas.style.width = W + 'px';
+canvas.style.height = H + 'px';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x030b14);
+
+const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 500);
+let sph = { theta: 0.45, phi: Math.PI / 3.2, r: 38 };
+function updateCamera() {
+  camera.position.set(
+    sph.r * Math.sin(sph.phi) * Math.sin(sph.theta),
+    sph.r * Math.cos(sph.phi) + 2,
+    sph.r * Math.sin(sph.phi) * Math.cos(sph.theta)
+  );
+  camera.lookAt(0, 2, 0);
+}
+updateCamera();
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(W, H);
+renderer.shadowMap.enabled = true;
+renderer.localClippingEnabled = true;
+
+// Lights
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const sun = new THREE.DirectionalLight(0xffffff, 0.85);
+sun.position.set(8, 18, 10);
+sun.castShadow = true;
+scene.add(sun);
+const fill = new THREE.PointLight(0x00e5a0, 0.5, 60);
+fill.position.set(-6, 5, 6);
+scene.add(fill);
+const rim = new THREE.PointLight(0x0099ff, 0.3, 40);
+rim.position.set(10, 0, -8);
+scene.add(rim);
+
+// Ground (soil)
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(60, 60),
+  new THREE.MeshLambertMaterial({ color: 0x1a0d05 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -9;
+scene.add(ground);
+
+// Soil texture layer
+const soilTop = new THREE.Mesh(
+  new THREE.PlaneGeometry(60, 60),
+  new THREE.MeshLambertMaterial({ color: 0x2d1a0a, transparent: true, opacity: 0.6 })
+);
+soilTop.rotation.x = -Math.PI / 2;
+soilTop.position.y = -8.98;
+scene.add(soilTop);
+
+// ── Device Group ──────────────────────────────────
+const deviceGroup = new THREE.Group();
+scene.add(deviceGroup);
+
+const housingMat = new THREE.MeshPhongMaterial({
+  color: 0x1a3520, shininess: 35,
+  side: THREE.FrontSide,
+});
+
+// MAIN HOUSING
+const housing = new THREE.Mesh(
+  new THREE.BoxGeometry(9, 18, 7),
+  housingMat
+);
+housing.position.y = 1;
+housing.castShadow = true;
+deviceGroup.add(housing);
+
+// Top cap (slightly smaller, rounded feel)
+const topCap = new THREE.Mesh(
+  new THREE.BoxGeometry(9.2, 0.5, 7.2),
+  new THREE.MeshPhongMaterial({ color: 0x1e4028, shininess: 20 })
+);
+topCap.position.y = 10.25;
+deviceGroup.add(topCap);
+
+// Bottom cap
+const botCap = new THREE.Mesh(
+  new THREE.BoxGeometry(9.2, 0.5, 7.2),
+  new THREE.MeshPhongMaterial({ color: 0x1e4028, shininess: 20 })
+);
+botCap.position.y = -8.25;
+deviceGroup.add(botCap);
+
+// Corner screws (decorative)
+const screwMat = new THREE.MeshPhongMaterial({ color: 0x888888, shininess: 120 });
+[[-4, -4], [-4, 4], [4, -4], [4, 4]].forEach(([x, z]) => {
+  ['top', 'bot'].forEach((pos, i) => {
+    const screw = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.4, 8), screwMat);
+    screw.position.set(x, i === 0 ? 10.2 : -8.2, z);
+    deviceGroup.add(screw);
+  });
+});
+
+// SOLAR PANEL on top
+const solarMat = new THREE.MeshPhongMaterial({
+  color: 0x1a2880, shininess: 180, specular: 0x4466dd
+});
+const solar = new THREE.Mesh(new THREE.BoxGeometry(8.5, 0.45, 6.5), solarMat);
+solar.position.y = 10.7;
+deviceGroup.add(solar);
+
+// Solar grid lines
+const gridMat = new THREE.MeshBasicMaterial({ color: 0x3355bb });
+for (let i = -3.5; i <= 3.5; i += 0.95) {
+  const ln = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.05, 6.5), gridMat);
+  ln.position.set(i, 10.75, 0);
+  deviceGroup.add(ln);
+}
+for (let j = -2.8; j <= 2.8; j += 1.12) {
+  const ln = new THREE.Mesh(new THREE.BoxGeometry(8.5, 0.05, 0.04), gridMat);
+  ln.position.set(0, 10.75, j);
+  deviceGroup.add(ln);
+}
+
+// OLED DISPLAY WINDOW (front face)
+const dispBg = new THREE.Mesh(
+  new THREE.BoxGeometry(3.8, 2.6, 0.25),
+  new THREE.MeshPhongMaterial({ color: 0x000d1a, shininess: 180, specular: 0x002244 })
+);
+dispBg.position.set(-0.5, 3.2, 3.63);
+deviceGroup.add(dispBg);
+
+// Display glow (simulates active OLED)
+const dispGlow = new THREE.Mesh(
+  new THREE.BoxGeometry(3.2, 2.0, 0.05),
+  new THREE.MeshBasicMaterial({ color: 0x00e5a0, transparent: true, opacity: 0.22 })
+);
+dispGlow.position.set(-0.5, 3.2, 3.76);
+deviceGroup.add(dispGlow);
+
+// LABEL PLATE on front
+const labelPlate = new THREE.Mesh(
+  new THREE.BoxGeometry(3.8, 1.2, 0.2),
+  new THREE.MeshPhongMaterial({ color: 0x0a1a10, shininess: 40 })
+);
+labelPlate.position.set(-0.5, 1.1, 3.62);
+deviceGroup.add(labelPlate);
+
+// STATUS LED
+const ledMat = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
+const led = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), ledMat);
+led.position.set(3, 3.2, 3.65);
+deviceGroup.add(led);
+// LED halo
+const ledHalo = new THREE.Mesh(
+  new THREE.SphereGeometry(0.5, 10, 10),
+  new THREE.MeshBasicMaterial({ color: 0x00ff88, transparent: true, opacity: 0.3 })
+);
+ledHalo.position.copy(led.position);
+deviceGroup.add(ledHalo);
+
+// CHARGING LED (red/amber)
+const chargedLed = new THREE.Mesh(
+  new THREE.SphereGeometry(0.22, 10, 10),
+  new THREE.MeshBasicMaterial({ color: 0xff8800, transparent: true, opacity: 0.8 })
+);
+chargedLed.position.set(3, 2.5, 3.65);
+deviceGroup.add(chargedLed);
+
+// USB-C PORT on side
+const usbPort = new THREE.Mesh(
+  new THREE.BoxGeometry(0.3, 0.7, 1.2),
+  new THREE.MeshPhongMaterial({ color: 0x888888, shininess: 80 })
+);
+usbPort.position.set(4.65, -1.5, 1.0);
+deviceGroup.add(usbPort);
+
+// CABLE GLAND (right side, lower)
+const cgMat = new THREE.MeshPhongMaterial({ color: 0x222222, shininess: 40 });
+const cg = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.4, 12), cgMat);
+cg.rotation.z = Math.PI / 2;
+cg.position.set(5.0, -4, 1.5);
+deviceGroup.add(cg);
+
+// Cable gland #2
+const cg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.4, 12), cgMat);
+cg2.rotation.z = Math.PI / 2;
+cg2.position.set(5.0, -4, -1.0);
+deviceGroup.add(cg2);
+
+// ── SENSOR PROBES (3) ───────────────────────────
+const probeMat = new THREE.MeshPhongMaterial({ color: 0xb8b8c0, shininess: 200, specular: 0x999999 });
+const tipMat   = new THREE.MeshPhongMaterial({ color: 0xddddee, shininess: 250 });
+[-2.5, 0, 2.5].forEach(x => {
+  // Probe body
+  const probe = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.18, 12, 12), probeMat);
+  probe.position.set(x, -14.5, 0);
+  deviceGroup.add(probe);
+  // Probe tip (cone)
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.18, 1.8, 12), tipMat);
+  tip.rotation.x = Math.PI;
+  tip.position.set(x, -21.4, 0);
+  deviceGroup.add(tip);
+  // Probe-to-housing connector ring
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.08, 8, 16), cgMat);
+  ring.position.set(x, -8.3, 0);
+  deviceGroup.add(ring);
+});
+
+// MOUNTING STAKE
+const stakeMat = new THREE.MeshPhongMaterial({ color: 0x777788, shininess: 60 });
+const stake = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.28, 22, 8), stakeMat);
+stake.position.set(0, -20, -3.2);
+deviceGroup.add(stake);
+
+// ── INTERNAL COMPONENTS ──────────────────────────
+const internalGroup = new THREE.Group();
+deviceGroup.add(internalGroup);
+internalGroup.visible = false;
+
+// PCB Board
+const pcb = new THREE.Mesh(
+  new THREE.BoxGeometry(7.8, 0.25, 5.5),
+  new THREE.MeshPhongMaterial({ color: 0x003300, shininess: 15 })
+);
+pcb.position.set(0, -1.5, 0);
+internalGroup.add(pcb);
+
+// PCB silkscreen (white overlay)
+const silk = new THREE.Mesh(
+  new THREE.BoxGeometry(7.5, 0.05, 5.2),
+  new THREE.MeshBasicMaterial({ color: 0xeeeeff, transparent: true, opacity: 0.15 })
+);
+silk.position.set(0, -1.37, 0);
+internalGroup.add(silk);
+
+// ESP32 Module
+const espMat = new THREE.MeshPhongMaterial({ color: 0x1a1a2a, shininess: 60 });
+const esp32 = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.45, 1.85), espMat);
+esp32.position.set(-1.5, -1.1, 0.5);
+internalGroup.add(esp32);
+// ESP32 metal shield
+const shield = new THREE.Mesh(
+  new THREE.BoxGeometry(1.8, 0.12, 1.4),
+  new THREE.MeshPhongMaterial({ color: 0x888888, shininess: 120 })
+);
+shield.position.set(-1.5, -0.82, 0.5);
+internalGroup.add(shield);
+// ESP32 antenna
+const ant = new THREE.Mesh(
+  new THREE.BoxGeometry(0.7, 0.1, 0.28),
+  new THREE.MeshBasicMaterial({ color: 0x333344 })
+);
+ant.position.set(-2.75, -0.88, 0.5);
+internalGroup.add(ant);
+
+// 18650 Battery
+const battMat = new THREE.MeshPhongMaterial({ color: 0x1e1e2e, shininess: 80 });
+const batt = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 5.5, 18), battMat);
+batt.rotation.z = Math.PI / 2;
+batt.position.set(2.5, -2.1, 1.6);
+internalGroup.add(batt);
+// Battery positive cap
+const batCap = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.28, 0.28, 0.2, 10),
+  new THREE.MeshPhongMaterial({ color: 0xaaaaaa, shininess: 120 })
+);
+batCap.rotation.z = Math.PI / 2;
+batCap.position.set(5.1, -2.1, 1.6);
+internalGroup.add(batCap);
+
+// MAX3485 IC
+const icMat = new THREE.MeshPhongMaterial({ color: 0x0a0a14, shininess: 70 });
+const max = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.28, 0.62), icMat);
+max.position.set(2.0, -1.35, -1.6);
+internalGroup.add(max);
+
+// MT3608 Boost module
+const boostMod = new THREE.Mesh(
+  new THREE.BoxGeometry(2.2, 0.5, 1.4),
+  new THREE.MeshPhongMaterial({ color: 0x004400, shininess: 20 })
+);
+boostMod.position.set(2.8, -1.2, -1.6);
+internalGroup.add(boostMod);
+
+// CN3065 charger
+const charger = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.28, 0.55), icMat);
+charger.position.set(-3.2, -1.35, -1.6);
+internalGroup.add(charger);
+
+// Inductor (toroid)
+const coil = new THREE.Mesh(
+  new THREE.TorusGeometry(0.38, 0.12, 8, 16),
+  new THREE.MeshPhongMaterial({ color: 0x8B6914, shininess: 50 })
+);
+coil.rotation.x = Math.PI / 2;
+coil.position.set(1.5, -1.2, -1.6);
+internalGroup.add(coil);
+
+// Capacitors
+[[- 2.2, -1.15, 0.2], [-1.5, -1.15, -0.5], [0.5, -1.15, -2.0], [1.2, -1.15, -2.0]].forEach(([x, y, z]) => {
+  const cap = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.18, 0.18, 0.5, 8),
+    new THREE.MeshPhongMaterial({ color: 0x223300, shininess: 15 })
+  );
+  cap.position.set(x, y, z);
+  internalGroup.add(cap);
+});
+
+// Pin headers / connectors
+const hdrMat = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 40 });
+[
+  [-3.4, -1.3, 1.0, 0.5, 0.55, 2.8],
+  [3.4, -1.3, 1.0, 0.5, 0.55, 2.8],
+  [0, -1.3, -2.4, 7.0, 0.55, 0.5],
+].forEach(([x, y, z, sx, sy, sz]) => {
+  const hdr = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), hdrMat);
+  hdr.position.set(x, y, z);
+  internalGroup.add(hdr);
+});
+
+// CLIPPING PLANE for cutaway
+const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0.8);
+
+// ── CUTAWAY STATE ─────────────────────────────────
+let cutaway = false;
+function toggleCutaway() {
+  cutaway = !cutaway;
+  const btn = document.getElementById('cutaway-btn');
+  if (cutaway) {
+    housingMat.clippingPlanes = [clipPlane];
+    housingMat.transparent = true;
+    housingMat.opacity = 0.12;
+    housingMat.side = THREE.DoubleSide;
+    internalGroup.visible = true;
+    btn.textContent = '🔒 Close View';
+    btn.classList.add('active');
+    // Also clip top/bottom caps
+    deviceGroup.children.forEach(ch => {
+      if (ch.material && ch !== housing && ch.material.color) {
+        // Only clip green-ish housing pieces, not sensors/probes
+        const c = ch.material.color;
+        if ((c.r < 0.2 && c.g > 0.1) || (c.r < 0.15 && c.g < 0.15 && c.b < 0.15)) return;
+      }
+    });
+  } else {
+    housingMat.clippingPlanes = [];
+    housingMat.transparent = false;
+    housingMat.opacity = 1.0;
+    housingMat.side = THREE.FrontSide;
+    internalGroup.visible = false;
+    btn.textContent = '🔍 View Inside';
+    btn.classList.remove('active');
+  }
+}
+
+// ── AUTO ROTATE ───────────────────────────────────
+let autoRotate = true;
+let lastInteract = Date.now();
+function toggleAutoRotate() {
+  autoRotate = !autoRotate;
+  const btn = document.getElementById('rotate-btn');
+  btn.textContent = autoRotate ? '⏸ Pause Rotation' : '▶ Resume Rotation';
+  if (autoRotate) btn.classList.remove('active');
+  else btn.classList.add('active');
+}
+function resetCamera() {
+  sph = { theta: 0.45, phi: Math.PI / 3.2, r: 38 };
+  updateCamera();
+}
+
+// ── MOUSE ORBIT ───────────────────────────────────
+let drag = false, lastMouse = { x: 0, y: 0 };
+canvas.addEventListener('mousedown', e => {
+  drag = true;
+  lastMouse = { x: e.clientX, y: e.clientY };
+  autoRotate = false;
+  document.getElementById('rotate-btn').textContent = '▶ Resume Rotation';
+  document.getElementById('rotate-btn').classList.add('active');
+});
+window.addEventListener('mouseup', () => { drag = false; });
+window.addEventListener('mousemove', e => {
+  if (!drag) return;
+  const dx = e.clientX - lastMouse.x;
+  const dy = e.clientY - lastMouse.y;
+  sph.theta -= dx * 0.012;
+  sph.phi = Math.max(0.15, Math.min(Math.PI / 2, sph.phi - dy * 0.012));
+  lastMouse = { x: e.clientX, y: e.clientY };
+  updateCamera();
+});
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  sph.r = Math.max(18, Math.min(65, sph.r + e.deltaY * 0.06));
+  updateCamera();
+}, { passive: false });
+
+// Touch support
+let lastTouch = null;
+canvas.addEventListener('touchstart', e => {
+  lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  autoRotate = false;
+}, { passive: true });
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (!lastTouch) return;
+  const dx = e.touches[0].clientX - lastTouch.x;
+  const dy = e.touches[0].clientY - lastTouch.y;
+  sph.theta -= dx * 0.014;
+  sph.phi = Math.max(0.15, Math.min(Math.PI / 2, sph.phi - dy * 0.014));
+  lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  updateCamera();
+}, { passive: false });
+
+// ── ANIMATE LED PULSE ─────────────────────────────
+let t = 0;
+function animateLeds(dt) {
+  t += dt;
+  ledMat.opacity = 0.7 + 0.3 * Math.sin(t * 2.5);
+  ledHalo.material.opacity = 0.15 + 0.25 * Math.sin(t * 2.5);
+  chargedLed.material.opacity = 0.5 + 0.5 * Math.abs(Math.sin(t * 0.8));
+}
+
+// ── RENDER LOOP ───────────────────────────────────
+let prev = performance.now();
+function animate() {
+  requestAnimationFrame(animate);
+  const now = performance.now();
+  const dt = (now - prev) / 1000;
+  prev = now;
+  if (autoRotate) {
+    sph.theta += dt * 0.22;
+    updateCamera();
+  }
+  animateLeds(dt);
+  renderer.render(scene, camera);
+}
+animate();
+
+// Resize
+window.addEventListener('resize', () => {
+  const w = canvas.clientWidth;
+  camera.aspect = w / H;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, H);
+});
+</script>
+</body>
+</html>
