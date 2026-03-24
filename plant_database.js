@@ -1,4 +1,4 @@
-// AgroSense Pro — Full Plant Database (1920 varieties)
+// Grow Smart — Full Plant Database (1920 varieties)
 // Auto-generated from BASE_SPECIES × 6 (base + 5 variety suffixes)
 // Total: 1920 entries
 const PLANT_DB = {

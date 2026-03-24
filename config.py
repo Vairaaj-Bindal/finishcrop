@@ -39,7 +39,7 @@ RANDOM_STATE = 42
 # ============================================================================
 # FEATURE COLUMNS
 # ============================================================================
-# Raw sensor input features present in the CSV from the AgroSense Pro device
+# Raw sensor input features present in the CSV from the Grow Smart device
 # (some are computed during data generation but available at inference time)
 RAW_FEATURES = [
     "N", "P", "K",

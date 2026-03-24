@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AgroSense Pro — 3D Device Design & Circuit</title>
+  <title>Grow Smart — 3D Device Design & Circuit</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
@@ -140,19 +140,20 @@
 <nav>
   <div class="nav-logo">
     <div class="nav-logo-dot"></div>
-    AgroSense Pro
+    Grow Smart
   </div>
   <div class="nav-links">
     <a href="#viewer-section" class="active">3D Model</a>
     <a href="#circuit-section">Circuit</a>
     <a href="#parts-section">Parts List</a>
+    <a href="circuit.html" class="nav-cta" style="background:rgba(139,92,246,0.15);border-color:#8B5CF6;color:#8B5CF6;">⚡ Circuit Blueprints</a>
     <a href="demo.html" class="nav-cta">← Live Demo</a>
   </div>
 </nav>
 
 <!-- HERO -->
 <div class="hero">
-  <h1>AgroSense Pro<br/><span>Hardware Design</span></h1>
+  <h1>Grow Smart<br/><span>Hardware Design</span></h1>
   <p>Full 3D model, verified circuit schematic, and complete bill of materials for the precision agriculture sensor unit.</p>
 </div>
 
@@ -224,16 +225,16 @@
       <g id="pwr-section">
         <rect x="30" y="30" width="130" height="60" rx="8" fill="none" stroke="#1e3a20" stroke-width="1.5"/>
         <text x="95" y="53" text-anchor="middle" fill="#00E5A0" font-size="10" font-weight="700">SOLAR PANEL</text>
-        <text x="95" y="68" text-anchor="middle" fill="#64748B" font-size="9">6V / 2W</text>
-        <text x="95" y="82" text-anchor="middle" fill="#64748B" font-size="9">Voc=7.2V, Isc=330mA</text>
+        <text x="95" y="68" text-anchor="middle" fill="#64748B" font-size="9">5.5V / 1W</text>
+        <text x="95" y="82" text-anchor="middle" fill="#64748B" font-size="9">Voc=6.8V, Isc=200mA</text>
 
         <line x1="160" y1="60" x2="210" y2="60" stroke="#00E5A0" stroke-width="1.5" marker-end="url(#arr)" opacity=".7"/>
-        <text x="185" y="54" text-anchor="middle" fill="#334155" font-size="8">6V+</text>
+        <text x="185" y="54" text-anchor="middle" fill="#334155" font-size="8">5.5V+</text>
 
         <rect x="210" y="30" width="100" height="60" rx="8" fill="none" stroke="#1e3a20" stroke-width="1.5"/>
-        <text x="260" y="53" text-anchor="middle" fill="#00E5A0" font-size="10" font-weight="700">CN3065</text>
-        <text x="260" y="67" text-anchor="middle" fill="#64748B" font-size="9">Solar LiPo Charger</text>
-        <text x="260" y="80" text-anchor="middle" fill="#334155" font-size="8">500mA charge rate</text>
+        <text x="260" y="53" text-anchor="middle" fill="#00E5A0" font-size="10" font-weight="700">TP4056</text>
+        <text x="260" y="67" text-anchor="middle" fill="#64748B" font-size="9">Li-ion Charger</text>
+        <text x="260" y="80" text-anchor="middle" fill="#334155" font-size="8">1A charge rate</text>
 
         <line x1="310" y1="60" x2="360" y2="60" stroke="#00E5A0" stroke-width="1.5" marker-end="url(#arr)" opacity=".7"/>
 
@@ -411,7 +412,7 @@
 <!-- PARTS LIST -->
 <div class="section" id="parts-section" style="border-top:1px solid var(--border);">
   <div class="section-title">Bill of <span>Materials</span></div>
-  <div class="section-sub">Every component needed to build the AgroSense Pro unit. Prices are typical retail/AliExpress estimates for single-unit quantities.</div>
+  <div class="section-sub">Every component needed to build the Grow Smart unit. Prices are typical retail/AliExpress estimates for single-unit quantities.</div>
 
   <div class="parts-grid">
 
@@ -613,7 +614,7 @@
 </div><!-- end parts section -->
 
 <footer>
-  <div>AgroSense Pro — AI Crop Helper Project</div>
+  <div>Grow Smart — AI Crop Helper Project</div>
   <div>
     <a href="demo.html">← Live AI Demo</a> &nbsp;·&nbsp;
     <a href="index.html">Home</a>
@@ -815,35 +816,73 @@ cg2.position.set(5.0, -4, -1.0);
 deviceGroup.add(cg2);
 
 // ── SENSOR PROBES (4) — N, P, K, Reference ──────
-// Square 2×2 arrangement; probes extend from housing bottom into soil
-const probeMat = new THREE.MeshPhongMaterial({ color: 0xc8c8d0, shininess: 220, specular: 0xaaaaaa });
-const tipMat   = new THREE.MeshPhongMaterial({ color: 0xe8e8ee, shininess: 280 });
+const probeMat  = new THREE.MeshPhongMaterial({ color: 0xd0d0e0, shininess: 260, specular: 0xccccdd });
+const tipMat    = new THREE.MeshPhongMaterial({ color: 0xeeeeee, shininess: 320, specular: 0xffffff });
 const probeLabelColors = [0x00e5a0, 0x0099ff, 0xff8800, 0x888888]; // N, P, K, Ref
-// Probe flange plate at bottom of housing
+const probeNames = ['N', 'P', 'K', 'Ref'];
+
+// Flange plate at housing base
 const flange = new THREE.Mesh(
-  new THREE.BoxGeometry(7, 0.4, 5.5),
+  new THREE.BoxGeometry(7.4, 0.5, 5.8),
   new THREE.MeshPhongMaterial({ color: 0x1a2820, shininess: 30 })
 );
-flange.position.set(0, -8.7, 0);
+flange.position.set(0, -8.65, 0);
 deviceGroup.add(flange);
-// 4 probes in square pattern
+
 [[-2, -2], [-2, 2], [2, -2], [2, 2]].forEach(([x, z], i) => {
-  // Probe collar (color-coded band at top)
-  const collar = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.30, 0.30, 0.6, 12),
-    new THREE.MeshPhongMaterial({ color: probeLabelColors[i], shininess: 80 })
+  const col = probeLabelColors[i];
+
+  // Wide mounting ring on flange (shows probe exits housing)
+  const mountRing = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.44, 0.44, 0.35, 16),
+    new THREE.MeshPhongMaterial({ color: 0x444450, shininess: 80 })
   );
-  collar.position.set(x, -8.9, z);
+  mountRing.position.set(x, -8.52, z);
+  deviceGroup.add(mountRing);
+
+  // Color-coded collar band (thick, clearly visible)
+  const collar = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.38, 0.38, 0.9, 16),
+    new THREE.MeshPhongMaterial({ color: col, shininess: 120, emissive: col, emissiveIntensity: 0.15 })
+  );
+  collar.position.set(x, -9.3, z);
   deviceGroup.add(collar);
-  // Probe body (visible above + below soil)
-  const probe = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.16, 14, 12), probeMat);
-  probe.position.set(x, -16.2, z);
+
+  // Second thin ring below collar (for depth perception)
+  const ring2 = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.34, 0.34, 0.2, 16),
+    new THREE.MeshPhongMaterial({ color: col, shininess: 60, transparent: true, opacity: 0.6 })
+  );
+  ring2.position.set(x, -9.9, z);
+  deviceGroup.add(ring2);
+
+  // Probe shaft — tapered, SS316 silver-grey with high shine
+  const probe = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.22, 0.14, 16, 14),
+    probeMat
+  );
+  probe.position.set(x, -18.2, z);
   deviceGroup.add(probe);
-  // Probe tip (cone)
-  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.16, 2.0, 12), tipMat);
+
+  // Sharpened conical tip
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.14, 2.4, 14), tipMat);
   tip.rotation.x = Math.PI;
-  tip.position.set(x, -23.7, z);
+  tip.position.set(x, -27.2, z);
   deviceGroup.add(tip);
+
+  // Soil displacement mound at entry point (dirt pushed up around probe)
+  const mound = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.7, 1.4, 0.8, 16),
+    new THREE.MeshLambertMaterial({ color: 0x2a140a })
+  );
+  mound.position.set(x, -12.6, z);
+  deviceGroup.add(mound);
+
+  // Thin wire from collar up to housing bottom-back (tether visual)
+  const wireMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.55 });
+  const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.7, 6), wireMat);
+  wire.position.set(x, -8.8, z);
+  deviceGroup.add(wire);
 });
 
 // MOUNTING STAKE
