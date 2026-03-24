@@ -181,9 +181,9 @@
   <div class="power-diagram">
     <div style="font-size:0.75rem;font-weight:700;color:var(--mint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.8rem;">Power Architecture</div>
     <div class="pwr-chain">
-      <div class="pwr-block">☀️ Solar Panel<br/><span style="font-size:.65rem;color:var(--muted);">6V / 2W</span></div>
+      <div class="pwr-block">☀️ Solar Panel<br/><span style="font-size:.65rem;color:var(--muted);">5.5V / 1W</span></div>
       <div class="pwr-arrow">→</div>
-      <div class="pwr-block">CN3065<br/><span style="font-size:.65rem;color:var(--muted);">Solar LiPo Charger</span></div>
+      <div class="pwr-block">TP4056<br/><span style="font-size:.65rem;color:var(--muted);">Li-ion Charger</span></div>
       <div class="pwr-arrow">→</div>
       <div class="pwr-block">🔋 18650<br/><span style="font-size:.65rem;color:var(--muted);">3.7V / 2500mAh</span></div>
       <div class="pwr-arrow">→</div>
@@ -194,11 +194,11 @@
     <div class="pwr-rail"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
       <div class="pwr-note"><strong style="color:var(--white);">5V Rail consumers:</strong><br/>
-        NPK sensor (RS485): ~25 mA<br/>pH module: ~5 mA<br/>SD card: ~20 mA avg<br/>ESP32 (via LDO): ~100 mA avg</div>
+        EC 555 circuit: ~5 mA (pulsed)<br/>pH module: ~5 mA<br/>DHT22: ~1.5 mA<br/>OLED: ~20 mA<br/>ESP32-C3 (via LDO): ~80 mA avg</div>
       <div class="pwr-note"><strong style="color:var(--white);">Battery life:</strong><br/>
-        Active draw: ~150 mA @ 5V → ~17 hrs<br/>
-        Deep-sleep cycles (30s/15min): ~24 mA avg → 4 days<br/>
-        Solar input: 400 mA@5V in full sun → net positive daily</div>
+        Active draw: ~115 mA @ 5V → ~22 hrs<br/>
+        Deep-sleep cycles (30s/15min): ~18 mA avg → 6+ days<br/>
+        Solar: 5.5V/200mA panel → net positive daily in sunlight</div>
     </div>
   </div>
 
@@ -257,13 +257,13 @@
       <!-- ESP32 (center) -->
       <g id="esp32">
         <rect x="330" y="200" width="240" height="220" rx="10" fill="rgba(0,229,160,0.04)" stroke="#00E5A0" stroke-width="1.5" filter="url(#glow)"/>
-        <text x="450" y="222" text-anchor="middle" fill="#00E5A0" font-size="12" font-weight="800">ESP32-WROOM-32D</text>
-        <text x="450" y="238" text-anchor="middle" fill="#64748B" font-size="9">Xtensa LX6 Dual-Core · 240MHz · 520KB SRAM · Wi-Fi+BT</text>
+        <text x="450" y="222" text-anchor="middle" fill="#00E5A0" font-size="12" font-weight="800">ESP32-C3 SuperMini</text>
+        <text x="450" y="238" text-anchor="middle" fill="#64748B" font-size="9">RISC-V 160MHz · 4MB Flash · 400KB SRAM · Wi-Fi+BLE</text>
 
         <!-- Pin rows inside ESP32 -->
-        <text x="345" y="262" fill="#aef" font-size="8.5" font-weight="600">GPIO16 (RX2)</text>
-        <text x="345" y="278" fill="#aef" font-size="8.5" font-weight="600">GPIO17 (TX2)</text>
-        <text x="345" y="294" fill="#aef" font-size="8.5" font-weight="600">GPIO4</text>
+        <text x="345" y="262" fill="#aef" font-size="8.5" font-weight="600">GPIO35 (EC ADC)</text>
+        <text x="345" y="278" fill="#aef" font-size="8.5" font-weight="600">GPIO14 (EC enable)</text>
+        <text x="345" y="294" fill="#aef" font-size="8.5" font-weight="600">GPIO34 (pH ADC)</text>
         <text x="345" y="310" fill="#aef" font-size="8.5" font-weight="600">GPIO34 (ADC)</text>
         <text x="345" y="326" fill="#aef" font-size="8.5" font-weight="600">GPIO26</text>
         <text x="345" y="342" fill="#aef" font-size="8.5" font-weight="600">GPIO27</text>
@@ -282,27 +282,27 @@
         <text x="555" y="390" fill="#aef" font-size="8.5" font-weight="600" text-anchor="end">GND</text>
       </g>
 
-      <!-- NPK SENSOR + MAX3485 (right) -->
-      <g id="npk-section">
+      <!-- EC MEASUREMENT CIRCUIT (right) -->
+      <g id="ec-section">
         <rect x="660" y="200" width="200" height="80" rx="8" fill="none" stroke="#0099FF" stroke-width="1.5"/>
-        <text x="760" y="222" text-anchor="middle" fill="#0099FF" font-size="10" font-weight="700">JXBS-3001 NPK Sensor</text>
-        <text x="760" y="238" text-anchor="middle" fill="#64748B" font-size="9">RS485 / Modbus RTU</text>
-        <text x="760" y="252" text-anchor="middle" fill="#334155" font-size="8">5V power · 4800 baud</text>
-        <text x="760" y="266" text-anchor="middle" fill="#334155" font-size="8">Range: N 0-1999, P 0-1999, K 0-1999 mg/kg</text>
+        <text x="760" y="218" text-anchor="middle" fill="#0099FF" font-size="10" font-weight="700">EC Soil Probes (×4)</text>
+        <text x="760" y="234" text-anchor="middle" fill="#64748B" font-size="9">Stainless Steel 316 · 4mm dia</text>
+        <text x="760" y="248" text-anchor="middle" fill="#334155" font-size="8">N, P, K, Ref — 150mm length</text>
+        <text x="760" y="262" text-anchor="middle" fill="#334155" font-size="8">Conductivity proxy for nutrient estimation</text>
+        <text x="760" y="276" text-anchor="middle" fill="#334155" font-size="8">+pH correlation for NPK inference</text>
 
-        <rect x="660" y="310" width="200" height="60" rx="8" fill="none" stroke="#334155" stroke-width="1.5"/>
-        <text x="760" y="332" text-anchor="middle" fill="#F0F9FF" font-size="10" font-weight="700">MAX3485 (3.3V RS485)</text>
-        <text x="760" y="348" text-anchor="middle" fill="#64748B" font-size="9">DE+RE → GPIO4</text>
-        <text x="760" y="362" text-anchor="middle" fill="#64748B" font-size="9">RO→GPIO16 · DI→GPIO17</text>
+        <rect x="660" y="310" width="200" height="60" rx="8" fill="none" stroke="#8B5CF6" stroke-width="1.5"/>
+        <text x="760" y="332" text-anchor="middle" fill="#8B5CF6" font-size="10" font-weight="700">555 Timer + EC Circuit</text>
+        <text x="760" y="348" text-anchor="middle" fill="#64748B" font-size="9">AC square wave prevents polarisation</text>
+        <text x="760" y="362" text-anchor="middle" fill="#64748B" font-size="9">EC out → GPIO35 ADC · Enable → GPIO14</text>
 
-        <!-- Wires NPK↔MAX3485 -->
+        <!-- Wires EC probes → 555 -->
         <line x1="760" y1="280" x2="760" y2="310" stroke="#0099FF" stroke-width="1.5" opacity=".6" marker-end="url(#arr)"/>
-        <text x="770" y="297" fill="#0099FF" font-size="8">RS485 A/B</text>
+        <text x="770" y="297" fill="#0099FF" font-size="8">EC signal</text>
 
-        <!-- Wires MAX3485→ESP32 -->
-        <line x1="660" y1="340" x2="570" y2="268" stroke="#334155" stroke-width="1.2" opacity=".8" marker-end="url(#arr-gray)"/>
-        <line x1="660" y1="350" x2="570" y2="284" stroke="#334155" stroke-width="1.2" opacity=".8" marker-end="url(#arr-gray)"/>
-        <line x1="660" y1="356" x2="570" y2="300" stroke="#334155" stroke-width="1.2" opacity=".8" marker-end="url(#arr-gray)"/>
+        <!-- Wires 555→ESP32 -->
+        <line x1="660" y1="340" x2="570" y2="268" stroke="#8B5CF6" stroke-width="1.2" opacity=".8" marker-end="url(#arr)"/>
+        <line x1="660" y1="350" x2="570" y2="284" stroke="#8B5CF6" stroke-width="1.2" opacity=".8" marker-end="url(#arr)"/>
       </g>
 
       <!-- SENSORS (left) -->
@@ -393,21 +393,16 @@
         <tr><th>GPIO</th><th>Function</th><th>Connected To</th><th>Interface</th><th>Notes</th></tr>
       </thead>
       <tbody>
-        <tr><td class="mono">GPIO16 (RX2)</td><td>UART2 RX</td><td>MAX3485 RO</td><td class="signal">UART 4800 baud</td><td>NPK sensor receive</td></tr>
-        <tr><td class="mono">GPIO17 (TX2)</td><td>UART2 TX</td><td>MAX3485 DI</td><td class="signal">UART 4800 baud</td><td>NPK sensor transmit</td></tr>
-        <tr><td class="mono">GPIO4</td><td>Direction</td><td>MAX3485 DE+RE</td><td class="signal">Digital OUT</td><td>HIGH=transmit, LOW=receive</td></tr>
-        <tr><td class="mono">GPIO34</td><td>ADC1_CH6</td><td>pH sensor AO (via divider)</td><td class="signal">ADC 12-bit</td><td>1kΩ+2kΩ voltage divider (5V→3.3V)</td></tr>
-        <tr><td class="mono">GPIO26</td><td>DHT22 Data</td><td>DHT22 DATA pin</td><td class="signal">Single-Wire</td><td>10kΩ pull-up to 3.3V</td></tr>
-        <tr><td class="mono">GPIO27</td><td>OneWire</td><td>DS18B20 DATA</td><td class="signal">1-Wire</td><td>4.7kΩ pull-up to 3.3V</td></tr>
-        <tr><td class="mono">GPIO25</td><td>Rain IRQ</td><td>Tipping bucket reed switch</td><td class="signal">INT (FALLING)</td><td>INPUT_PULLUP; 0.2mm per pulse</td></tr>
-        <tr><td class="mono">GPIO21</td><td>I²C SDA</td><td>SSD1306 SDA</td><td class="signal">I²C 400kHz</td><td>3.3V; 4.7kΩ pull-up</td></tr>
-        <tr><td class="mono">GPIO22</td><td>I²C SCL</td><td>SSD1306 SCL</td><td class="signal">I²C 400kHz</td><td>3.3V; 4.7kΩ pull-up</td></tr>
-        <tr><td class="mono">GPIO18</td><td>SPI CLK</td><td>SD card CLK</td><td class="signal">SPI VSPI</td><td>Up to 20 MHz</td></tr>
-        <tr><td class="mono">GPIO19</td><td>SPI MISO</td><td>SD card MISO</td><td class="signal">SPI VSPI</td><td></td></tr>
-        <tr><td class="mono">GPIO23</td><td>SPI MOSI</td><td>SD card MOSI</td><td class="signal">SPI VSPI</td><td></td></tr>
-        <tr><td class="mono">GPIO5</td><td>SPI CS</td><td>SD card CS</td><td class="signal">Digital OUT</td><td>Active LOW</td></tr>
-        <tr><td class="mono">GPIO36</td><td>ADC1_CH0</td><td>Battery voltage divider</td><td class="signal">ADC 12-bit</td><td>100kΩ+100kΩ; Vbat/2 → 3.3V max at 4.2V/2=2.1V ✓</td></tr>
-        <tr><td class="mono">GPIO2</td><td>LED</td><td>330Ω → Green LED</td><td class="signal">Digital OUT</td><td>Built-in LED on most DevKit boards</td></tr>
+        <tr><td class="mono">GPIO35</td><td>ADC1</td><td>EC sensor output</td><td class="signal">ADC 12-bit</td><td>10kΩ+10kΩ voltage divider; soil conductivity proxy</td></tr>
+        <tr><td class="mono">GPIO14</td><td>EC Enable</td><td>555 timer enable pin</td><td class="signal">Digital OUT</td><td>HIGH = measure, LOW = idle (saves power)</td></tr>
+        <tr><td class="mono">GPIO34</td><td>ADC1_CH6</td><td>pH sensor AO (via divider)</td><td class="signal">ADC 12-bit</td><td>1kΩ+2kΩ voltage divider (5V→3.3V max)</td></tr>
+        <tr><td class="mono">GPIO4</td><td>DHT22 Data</td><td>DHT22 DATA pin</td><td class="signal">Single-Wire</td><td>10kΩ pull-up to 3.3V</td></tr>
+        <tr><td class="mono">GPIO27</td><td>OneWire</td><td>DS18B20 soil temp</td><td class="signal">1-Wire</td><td>4.7kΩ pull-up to 3.3V</td></tr>
+        <tr><td class="mono">GPIO25</td><td>Rain IRQ</td><td>Tipping bucket reed switch</td><td class="signal">INT (FALLING)</td><td>INPUT_PULLUP; 0.2 mm per pulse counted</td></tr>
+        <tr><td class="mono">GPIO21</td><td>I²C SDA</td><td>SSD1306 OLED SDA</td><td class="signal">I²C 400kHz</td><td>3.3V; 4.7kΩ pull-up resistor</td></tr>
+        <tr><td class="mono">GPIO22</td><td>I²C SCL</td><td>SSD1306 OLED SCL</td><td class="signal">I²C 400kHz</td><td>3.3V; 4.7kΩ pull-up resistor</td></tr>
+        <tr><td class="mono">GPIO36</td><td>ADC1_CH0</td><td>Battery voltage divider</td><td class="signal">ADC 12-bit</td><td>100kΩ+100kΩ; Vbat/2 → max 2.1V at 4.2V ✓</td></tr>
+        <tr><td class="mono">GPIO2</td><td>LED</td><td>330Ω → RGB status LED</td><td class="signal">Digital OUT</td><td>1 blink=OK, 2=uploading, solid=charging</td></tr>
       </tbody>
     </table>
   </div>
@@ -420,356 +415,168 @@
 
   <div class="parts-grid">
 
-    <!-- MCU -->
     <div class="part-card">
       <div class="part-num">01 · Microcontroller</div>
-      <div class="part-name">ESP32-WROOM-32D Module</div>
-      <div class="part-model">ESP32-WROOM-32D</div>
-      <div class="part-desc">Dual-core Xtensa LX6 @ 240 MHz, 4MB Flash, 520KB SRAM, integrated Wi-Fi 802.11 b/g/n + Bluetooth 4.2 BLE. Main controller for all sensor acquisition and wireless data upload.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$4.50</span>
-        <span class="part-tag cat">MCU</span>
-        <span class="part-tag">3.3V / 5V VIN</span>
-      </div>
+      <div class="part-name">ESP32-C3 SuperMini Module</div>
+      <div class="part-model">ESP32-C3 SuperMini</div>
+      <div class="part-desc">RISC-V 160 MHz, 4MB Flash, 400KB SRAM, integrated Wi-Fi 802.11 b/g/n + BLE 5.0. USB-C built-in for programming. Smaller and cheaper than WROOM-32D while retaining all required ADC, I²C, and interrupt pins.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$2.00</span><span class="part-tag cat">MCU</span><span class="part-tag">3.3V / 5V via USB</span></div>
     </div>
 
-    <!-- NPK Sensor -->
     <div class="part-card">
-      <div class="part-num">02 · Soil Nutrient Sensor</div>
-      <div class="part-name">RS485 NPK Soil Sensor</div>
-      <div class="part-model">JXBS-3001-NPK-N01 (or equivalent)</div>
-      <div class="part-desc">Capacitive NPK sensor using RS485 / Modbus RTU protocol. Measures Nitrogen, Phosphorus, Potassium in mg/kg (ppm). Supply: 5–30V DC. Range: 0–1999 mg/kg each nutrient. Response time &lt;1 s.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$28–45</span>
-        <span class="part-tag cat">Soil Sensor</span>
-        <span class="part-tag">RS485 4800 baud</span>
-      </div>
+      <div class="part-num">02 · EC Soil Probes</div>
+      <div class="part-name">Stainless Steel 316 Soil Probes (4×)</div>
+      <div class="part-model">SS316 4mm rod × 150mm — DIY</div>
+      <div class="part-desc">4 stainless steel 316 rods (4mm dia, 150mm long) sharpened to a point. Two probes carry AC signal from 555 timer circuit; two measure EC voltage. Combined with pH, EC enables N/P/K nutrient estimation. Far cheaper than RS485 NPK sensors.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 4</span><span class="part-tag price">~$1.50</span><span class="part-tag cat">Soil Sensor</span><span class="part-tag">AC-excited EC</span></div>
     </div>
 
-    <!-- RS485 Transceiver -->
     <div class="part-card">
-      <div class="part-num">03 · RS485 Transceiver</div>
-      <div class="part-name">MAX3485 Half-Duplex RS485 IC</div>
-      <div class="part-model">MAX3485ESA+</div>
-      <div class="part-desc">3.3V-compatible RS485 transceiver (unlike MAX485 which needs 5V). Connects ESP32 UART2 to the NPK sensor's RS485 bus. DE pin tied to RE for half-duplex direction control via GPIO4.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$0.80</span>
-        <span class="part-tag cat">Interface IC</span>
-        <span class="part-tag">3.3V supply ✓</span>
-      </div>
+      <div class="part-num">03 · EC Oscillator IC</div>
+      <div class="part-name">NE555 Timer IC (EC measurement)</div>
+      <div class="part-model">NE555P (DIP-8)</div>
+      <div class="part-desc">Configured as astable oscillator (~1 kHz AC square wave) to drive EC probes. AC excitation prevents electrode polarisation that ruins DC measurements. Output voltage after soil divides is read by ESP32-C3 ADC on GPIO35. Powered from 3.3V rail.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$0.20</span><span class="part-tag cat">Measurement</span><span class="part-tag">GPIO14 enable</span></div>
     </div>
 
-    <!-- pH Sensor -->
     <div class="part-card">
       <div class="part-num">04 · pH Sensor</div>
-      <div class="part-name">Analog pH Electrode + Circuit Board</div>
+      <div class="part-name">Analog pH Electrode + Board</div>
       <div class="part-model">pH-4502C Module + BNC Glass Electrode</div>
-      <div class="part-desc">BNC pH electrode with signal conditioning board. Analog output 0–3.3V (0–14 pH). Powered at 5V; output divided with 1kΩ+2kΩ resistors to stay within ESP32 ADC 3.3V limit. Requires calibration with pH 4 and pH 7 buffer solutions.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$6–12</span>
-        <span class="part-tag cat">Soil Sensor</span>
-        <span class="part-tag">ADC GPIO34</span>
-      </div>
+      <div class="part-desc">BNC glass pH electrode with signal conditioning board. Analog output 0–3.3V (0–14 pH). Powered at 5V; output divided with 1kΩ+2kΩ to stay within ESP32 ADC 3.3V limit. Calibrate with pH 4 and pH 7 buffer solutions before deployment.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$5.00</span><span class="part-tag cat">Soil Sensor</span><span class="part-tag">ADC GPIO34</span></div>
     </div>
 
-    <!-- DHT22 -->
     <div class="part-card">
-      <div class="part-num">05 · Temp/Humidity Sensor</div>
-      <div class="part-name">DHT22 (AM2302) Temperature & Humidity</div>
-      <div class="part-model">DHT22 / AM2302</div>
-      <div class="part-desc">Capacitive humidity + thermistor combo. Range: −40 to +80°C (±0.5°C), 0–100% RH (±2% RH). Single-wire serial protocol. Requires 10kΩ pull-up on data line. Placed in radiation shield on exterior of housing to measure ambient conditions.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$3.50</span>
-        <span class="part-tag cat">Environmental</span>
-        <span class="part-tag">GPIO26 + 10kΩ PU</span>
-      </div>
+      <div class="part-num">05 · Temp + Humidity</div>
+      <div class="part-name">AHT20 I²C Sensor</div>
+      <div class="part-model">AHT20 (or DHT22 as alternative)</div>
+      <div class="part-desc">Capacitive humidity + temperature on I²C. Range: −40 to +85°C (±0.3°C), 0–100% RH (±2%). Cheaper and more accurate than DHT22. Shares I²C bus with OLED. 3.3V supply. Mount in radiation shield on device exterior for ambient conditions.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$1.50</span><span class="part-tag cat">Environmental</span><span class="part-tag">I²C GPIO21/22</span></div>
     </div>
 
-    <!-- DS18B20 -->
     <div class="part-card">
-      <div class="part-num">06 · Soil Temperature Probe</div>
-      <div class="part-name">DS18B20 Waterproof Temperature Probe</div>
-      <div class="part-model">DS18B20 (TO-92 + stainless tube)</div>
-      <div class="part-desc">1-Wire digital thermometer in IP67 stainless steel waterproof tube (60cm cable). Measures soil temperature at root zone. Range: −55 to +125°C, ±0.5°C accuracy. 4.7kΩ pull-up required. Multiple sensors can share one GPIO.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$4.00</span>
-        <span class="part-tag cat">Soil Sensor</span>
-        <span class="part-tag">GPIO27 + 4.7kΩ PU</span>
-      </div>
+      <div class="part-num">06 · Soil Temperature</div>
+      <div class="part-name">DS18B20 Waterproof Probe</div>
+      <div class="part-model">DS18B20 (stainless tube, 60cm cable)</div>
+      <div class="part-desc">1-Wire digital thermometer in IP67 waterproof stainless tube. Measures soil temperature at root zone depth. Range: −55 to +125°C, ±0.5°C. 4.7kΩ pull-up required. One of the 4 soil probes carries this sensor embedded at tip.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$1.80</span><span class="part-tag cat">Soil Sensor</span><span class="part-tag">1-Wire GPIO27</span></div>
     </div>
 
-    <!-- Rain Gauge -->
     <div class="part-card">
-      <div class="part-num">07 · Rainfall Sensor</div>
-      <div class="part-name">Tipping Bucket Rain Gauge</div>
-      <div class="part-model">Generic 0.2mm tipping bucket (WS-3000 equiv.)</div>
-      <div class="part-desc">Self-emptying tipping bucket mechanism. Each tip = 0.2 mm of rainfall. Reed switch output wired to GPIO25 with INPUT_PULLUP. Interrupt-driven counting. Weatherproof, UV-resistant housing. Mounting arm included.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$18–30</span>
-        <span class="part-tag cat">Weather</span>
-        <span class="part-tag">GPIO25 IRQ</span>
-      </div>
+      <div class="part-num">07 · Rain Gauge</div>
+      <div class="part-name">DIY Tipping Bucket (Reed Switch)</div>
+      <div class="part-model">Reed switch + neodymium magnet + 3D-printed bucket</div>
+      <div class="part-desc">DIY tipping bucket using a reed switch and magnet on the pivot arm. 3D-print the funnel and bucket from PETG (UV and weather resistant). Each tip = 0.2mm rain. Reed switch wired to GPIO25 with INPUT_PULLUP. Total cost vs commercial: $3 vs $18–30.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$3.00</span><span class="part-tag cat">Weather</span><span class="part-tag">GPIO25 IRQ</span></div>
     </div>
 
-    <!-- OLED -->
     <div class="part-card">
       <div class="part-num">08 · Display</div>
-      <div class="part-name">0.96" SSD1306 OLED Display</div>
-      <div class="part-model">SSD1306 128×64 I²C</div>
-      <div class="part-desc">Monochrome 128×64 OLED display, I²C interface (addr 0x3C). Shows real-time sensor readings and status. 3.3V compatible. Very low power (~20 mA active, &lt;1 μA in sleep). Ideal for battery-powered devices.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$2.50</span>
-        <span class="part-tag cat">Display</span>
-        <span class="part-tag">I²C GPIO21/22</span>
-      </div>
+      <div class="part-name">0.96" SSD1306 OLED (I²C)</div>
+      <div class="part-model">SSD1306 128×64</div>
+      <div class="part-desc">Monochrome 128×64 OLED, I²C at 0x3C. Shows real-time NPK estimate, pH, temp, humidity, battery level, and upload status. 3.3V compatible. &lt;1 μA in sleep. Shares I²C bus with AHT20 sensor.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$1.80</span><span class="part-tag cat">Display</span><span class="part-tag">I²C 0x3C</span></div>
     </div>
 
-    <!-- Battery -->
     <div class="part-card">
       <div class="part-num">09 · Battery</div>
-      <div class="part-name">18650 Li-ion Cell (Protected)</div>
-      <div class="part-model">Samsung INR18650-25R or Panasonic NCR18650B</div>
-      <div class="part-desc">2500–3400 mAh 18650 Li-ion cell with built-in PCB protection (overcurrent, overcharge, deep discharge). 3.7V nominal. Provides ~16 hours continuous operation or 4+ days with deep-sleep firmware. Use protected cell only for safety.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$5–8</span>
-        <span class="part-tag cat">Power</span>
-        <span class="part-tag">3.7V / 2500mAh</span>
-      </div>
+      <div class="part-name">18650 Li-ion Cell (2600mAh)</div>
+      <div class="part-model">Generic protected 18650 2600mAh</div>
+      <div class="part-desc">3.7V nominal, 2600mAh protected Li-ion cell. Provides ~22 hours continuous or 6+ days in deep-sleep mode. Use a protected cell (built-in PCB) to prevent overcharge/overdischarge damage. AliExpress unbranded protected cells are adequate for this use.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$2.50</span><span class="part-tag cat">Power</span><span class="part-tag">3.7V 2600mAh</span></div>
     </div>
 
-    <!-- Solar Charger -->
     <div class="part-card">
-      <div class="part-num">10 · Solar Charger IC</div>
-      <div class="part-name">CN3065 Solar LiPo Charger Module</div>
-      <div class="part-model">CN3065 + breakout board</div>
-      <div class="part-desc">Designed specifically for solar charging. Accepts 4.5–6.5V input (unlike TP4056 which needs regulated 5V). MPPT-like behaviour. Charge current set by external resistor (2kΩ = 500mA). LED indicators for charging/full. Protects against overvoltage from solar panel.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$1.50</span>
-        <span class="part-tag cat">Power</span>
-        <span class="part-tag">4.5–6.5V solar in</span>
-      </div>
+      <div class="part-num">10 · Battery Charger</div>
+      <div class="part-name">TP4056 Solar Charging Module</div>
+      <div class="part-model">TP4056 with DW01A protection (micro-USB or USB-C)</div>
+      <div class="part-desc">Li-ion charger IC rated for up to 5.5V input — solar-compatible modules with an added MOSFET gate. 1A charge rate. Use the variant with integrated protection (DW01A + FS8205). Input from 5.5V solar panel via 1N5819 Schottky diode to clamp voltage.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$0.60</span><span class="part-tag cat">Power</span><span class="part-tag">Up to 5.5V in</span></div>
     </div>
 
-    <!-- Boost Converter -->
     <div class="part-card">
       <div class="part-num">11 · Boost Converter</div>
       <div class="part-name">MT3608 DC-DC Boost Module</div>
-      <div class="part-model">MT3608 (2A, adjustable)</div>
-      <div class="part-desc">Boosts 3.7V battery voltage to stable 5V for ESP32 VIN and NPK sensor. 88% typical efficiency at 150mA load. Adjust output with onboard trimmer to exactly 5.00V before installation. Maximum continuous output: 2A. Input: 2–24V.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$1.20</span>
-        <span class="part-tag cat">Power</span>
-        <span class="part-tag">3.7V → 5.0V</span>
-      </div>
+      <div class="part-model">MT3608 adjustable boost (pre-built module)</div>
+      <div class="part-desc">Boosts 3.7V battery to stable 5V for pH module and ESP32 VIN. 88% efficiency @ 100mA load. Pre-built module includes the 22μH inductor and SS14 diode — no separate sourcing required. Pre-adjust trimmer to exactly 5.00V before installation.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$0.60</span><span class="part-tag cat">Power</span><span class="part-tag">3.7V → 5.0V</span></div>
     </div>
 
-    <!-- Solar Panel -->
     <div class="part-card">
       <div class="part-num">12 · Solar Panel</div>
-      <div class="part-name">6V / 2W Monocrystalline Solar Panel</div>
-      <div class="part-model">6V 333mA polycrystalline panel (90×60mm)</div>
-      <div class="part-desc">Voc=7.2V, Vmp=6V, Isc=333mA, Imp=280mA. Sized to fully recharge the 18650 within 8 hours of sunlight. Wires through a 1N5819 Schottky diode (0.3V drop) to prevent back-discharge at night. Epoxy-coated for outdoor use.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$4–7</span>
-        <span class="part-tag cat">Power</span>
-        <span class="part-tag">6V / 2W</span>
-      </div>
+      <div class="part-name">5.5V / 1W Epoxy Solar Panel</div>
+      <div class="part-model">5.5V 180mA monocrystalline epoxy panel (110×69mm)</div>
+      <div class="part-desc">Voc=6.8V, Vmp=5.5V, Isc=200mA. Wire via 1N5819 Schottky diode to TP4056 input. In full sun, charges from 0% to full in ~14 hours. Net positive charging in 4+ hrs/day sunlight. Epoxy laminated for outdoor durability. Attach to lid with weatherproof adhesive tape.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$2.50</span><span class="part-tag cat">Power</span><span class="part-tag">5.5V / 1W</span></div>
     </div>
 
-    <!-- SD Card Module -->
     <div class="part-card">
-      <div class="part-num">13 · Storage</div>
-      <div class="part-name">Micro SD Card Module (SPI)</div>
-      <div class="part-model">MH-SD Module or equivalent</div>
-      <div class="part-desc">SPI-interface microSD module with built-in 3.3V level shifter and LDO regulator. Logs all sensor readings with timestamps to CSV on the SD card for offline analysis. Use 2–8GB Class 10 card (not included). Supports FAT32.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$1.50</span>
-        <span class="part-tag cat">Storage</span>
-        <span class="part-tag">SPI GPIO18/19/23/5</span>
-      </div>
+      <div class="part-num">13 · Custom PCB</div>
+      <div class="part-name">AgroSense PCB (2-layer, 70×50mm)</div>
+      <div class="part-model">2-layer FR4 1.6mm HASL — JLCPCB</div>
+      <div class="part-desc">Integrates ESP32-C3 SuperMini, 555 timer EC circuit, pH divider, DS18B20 pull-up, AHT20 I²C, OLED header, battery connector, and boost module header. Order 5 for $10 from JLCPCB (~$2/each). Design in EasyEDA or KiCad. Gerbers ready to export.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1 (min 5)</span><span class="part-tag price">~$2.00 ea</span><span class="part-tag cat">PCB</span><span class="part-tag">FR4 2-layer</span></div>
     </div>
 
-    <!-- microSD card -->
     <div class="part-card">
-      <div class="part-num">14 · Memory Card</div>
-      <div class="part-name">8GB Micro SD Card (Class 10)</div>
-      <div class="part-model">SanDisk Ultra 8GB microSDHC</div>
-      <div class="part-desc">Pre-formatted FAT32. Stores sensor logs at 15-minute intervals → ~1MB/day → 8 years of storage. Use a name-brand card to avoid data corruption in extreme temperatures.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$4.00</span>
-        <span class="part-tag cat">Storage</span>
-        <span class="part-tag">FAT32</span>
-      </div>
+      <div class="part-num">14 · Enclosure</div>
+      <div class="part-name">IP65 ABS Weatherproof Box</div>
+      <div class="part-model">120×80×50mm ABS IP65 (generic)</div>
+      <div class="part-desc">Dust-tight, jet-water resistant (IP65). ABS plastic with rubber gasket. Drill 4× holes in bottom for probe pass-through (use waterproof epoxy seal), 1× hole for cable gland (solar panel wire). IP65 is sufficient for field use — full submersion not required.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$3.50</span><span class="part-tag cat">Mechanical</span><span class="part-tag">IP65</span></div>
     </div>
 
-    <!-- Enclosure -->
     <div class="part-card">
-      <div class="part-num">15 · Enclosure</div>
-      <div class="part-name">IP67 Weatherproof ABS Enclosure</div>
-      <div class="part-model">110×65×50mm ABS IP67 (Hammond 1555 equiv.)</div>
-      <div class="part-desc">Ingress protection IP67: dust-tight, 30-min submersion to 1m. ABS plastic, UV-stabilised. Rubber gasket seal. 4× M3 mounting screws. Dark green colour preferred to reduce solar heating. Drill holes for probe cable entry (use cable glands).</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$8–14</span>
-        <span class="part-tag cat">Mechanical</span>
-        <span class="part-tag">IP67</span>
-      </div>
+      <div class="part-num">15 · Cable Glands</div>
+      <div class="part-name">M12 Nylon Cable Glands (PG7)</div>
+      <div class="part-model">PG7 IP67 nylon — 3–6.5mm cable dia</div>
+      <div class="part-desc">Watertight cable entry for solar panel cable and rain gauge cable. 2 needed. IP67 rating. Tighten to compress rubber insert around cable. Available in packs of 10 for ~$2 on AliExpress — keep extras for future builds.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 2</span><span class="part-tag price">~$0.80</span><span class="part-tag cat">Mechanical</span><span class="part-tag">IP67 PG7</span></div>
     </div>
 
-    <!-- PCB -->
     <div class="part-card">
-      <div class="part-num">16 · Custom PCB</div>
-      <div class="part-name">AgroSense Pro Main PCB</div>
-      <div class="part-model">Custom 2-layer FR4, 80×55mm</div>
-      <div class="part-desc">Custom PCB integrating all component footprints: ESP32 module, MAX3485, MT3608 boost circuit, CN3065 charger, sensor headers, power connectors, and battery holder. Designed in KiCad. 2-layer FR4, HASL finish, 1.6mm thickness. Order from JLCPCB or PCBWay.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1 (min 5-pack)</span>
-        <span class="part-tag price">~$2–4 each</span>
-        <span class="part-tag cat">PCB</span>
-        <span class="part-tag">FR4 2-layer</span>
-      </div>
+      <div class="part-num">16 · Mounting Stake</div>
+      <div class="part-name">25mm PVC Conduit Stake (50cm)</div>
+      <div class="part-model">25mm OD PVC electrical conduit + end cap</div>
+      <div class="part-desc">Half-metre section of 25mm PVC conduit hammered into ground. Attach device enclosure to conduit with stainless M4 hose clamps. PVC is UV-stable, rust-free, and cheap. End cap keeps dirt out. Reposition by simply pulling up and re-inserting.</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$1.50</span><span class="part-tag cat">Mechanical</span><span class="part-tag">PVC</span></div>
     </div>
 
-    <!-- Sensor Probes -->
     <div class="part-card">
-      <div class="part-num">17 · Sensor Probes</div>
-      <div class="part-name">Stainless Steel Insertion Probes (3×)</div>
-      <div class="part-model">304 SS rod 6mm dia × 150mm</div>
-      <div class="part-desc">Three 304-grade stainless steel probes for soil insertion. One carries NPK sensor electrodes (connected to NPK sensor wire), one carries the DS18B20 capsule, one is reference ground. Epoxy-sealed probe entry into housing. Sharpened tip for easy insertion.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 3</span>
-        <span class="part-tag price">~$2 total</span>
-        <span class="part-tag cat">Mechanical</span>
-        <span class="part-tag">304 SS</span>
-      </div>
+      <div class="part-num">17 · Status LED</div>
+      <div class="part-name">5mm RGB LED (Common Cathode)</div>
+      <div class="part-model">5mm CC RGB LED + IP67 lens cap</div>
+      <div class="part-desc">RGB LED for multi-state status indication: green=OK/uploading, amber=charging, red=error, blue=BLE active. Three 330Ω series resistors on R/G/B channels. Waterproof lens cap for panel mounting. Controlled by ESP32-C3 GPIO2 (green channel).</div>
+      <div class="part-meta"><span class="part-tag">Qty: 1</span><span class="part-tag price">~$0.30</span><span class="part-tag cat">Indicator</span><span class="part-tag">GPIO2 + 3×330Ω</span></div>
     </div>
 
-    <!-- Cable Glands -->
     <div class="part-card">
-      <div class="part-num">18 · Cable Glands</div>
-      <div class="part-name">PG7 IP68 Nylon Cable Glands</div>
-      <div class="part-model">PG7 M12 thread (3–6.5mm cable dia)</div>
-      <div class="part-desc">Watertight cable entry for sensor probe wires and solar panel cable. IP68 rated when fully tightened. 4 needed: NPK cable, rain gauge cable, solar panel cable, auxiliary port. Nylon body, stainless lock nut.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 4</span>
-        <span class="part-tag price">~$3 (pack of 10)</span>
-        <span class="part-tag cat">Mechanical</span>
-        <span class="part-tag">IP68 PG7</span>
-      </div>
-    </div>
-
-    <!-- Mounting stake -->
-    <div class="part-card">
-      <div class="part-num">19 · Mounting Hardware</div>
-      <div class="part-name">Galvanised Steel Mounting Stake</div>
-      <div class="part-model">50cm × 20mm galvanised steel angle bar</div>
-      <div class="part-desc">L-shaped stake to position the device at proper height above ground (probes in soil, solar panel angled toward sun). Spray-painted with anti-rust primer. M4 bolt and wing nut for quick removal. Alternatively use a 25mm PVC conduit with end cap.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$3–5</span>
-        <span class="part-tag cat">Mechanical</span>
-        <span class="part-tag">Galvanised</span>
-      </div>
-    </div>
-
-    <!-- Passives -->
-    <div class="part-card">
-      <div class="part-num">20 · Passive Components</div>
+      <div class="part-num">18 · Passives</div>
       <div class="part-name">Resistors, Capacitors & Diodes</div>
-      <div class="part-model">Assorted 0402 / through-hole</div>
+      <div class="part-model">Through-hole / 0402 SMD assorted</div>
       <div class="part-desc">
-        <strong>Resistors:</strong> 4.7kΩ×2 (DS18B20/I²C PU), 10kΩ×2 (DHT22 PU / rain PU), 1kΩ+2kΩ (pH divider), 330Ω (LED), 100kΩ×2 (battery divider), 2kΩ (CN3065 prog).<br/>
-        <strong>Capacitors:</strong> 100nF×4 (decoupling), 10μF×3 (power rails), 22μF×2 (MT3608 in/out).<br/>
-        <strong>Diodes:</strong> 1N5819 Schottky (solar anti-backflow), SS14 (MT3608 boost diode).
+        <strong>Resistors:</strong> 4.7kΩ (DS18B20/I²C PU), 10kΩ×3 (AHT20/rain/EC divider), 1kΩ+2kΩ (pH divider), 100kΩ×2 (battery divider), 330Ω×3 (LED), 10kΩ+10kΩ (EC divider).<br/>
+        <strong>Capacitors:</strong> 100nF×4 (decoupling), 10μF×2 (power rails).<br/>
+        <strong>Diodes:</strong> 1N5819 Schottky×2 (solar + EC rectifier).
       </div>
-      <div class="part-meta">
-        <span class="part-tag">Assorted</span>
-        <span class="part-tag price">~$2–4</span>
-        <span class="part-tag cat">Passives</span>
-      </div>
+      <div class="part-meta"><span class="part-tag">Assorted</span><span class="part-tag price">~$1.50</span><span class="part-tag cat">Passives</span></div>
     </div>
 
-    <!-- Connectors -->
     <div class="part-card">
-      <div class="part-num">21 · Connectors</div>
+      <div class="part-num">19 · Connectors</div>
       <div class="part-name">JST-PH 2-pin + Pin Headers + Terminal Blocks</div>
-      <div class="part-model">JST-PH 2.0mm + 2.54mm headers</div>
-      <div class="part-desc">JST-PH 2.0mm 2-pin connector for battery (standard 18650 holder). 2.54mm female headers for sensor connections. 3.5mm screw terminal blocks for rain gauge and solar panel. USB-C breakout board for programming and optional 5V charging input.</div>
-      <div class="part-meta">
-        <span class="part-tag">Assorted</span>
-        <span class="part-tag price">~$2</span>
-        <span class="part-tag cat">Connectors</span>
-      </div>
+      <div class="part-model">JST-PH 2.0mm + 2.54mm + 3.5mm terminals</div>
+      <div class="part-desc">JST-PH 2.0mm for 18650 battery. 2.54mm female headers for probe connections to PCB. 3.5mm screw terminals for rain gauge and solar panel (removable for transport). All connections labelled on PCB silkscreen.</div>
+      <div class="part-meta"><span class="part-tag">Assorted</span><span class="part-tag price">~$1.00</span><span class="part-tag cat">Connectors</span></div>
     </div>
 
-    <!-- Status LED -->
     <div class="part-card">
-      <div class="part-num">22 · Status Indicator</div>
-      <div class="part-name">3mm Green LED + Lens Cap</div>
-      <div class="part-model">Kingbright L-934LGD + IP67 lens cap</div>
-      <div class="part-desc">High-brightness 3mm green LED (550nm, 20mA, 40° viewing angle) with waterproof lens cap for panel mounting. Controlled via GPIO2 with 330Ω series resistor. Flash patterns: 1 blink=OK, 2 blinks=uploading, solid=charging, off=deep sleep.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$0.50</span>
-        <span class="part-tag cat">Indicator</span>
-        <span class="part-tag">GPIO2 + 330Ω</span>
-      </div>
-    </div>
-
-    <!-- Inductor -->
-    <div class="part-card">
-      <div class="part-num">23 · Boost Inductor</div>
-      <div class="part-name">22μH Shielded SMD Inductor</div>
-      <div class="part-model">Würth 744025220 or TDK CLF6045 22μH</div>
-      <div class="part-desc">Required for MT3608 boost converter circuit. 22μH, 2A saturation current, DCR &lt;150mΩ. Shielded design minimises EMI from switching. If using a pre-made MT3608 module, this is already included on the module PCB.</div>
-      <div class="part-meta">
-        <span class="part-tag">Qty: 1</span>
-        <span class="part-tag price">~$0.80</span>
-        <span class="part-tag cat">Magnetics</span>
-        <span class="part-tag">22μH / 2A</span>
-      </div>
-    </div>
-
-    <!-- UV resin / potting -->
-    <div class="part-card">
-      <div class="part-num">24 · Weatherproofing</div>
-      <div class="part-name">Silicone Conformal Coating + Probe Potting Compound</div>
-      <div class="part-model">MG Chemicals 419C + 2-part epoxy</div>
-      <div class="part-desc">Spray conformal coating on PCB to prevent condensation-induced shorts. 2-part waterproof epoxy to pot probe entry points and cable glands. Prevents moisture ingress in high-humidity or rain conditions. Apply after all testing is complete.</div>
-      <div class="part-meta">
-        <span class="part-tag">1 can + 1 tube</span>
-        <span class="part-tag price">~$12</span>
-        <span class="part-tag cat">Materials</span>
-        <span class="part-tag">Weatherproof</span>
-      </div>
-    </div>
-
-    <!-- Wiring -->
-    <div class="part-card">
-      <div class="part-num">25 · Wiring</div>
-      <div class="part-name">Silicone Hookup Wire + RS485 Twisted Pair</div>
-      <div class="part-model">24 AWG silicone + 22 AWG twisted pair</div>
-      <div class="part-desc">Silicone-insulated 24 AWG wire (flexible, −60°C to +200°C) for internal connections. RS485 twisted pair cable (22 AWG shielded, 1m) from housing to NPK sensor — critical for noise immunity. Colour code: red=5V, black=GND, green=data, blue=RS485-A, white=RS485-B.</div>
-      <div class="part-meta">
-        <span class="part-tag">~2m assorted</span>
-        <span class="part-tag price">~$3</span>
-        <span class="part-tag cat">Materials</span>
-        <span class="part-tag">24 AWG silicone</span>
-      </div>
+      <div class="part-num">20 · Sealant & Wire</div>
+      <div class="part-name">Waterproof Epoxy + Silicone Wire</div>
+      <div class="part-model">2-part epoxy + 24 AWG silicone hookup wire</div>
+      <div class="part-desc">2-part waterproof epoxy to seal probe entry holes in enclosure bottom and around cable gland threads. 24 AWG silicone-insulated wire (flexible, −60°C to +200°C) for internal connections. 1m assorted colours. Silicone resists humidity better than PVC insulation.</div>
+      <div class="part-meta"><span class="part-tag">~1m wire + 1 tube epoxy</span><span class="part-tag price">~$2.00</span><span class="part-tag cat">Materials</span></div>
     </div>
 
   </div><!-- end parts-grid -->
@@ -777,11 +584,11 @@
   <!-- BOM TOTALS -->
   <div class="bom-total">
     <div class="bom-stat">
-      <div class="val">25</div>
+      <div class="val">20</div>
       <div class="lbl">Line Items</div>
     </div>
     <div class="bom-stat">
-      <div class="val">$98–140</div>
+      <div class="val">~$32–38</div>
       <div class="lbl">Est. Build Cost (single unit)</div>
     </div>
     <div class="bom-stat">
@@ -799,7 +606,7 @@
     <div style="flex:1;font-size:0.78rem;color:var(--muted);min-width:220px;">
       <strong style="color:var(--white);">Where to buy:</strong><br/>
       AliExpress (best price), Amazon (faster), Digi-Key / Mouser (premium/verified parts).
-      NPK sensor: recommend Aliexpress "RS485 NPK sensor" search — verify 5V compatibility before ordering.
+      ESP32-C3 SuperMini, NE555, AHT20, and MT3608 are all well-stocked on AliExpress. pH-4502C + electrode kits ship from China for ~$5. SS316 rods from hardware stores or Amazon.
     </div>
   </div>
 
@@ -864,7 +671,7 @@ const ground = new THREE.Mesh(
   new THREE.MeshLambertMaterial({ color: 0x1a0d05 })
 );
 ground.rotation.x = -Math.PI / 2;
-ground.position.y = -9;
+ground.position.y = -13;
 scene.add(ground);
 
 // Soil texture layer
@@ -873,7 +680,7 @@ const soilTop = new THREE.Mesh(
   new THREE.MeshLambertMaterial({ color: 0x2d1a0a, transparent: true, opacity: 0.6 })
 );
 soilTop.rotation.x = -Math.PI / 2;
-soilTop.position.y = -8.98;
+soilTop.position.y = -12.98;
 scene.add(soilTop);
 
 // ── Device Group ──────────────────────────────────
@@ -1007,23 +814,36 @@ cg2.rotation.z = Math.PI / 2;
 cg2.position.set(5.0, -4, -1.0);
 deviceGroup.add(cg2);
 
-// ── SENSOR PROBES (3) ───────────────────────────
-const probeMat = new THREE.MeshPhongMaterial({ color: 0xb8b8c0, shininess: 200, specular: 0x999999 });
-const tipMat   = new THREE.MeshPhongMaterial({ color: 0xddddee, shininess: 250 });
-[-2.5, 0, 2.5].forEach(x => {
-  // Probe body
-  const probe = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.18, 12, 12), probeMat);
-  probe.position.set(x, -14.5, 0);
+// ── SENSOR PROBES (4) — N, P, K, Reference ──────
+// Square 2×2 arrangement; probes extend from housing bottom into soil
+const probeMat = new THREE.MeshPhongMaterial({ color: 0xc8c8d0, shininess: 220, specular: 0xaaaaaa });
+const tipMat   = new THREE.MeshPhongMaterial({ color: 0xe8e8ee, shininess: 280 });
+const probeLabelColors = [0x00e5a0, 0x0099ff, 0xff8800, 0x888888]; // N, P, K, Ref
+// Probe flange plate at bottom of housing
+const flange = new THREE.Mesh(
+  new THREE.BoxGeometry(7, 0.4, 5.5),
+  new THREE.MeshPhongMaterial({ color: 0x1a2820, shininess: 30 })
+);
+flange.position.set(0, -8.7, 0);
+deviceGroup.add(flange);
+// 4 probes in square pattern
+[[-2, -2], [-2, 2], [2, -2], [2, 2]].forEach(([x, z], i) => {
+  // Probe collar (color-coded band at top)
+  const collar = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.30, 0.30, 0.6, 12),
+    new THREE.MeshPhongMaterial({ color: probeLabelColors[i], shininess: 80 })
+  );
+  collar.position.set(x, -8.9, z);
+  deviceGroup.add(collar);
+  // Probe body (visible above + below soil)
+  const probe = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.16, 14, 12), probeMat);
+  probe.position.set(x, -16.2, z);
   deviceGroup.add(probe);
   // Probe tip (cone)
-  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.18, 1.8, 12), tipMat);
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.16, 2.0, 12), tipMat);
   tip.rotation.x = Math.PI;
-  tip.position.set(x, -21.4, 0);
+  tip.position.set(x, -23.7, z);
   deviceGroup.add(tip);
-  // Probe-to-housing connector ring
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.08, 8, 16), cgMat);
-  ring.position.set(x, -8.3, 0);
-  deviceGroup.add(ring);
 });
 
 // MOUNTING STAKE
@@ -1088,11 +908,20 @@ batCap.rotation.z = Math.PI / 2;
 batCap.position.set(5.1, -2.1, 1.6);
 internalGroup.add(batCap);
 
-// MAX3485 IC
+// 555 Timer IC (EC measurement oscillator)
 const icMat = new THREE.MeshPhongMaterial({ color: 0x0a0a14, shininess: 70 });
-const max = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.28, 0.62), icMat);
-max.position.set(2.0, -1.35, -1.6);
-internalGroup.add(max);
+const ic555 = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.28, 0.55), icMat);
+ic555.position.set(2.0, -1.35, -1.6);
+internalGroup.add(ic555);
+// EC measurement voltage divider resistors
+[2.9, 3.3, 3.7].forEach(xr => {
+  const res = new THREE.Mesh(
+    new THREE.BoxGeometry(0.15, 0.25, 0.42),
+    new THREE.MeshPhongMaterial({ color: 0x8B6914, shininess: 30 })
+  );
+  res.position.set(xr, -1.35, -1.6);
+  internalGroup.add(res);
+});
 
 // MT3608 Boost module
 const boostMod = new THREE.Mesh(

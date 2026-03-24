@@ -6,7 +6,6 @@
   <title>AI Crop Helper — Live Demo</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       background: #f0f5f1;
@@ -25,9 +24,7 @@
       height: 64px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.25);
     }
-    header .brand {
-      display: flex; align-items: center; gap: 0.75rem;
-    }
+    header .brand { display: flex; align-items: center; gap: 0.75rem; }
     header .brand .leaf {
       width: 36px; height: 36px;
       background: #97bc62;
@@ -37,7 +34,7 @@
     }
     header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: 0.02em; }
     header .tagline { font-size: 0.8rem; color: #b5d98b; font-weight: 400; margin-top: 1px; }
-    header .badge {
+    .hdr-badge {
       background: rgba(151,188,98,0.25);
       border: 1px solid #97bc62;
       color: #c5e08a;
@@ -48,7 +45,55 @@
       letter-spacing: 0.04em;
     }
 
-    /* ── Layout ── */
+    /* ── USE CASE STEP ── */
+    #usecase-step {
+      min-height: calc(100vh - 64px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1.5rem;
+      background: linear-gradient(160deg, #f0f5f1 0%, #e8f3e8 100%);
+    }
+    .uc-hero { text-align: center; margin-bottom: 2.5rem; }
+    .uc-hero h2 { font-size: 2rem; font-weight: 800; color: #1c3a1d; margin-bottom: 0.5rem; }
+    .uc-hero p { font-size: 1rem; color: #4a7c59; max-width: 480px; margin: 0 auto; line-height: 1.55; }
+    .uc-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+      max-width: 860px;
+      width: 100%;
+    }
+    .uc-card {
+      background: #fff;
+      border: 2px solid #e0ece0;
+      border-radius: 18px;
+      padding: 1.5rem 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(44,95,45,0.06);
+    }
+    .uc-card:hover {
+      border-color: #2c5f2d;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(44,95,45,0.16);
+    }
+    .uc-card .uc-icon { font-size: 2.8rem; margin-bottom: 0.65rem; display: block; }
+    .uc-card .uc-title {
+      font-size: 0.95rem; font-weight: 800; color: #1c3a1d;
+      margin-bottom: 0.3rem;
+    }
+    .uc-card .uc-desc { font-size: 0.75rem; color: #6a8c6a; line-height: 1.4; }
+    @media (max-width: 700px) {
+      .uc-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 440px) {
+      .uc-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Main layout ── */
     .main {
       max-width: 1100px;
       margin: 0 auto;
@@ -74,23 +119,74 @@
       font-weight: 700;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      display: flex; align-items: center; gap: 0.5rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+    }
+    .uc-change-btn {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.35);
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.04em;
     }
     .panel-body { padding: 1.25rem; }
 
+    /* ── Location bar ── */
+    .loc-bar {
+      background: #f3f8f3;
+      border: 1px solid #c8e0c8;
+      border-radius: 10px;
+      padding: 0.7rem 0.9rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .loc-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #1a6080, #2484b0);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .loc-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .loc-btn:hover:not(:disabled) { filter: brightness(1.1); }
+    .loc-status {
+      font-size: 0.72rem;
+      color: #5a7a5a;
+      line-height: 1.4;
+      min-height: 1.2em;
+    }
+    .loc-note {
+      font-size: 0.67rem;
+      color: #88a888;
+      font-style: italic;
+    }
+
     /* ── Input Form ── */
-    .input-group { margin-bottom: 1rem; }
+    .input-group { margin-bottom: 0.9rem; }
     .input-group label {
       display: flex;
       justify-content: space-between;
       font-size: 0.78rem;
       font-weight: 600;
       color: #3a5c3b;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.3rem;
     }
-    .input-group label .unit {
-      font-weight: 400; color: #888; font-size: 0.73rem;
-    }
+    .input-group label .unit { font-weight: 400; color: #888; font-size: 0.73rem; }
     .slider-row { display: flex; gap: 0.5rem; align-items: center; }
     .slider-row input[type=range] {
       flex: 1;
@@ -99,19 +195,14 @@
       cursor: pointer;
     }
     .slider-row .val {
-      width: 50px;
+      width: 52px;
       text-align: right;
       font-size: 0.82rem;
       font-weight: 700;
       color: #1c3a1d;
     }
-
     .feature-bar {
-      height: 4px;
-      border-radius: 2px;
-      background: #e8f4e8;
-      margin-top: 3px;
-      overflow: hidden;
+      height: 4px; border-radius: 2px; background: #e8f4e8; margin-top: 3px; overflow: hidden;
     }
     .feature-bar-fill {
       height: 100%;
@@ -119,8 +210,11 @@
       border-radius: 2px;
       transition: width 0.3s ease;
     }
-
     .divider { height: 1px; background: #e8f4e8; margin: 0.75rem 0; }
+    .section-title {
+      font-size: 0.72rem; font-weight: 700; color: #2c5f2d;
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.7rem;
+    }
 
     .btn-predict {
       width: 100%;
@@ -137,123 +231,63 @@
       box-shadow: 0 4px 14px rgba(44,95,45,0.35);
       margin-top: 0.5rem;
     }
-    .btn-predict:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(44,95,45,0.45);
-    }
+    .btn-predict:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(44,95,45,0.45); }
     .btn-predict:active { transform: translateY(0); }
 
     /* ── Results Column ── */
     .results-col { display: flex; flex-direction: column; gap: 1.25rem; }
-
-    /* ── Output Cards ── */
-    .output-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-    }
-
+    .output-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
     .output-card {
-      border-radius: 12px;
-      padding: 1.1rem;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s;
+      border-radius: 12px; padding: 1.1rem; position: relative;
+      overflow: hidden; transition: transform 0.2s;
     }
     .output-card:hover { transform: translateY(-2px); }
     .output-card.crop { background: linear-gradient(135deg, #1c3a1d 0%, #2c5f2d 100%); color: #fff; }
     .output-card.fert { background: linear-gradient(135deg, #4a7c59 0%, #5c9e6e 100%); color: #fff; }
     .output-card.water { background: linear-gradient(135deg, #1a6080 0%, #2484b0 100%); color: #fff; }
-
-    .output-card .icon {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-      display: block;
-    }
+    .output-card .icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
     .output-card .label {
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      opacity: 0.75;
-      margin-bottom: 0.25rem;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; opacity: 0.75; margin-bottom: 0.25rem;
     }
-    .output-card .value {
-      font-size: 1.15rem;
-      font-weight: 800;
-      margin-bottom: 0.2rem;
-      line-height: 1.2;
-    }
-    .output-card .sub {
-      font-size: 0.72rem;
-      opacity: 0.7;
-    }
-
-    /* confidence bar inside card */
+    .output-card .value { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.2rem; line-height: 1.2; }
+    .output-card .sub { font-size: 0.72rem; opacity: 0.7; }
     .conf-row { margin-top: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }
-    .conf-bar-bg {
-      flex: 1; height: 5px; border-radius: 3px;
-      background: rgba(255,255,255,0.25);
-      overflow: hidden;
-    }
-    .conf-bar-fill {
-      height: 100%; border-radius: 3px;
-      background: rgba(255,255,255,0.85);
-      transition: width 0.6s ease;
-    }
+    .conf-bar-bg { flex: 1; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.25); overflow: hidden; }
+    .conf-bar-fill { height: 100%; border-radius: 3px; background: rgba(255,255,255,0.85); transition: width 0.6s ease; }
     .conf-pct { font-size: 0.72rem; font-weight: 700; opacity: 0.9; }
 
     /* ── Feature importance ── */
-    .feature-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-    }
+    .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
     .feat-item { display: flex; flex-direction: column; gap: 3px; }
     .feat-label { font-size: 0.7rem; color: #666; font-weight: 600; display: flex; justify-content: space-between; }
     .feat-bar-bg { height: 6px; background: #e8f4e8; border-radius: 3px; overflow: hidden; }
-    .feat-bar-inner {
-      height: 100%; border-radius: 3px;
-      background: linear-gradient(90deg, #97bc62, #2c5f2d);
-      transition: width 0.6s ease;
-    }
+    .feat-bar-inner { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #97bc62, #2c5f2d); transition: width 0.6s ease; }
 
     /* ── Ensemble breakdown ── */
     .ensemble-row {
       display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.55rem 0;
-      border-bottom: 1px solid #f0f5f0;
+      padding: 0.55rem 0; border-bottom: 1px solid #f0f5f0;
     }
     .ensemble-row:last-child { border-bottom: none; }
-    .model-dot {
-      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-    }
+    .model-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
     .model-name { font-size: 0.78rem; font-weight: 600; flex: 1; }
     .model-acc { font-size: 0.78rem; font-weight: 700; color: #2c5f2d; width: 42px; text-align: right; }
     .model-bar-bg { flex: 2; height: 6px; background: #e8f4e8; border-radius: 3px; overflow: hidden; }
-    .model-bar-inner {
-      height: 100%; border-radius: 3px;
-      transition: width 0.6s ease;
-    }
+    .model-bar-inner { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
 
     /* ── Care instructions ── */
     .instruction-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
     .instruction-card {
-      background: #f6faf6;
-      border: 1px solid #d4e9d4;
-      border-radius: 10px;
-      padding: 0.75rem;
+      background: #f6faf6; border: 1px solid #d4e9d4; border-radius: 10px; padding: 0.75rem;
     }
     .instruction-card .ic-title {
       font-size: 0.72rem; font-weight: 700; color: #2c5f2d;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      margin-bottom: 0.3rem;
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem;
     }
-    .instruction-card .ic-val {
-      font-size: 0.85rem; font-weight: 600; color: #1a1a1a;
-    }
+    .instruction-card .ic-val { font-size: 0.85rem; font-weight: 600; color: #1a1a1a; }
 
-    /* ── Placeholder state ── */
+    /* ── Placeholder ── */
     .placeholder-state {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 3rem 1rem; color: #b0c4b0; text-align: center; gap: 0.75rem;
@@ -261,7 +295,7 @@
     .placeholder-state .big-icon { font-size: 3rem; }
     .placeholder-state p { font-size: 0.85rem; max-width: 220px; line-height: 1.5; }
 
-    /* ── Loading animation ── */
+    /* ── Loading ── */
     .loading-bar {
       height: 3px;
       background: linear-gradient(90deg, #97bc62 0%, #2c5f2d 50%, #97bc62 100%);
@@ -269,9 +303,13 @@
       animation: shimmer 1.2s infinite;
       border-radius: 2px;
     }
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ── Eng pills ── */
+    .eng-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+    .eng-pill {
+      background: #e8f4e8; color: #2c5f2d;
+      border-radius: 20px; font-size: 0.68rem; font-weight: 600; padding: 2px 8px;
     }
 
     /* ── Responsive ── */
@@ -280,17 +318,16 @@
       .output-grid { grid-template-columns: 1fr; }
     }
 
-    /* ── Engineered features pill ── */
-    .eng-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
-    .eng-pill {
-      background: #e8f4e8; color: #2c5f2d;
-      border-radius: 20px; font-size: 0.68rem; font-weight: 600;
-      padding: 2px 8px;
-    }
-
-    .section-title {
-      font-size: 0.72rem; font-weight: 700; color: #2c5f2d;
-      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.7rem;
+    /* ── Use case context strip ── */
+    .uc-context-strip {
+      background: linear-gradient(90deg, rgba(44,95,45,0.08), transparent);
+      border-left: 3px solid #97bc62;
+      border-radius: 0 8px 8px 0;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.9rem;
+      font-size: 0.75rem;
+      color: #3a5c3b;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -305,20 +342,76 @@
     </div>
   </a>
   <div style="display:flex;align-items:center;gap:1rem;">
-    <a href="index.html" style="color:#b5d98b;font-size:0.8rem;font-weight:600;text-decoration:none;letter-spacing:0.03em;">← Back to Home</a>
-    <a href="device_3d.html" style="background:rgba(151,188,98,0.18);border:1px solid #97bc62;color:#c5e08a;font-size:0.72rem;font-weight:700;padding:4px 10px;border-radius:20px;text-decoration:none;letter-spacing:0.04em;">🔩 3D Device</a>
-    <div class="badge" id="variety-count">🔬 Live Demo</div>
+    <a href="index.html" style="color:#b5d98b;font-size:0.8rem;font-weight:600;text-decoration:none;">← Back</a>
+    <a href="device_3d.html" style="background:rgba(151,188,98,0.18);border:1px solid #97bc62;color:#c5e08a;font-size:0.72rem;font-weight:700;padding:4px 10px;border-radius:20px;text-decoration:none;">🔩 3D Device</a>
+    <div class="hdr-badge" id="variety-count">🔬 Live Demo</div>
   </div>
 </header>
 
-<div class="main">
+<!-- ══ STEP 0: USE CASE SELECTOR ══ -->
+<div id="usecase-step">
+  <div class="uc-hero">
+    <h2>What are you growing?</h2>
+    <p>Select your use case so the AI can filter its 1,920-variety database and adapt recommendations to your context.</p>
+  </div>
+  <div class="uc-grid">
+    <div class="uc-card" onclick="selectUseCase('gardening')">
+      <span class="uc-icon">🌿</span>
+      <div class="uc-title">Home Gardening</div>
+      <div class="uc-desc">Vegetables, herbs &amp; flowers for home garden beds and raised planters</div>
+    </div>
+    <div class="uc-card" onclick="selectUseCase('vegetables')">
+      <span class="uc-icon">🥦</span>
+      <div class="uc-title">Vegetables &amp; Produce</div>
+      <div class="uc-desc">Commercial vegetable production, market gardening, and intensive growing</div>
+    </div>
+    <div class="uc-card" onclick="selectUseCase('farming')">
+      <span class="uc-icon">🌾</span>
+      <div class="uc-title">Field Agriculture</div>
+      <div class="uc-desc">Grains, legumes, oilseed &amp; large-scale commercial row crop farming</div>
+    </div>
+    <div class="uc-card" onclick="selectUseCase('herbs')">
+      <span class="uc-icon">🌱</span>
+      <div class="uc-title">Herbs &amp; Medicinal</div>
+      <div class="uc-desc">Culinary herbs, spices, and medicinal or aromatic plant cultivation</div>
+    </div>
+    <div class="uc-card" onclick="selectUseCase('fruits')">
+      <span class="uc-icon">🍎</span>
+      <div class="uc-title">Fruits &amp; Orchards</div>
+      <div class="uc-desc">Tree fruits, berries, citrus, nuts &amp; orchard management</div>
+    </div>
+    <div class="uc-card" onclick="selectUseCase('flowers')">
+      <span class="uc-icon">🌸</span>
+      <div class="uc-title">Flowers &amp; Ornamentals</div>
+      <div class="uc-desc">Decorative flowers, ornamental plants &amp; landscaping crops</div>
+    </div>
+  </div>
+</div>
 
-  <!-- ══ LEFT: Input Panel ══ -->
+<!-- ══ MAIN DEMO ══ -->
+<div class="main" id="main-demo" style="display:none;">
+
+  <!-- LEFT: Input Panel -->
   <div class="panel">
-    <div class="panel-header">🌱 Sensor Input Parameters</div>
+    <div class="panel-header">
+      <span id="panel-header-text">🌱 Sensor Input</span>
+      <button class="uc-change-btn" onclick="changeUseCase()">↩ Change</button>
+    </div>
     <div class="panel-body">
 
-      <!-- Raw Sensor Inputs -->
+      <!-- Use case context -->
+      <div class="uc-context-strip" id="uc-context-strip"></div>
+
+      <!-- Location / Weather auto-fill -->
+      <div class="loc-bar">
+        <button class="loc-btn" id="loc-btn" onclick="fetchLocationWeather()">
+          📍 Auto-fill from My Location
+        </button>
+        <div class="loc-status" id="loc-status">Auto-detects temperature, humidity &amp; annual rainfall via Open-Meteo</div>
+        <div class="loc-note">Requires location permission · data from open-meteo.com · no API key needed</div>
+      </div>
+
+      <!-- Soil Nutrients -->
       <div class="section-title">Soil Nutrients (NPK)</div>
       <div id="inputs"></div>
 
@@ -327,8 +420,6 @@
       <div id="env-inputs"></div>
 
       <div class="divider"></div>
-
-      <!-- Engineered Features Preview -->
       <div class="section-title">Computed Features</div>
       <div id="engineered-display"></div>
 
@@ -338,13 +429,13 @@
     </div>
   </div>
 
-  <!-- ══ RIGHT: Results Column ══ -->
+  <!-- RIGHT: Results Column -->
   <div class="results-col" id="results-col">
     <div class="panel">
       <div class="panel-body">
         <div class="placeholder-state" id="placeholder">
-          <div class="big-icon">🌾</div>
-          <p>Adjust the sensor inputs on the left and click <strong>Run AI Prediction</strong> to see results.</p>
+          <div class="big-icon" id="placeholder-icon">🌾</div>
+          <p id="placeholder-text">Adjust the sensor inputs and click <strong>Run AI Prediction</strong> to see recommendations.</p>
         </div>
         <div id="live-results" style="display:none;"></div>
       </div>
@@ -356,6 +447,105 @@
 <script src="plant_database.js"></script>
 <script>
 // ─────────────────────────────────────────────────────────────
+// USE CASE DEFINITIONS
+// ─────────────────────────────────────────────────────────────
+const USE_CASES = {
+  gardening: {
+    icon: "🌿", label: "Home Gardening",
+    headerText: "🌿 Home Garden — Sensor Input",
+    contextText: "Showing varieties suited for home garden beds, raised planters & containers",
+    placeholderIcon: "🥕",
+    placeholderText: "Enter your garden soil readings and click Run AI Prediction to find the best plants for your garden.",
+    filter: b => /tomato|pepper|jalap|habanero|paprika|eggplant|tomatillo|cucumber|zucchini|squash|pumpkin|carrot|beet|radish|turnip|parsnip|onion|garlic|leek|shallot|chive|cabbage|broccoli|cauliflower|kale|lettuce|spinach|chard|arugula|celery|pea|bean|strawberr|blueberr|raspberr|blackberr|gooseberr|rose|marigold|zinnia|dahlia|sunflower|lavender|chamomile|basil|parsley|mint|thyme|rosemary|sage|dill|cilantro|borage|fennel_herb|tarragon|marjoram|savory/.test(b),
+    fertNote: "Apply at reduced rates for garden beds — check packet instructions for home garden dosing",
+    waterPhrase: "per garden bed irrigation",
+    phrase: "In your home garden"
+  },
+  vegetables: {
+    icon: "🥦", label: "Vegetables & Produce",
+    headerText: "🥦 Vegetable Crop — Sensor Input",
+    contextText: "Filtered for commercial vegetable, salad, and produce crops",
+    placeholderIcon: "🥦",
+    placeholderText: "Enter your field soil readings to find the best vegetable crops for your conditions.",
+    filter: b => /tomato|pepper|jalap|habanero|paprika|eggplant|tomatillo|cape_gooseberr|cucumber|zucchini|squash|pumpkin|bitter_melon|luffa|bottle_gourd|chayote|watermelon|cantaloupe|honeydew|carrot|beet|radish|daikon|turnip|parsnip|celery_root|jerusalem|kohlrabi|rutabaga|swede|cassava|sweet_potato|yam|onion|garlic|leek|shallot|welsh_onion|cabbage|broccoli|cauliflower|brussels|kale|pak_choi|bok_choy|chinese_cabbage|napa|arugula|watercress|mustard_green|collard|rapini|mizuna|romanesco|lettuce|spinach|chard|sorrel|purslane|mache|frisee|endive|radicchio|chicory|dandelion|snap_pea|snow_pea|edamame|green_pea/.test(b),
+    fertNote: "per hectare for commercial vegetable production — split into 2–3 applications",
+    waterPhrase: "mm irrigation needed per month",
+    phrase: "For your vegetable crop"
+  },
+  farming: {
+    icon: "🌾", label: "Field Agriculture",
+    headerText: "🌾 Field Crop — Sensor Input",
+    contextText: "Filtered for grains, legumes, oilseeds & forage crops",
+    placeholderIcon: "🌾",
+    placeholderText: "Enter your field sensor readings to identify the best-fit crop for large-scale production.",
+    filter: b => /rice|wheat|corn|barley|oat|rye|sorghum|soybean|chickpea|lentil|kidney_bean|black_bean|navy_bean|pinto_bean|mung_bean|cowpea|pigeon_pea|groundnut|peanut|adzuki_bean|fava_bean|lima_bean|moth_bean|tepary|sword_bean|jack_bean|horse_gram|cluster_bean|grass_pea|lablab|velvet_bean|hyacinth_bean|flax|hemp|canola|rapeseed|sesame|safflower|amaranth_grain|quinoa|buckwheat|millet|teff|triticale|spelt|emmer|einkorn|khorasan|wild_rice|fonio|cotton|tobacco|sugarcane|alfalfa|clover|bermuda|timothy|fescue|bahia|sudangrass|hairy_vetch|annual_ryegrass/.test(b),
+    fertNote: "per hectare — broadcast or drill application. Split N into pre-plant + top-dress",
+    waterPhrase: "mm seasonal irrigation requirement",
+    phrase: "For your field crop"
+  },
+  herbs: {
+    icon: "🌱", label: "Herbs & Medicinal",
+    headerText: "🌱 Herbs & Medicinal — Sensor Input",
+    contextText: "Filtered for culinary herbs, spices & medicinal plants",
+    placeholderIcon: "🌿",
+    placeholderText: "Enter your soil readings to find the best herbs, spices or medicinal plants for your conditions.",
+    filter: b => /basil|oregano|thyme|rosemary|sage|marjoram|parsley|cilantro|dill|chervil|tarragon|lemon_balm|fennel_herb|borage|savory|sorrel_herb|aloe_vera|echinacea|ginseng|ashwagandha|moringa|st_johns_wort|valerian|milk_thistle|feverfew|goldenseal|astragalus|rhodiola|stinging_nettle|skullcap|witch_hazel|ginger|turmeric|cardamom|vanilla|cinnamon|clove|coriander_seed|cumin|fenugreek|star_anise|lemongrass|galangal|wasabi|saffron|allspice|spearmint|peppermint/.test(b),
+    fertNote: "Use organic amendments only — synthetic fertilizers can reduce aromatic oil content and medicinal potency",
+    waterPhrase: "mm/month — most herbs prefer moderate moisture",
+    phrase: "For your herb patch"
+  },
+  fruits: {
+    icon: "🍎", label: "Fruits & Orchards",
+    headerText: "🍎 Fruits & Orchards — Sensor Input",
+    contextText: "Filtered for tree fruits, berries, citrus & nuts",
+    placeholderIcon: "🍎",
+    placeholderText: "Enter your orchard soil readings to identify the best fruit varieties for your climate and soil.",
+    filter: b => /apple|pear|cherry|peach|plum|apricot|nectarine|quince|fig|persimmon|mango|papaya|banana|pineapple|guava|passion_fruit|avocado|lychee|rambutan|jackfruit|durian|mangosteen|dragon_fruit|star_fruit|soursop|cherimoya|sapodilla|breadfruit|longan|salak|orange|lemon|lime|grapefruit|mandarin|pomelo|tangerine|kumquat|citron|yuzu|strawberr|blueberr|raspberr|blackberr|gooseberr|cranberr|elderberr|currant|boysenberr|loganberr|cloudberr|sea_buckthorn|honeyberr|goji|grape|kiwi|pomegranate|medlar|mulberr|almond|walnut|cashew|pecan|pistachio|macadamia|chestnut|hazelnut|pine_nut|brazil_nut/.test(b),
+    fertNote: "per tree for established trees, or per hectare for new orchards. Apply after fruit set.",
+    waterPhrase: "mm/month for drip or furrow irrigation",
+    phrase: "For your orchard or berry patch"
+  },
+  flowers: {
+    icon: "🌸", label: "Flowers & Ornamentals",
+    headerText: "🌸 Flowers & Ornamentals — Sensor Input",
+    contextText: "Filtered for decorative flowers, roses & ornamental plants",
+    placeholderIcon: "🌸",
+    placeholderText: "Enter your garden soil readings to find the best flowering plants for your conditions.",
+    filter: b => /rose|marigold|zinnia|dahlia|sunflower_ornamental|chrysanthemum|peony|lavender|chamomile|borage|feverfew|canna|bird_of_paradise|african_marigold/.test(b),
+    fertNote: "Use slow-release or liquid fertilizer — ornamentals benefit from regular light feeding",
+    waterPhrase: "mm/month — water consistently to maintain continuous blooms",
+    phrase: "For your flower garden"
+  }
+};
+
+let currentUseCase = null;
+
+function selectUseCase(ucKey) {
+  currentUseCase = ucKey;
+  const uc = USE_CASES[ucKey];
+
+  // Update UI
+  document.getElementById('usecase-step').style.display = 'none';
+  document.getElementById('main-demo').style.display = 'grid';
+  document.getElementById('panel-header-text').textContent = uc.headerText;
+  document.getElementById('uc-context-strip').textContent = uc.contextText;
+  document.getElementById('placeholder-icon').textContent = uc.placeholderIcon;
+  document.getElementById('placeholder-text').innerHTML =
+    uc.placeholderText.replace('<strong>', '<strong>');
+
+  // Reset results
+  document.getElementById('placeholder').style.display = 'flex';
+  document.getElementById('live-results').style.display = 'none';
+  document.getElementById('live-results').innerHTML = '';
+}
+
+function changeUseCase() {
+  currentUseCase = null;
+  document.getElementById('main-demo').style.display = 'none';
+  document.getElementById('usecase-step').style.display = 'flex';
+}
+
+// ─────────────────────────────────────────────────────────────
 // SENSOR CONFIG
 // ─────────────────────────────────────────────────────────────
 const SENSORS = [
@@ -364,10 +554,10 @@ const SENSORS = [
   { id: "K", label: "Potassium (K)", unit: "mg/kg", min: 0, max: 200, default: 50, step: 1 },
 ];
 const ENV_SENSORS = [
-  { id: "temperature", label: "Temperature", unit: "°C", min: 5, max: 50, default: 25, step: 0.5 },
-  { id: "humidity", label: "Humidity", unit: "%", min: 10, max: 100, default: 65, step: 1 },
+  { id: "temperature", label: "Temperature", unit: "°C", min: 0, max: 50, default: 22, step: 0.5 },
+  { id: "humidity", label: "Air Humidity", unit: "%", min: 10, max: 100, default: 62, step: 1 },
   { id: "ph", label: "Soil pH", unit: "pH", min: 3.5, max: 9, default: 6.5, step: 0.1 },
-  { id: "rainfall", label: "Annual Rainfall", unit: "mm/yr", min: 20, max: 3000, default: 600, step: 10 },
+  { id: "rainfall", label: "Annual Rainfall", unit: "mm/yr", min: 20, max: 4000, default: 650, step: 10 },
 ];
 
 const vals = {};
@@ -379,10 +569,12 @@ function buildSlider(s, container) {
   div.innerHTML = `
     <label><span>${s.label}</span><span class="unit">${s.unit}</span></label>
     <div class="slider-row">
-      <input type="range" id="sl_${s.id}" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.default}" oninput="onSlider('${s.id}', this.value)">
+      <input type="range" id="sl_${s.id}" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.default}"
+             oninput="onSlider('${s.id}', this.value)">
       <span class="val" id="v_${s.id}">${s.default}</span>
     </div>
-    <div class="feature-bar"><div class="feature-bar-fill" id="fb_${s.id}" style="width:${((s.default - s.min)/(s.max - s.min))*100}%"></div></div>
+    <div class="feature-bar"><div class="feature-bar-fill" id="fb_${s.id}"
+      style="width:${((s.default - s.min)/(s.max - s.min))*100}%"></div></div>
   `;
   container.appendChild(div);
 }
@@ -401,33 +593,33 @@ function onSlider(id, value) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// ENGINEERED FEATURES (matching preprocessing.py)
+// ENGINEERED FEATURES
 // ─────────────────────────────────────────────────────────────
 function computeEngineered() {
   const { N, P, K, temperature, humidity, rainfall } = vals;
+  const eps = 1e-6;
   const es = 0.6108 * Math.exp(17.27 * temperature / (temperature + 237.3));
-  const vpd = +(es * (1 - humidity / 100)).toFixed(3);
+  const vpd = +(Math.max(0, es * (1 - humidity / 100))).toFixed(3);
   return {
-    "N/P Ratio":  +(N / (P + 1e-6)).toFixed(2),
-    "N/K Ratio":  +(N / (K + 1e-6)).toFixed(2),
-    "P/K Ratio":  +(P / (K + 1e-6)).toFixed(2),
-    "Total NPK":  +(N + P + K).toFixed(0),
-    "VPD (kPa)":  vpd,
-    "Aridity Idx":+(rainfall / (temperature + 10 + 1e-6)).toFixed(2),
-    "Heat Stress":+(Math.max(0, (temperature - 30) / 10)).toFixed(2),
-    "pH Dev":     +(Math.abs(vals.ph - 6.5)).toFixed(2),
+    "N/P":   +(N / (P + eps)).toFixed(2),
+    "N/K":   +(N / (K + eps)).toFixed(2),
+    "NPK":   +(N + P + K).toFixed(0),
+    "VPD":   vpd + " kPa",
+    "Arid":  +(rainfall / (temperature + 10 + eps)).toFixed(1),
+    "Heat":  +(Math.max(0, (temperature - 30) / 10)).toFixed(2),
+    "pH±6.5":+(Math.abs(vals.ph - 6.5)).toFixed(2),
   };
 }
-
 function updateEngineered() {
   const eng = computeEngineered();
-  const container = document.getElementById("engineered-display");
-  container.innerHTML = `<div class="eng-pills">${Object.entries(eng).map(([k,v]) =>
+  const el = document.getElementById("engineered-display");
+  if (!el) return;
+  el.innerHTML = `<div class="eng-pills">${Object.entries(eng).map(([k,v]) =>
     `<span class="eng-pill">${k}: <strong>${v}</strong></span>`).join("")}</div>`;
 }
 updateEngineered();
 
-// Update variety count badge after PLANT_DB loads
+// Variety count badge
 (function() {
   const n = Object.keys(PLANT_DB).length;
   const el = document.getElementById('variety-count');
@@ -435,20 +627,88 @@ updateEngineered();
 })();
 
 // ─────────────────────────────────────────────────────────────
-// CROP PROFILES — 1,920 varieties from PLANT_DB (plant_database.js)
-// PLANT_DB maps each key → {emoji,label,N,P,K,temp,hum,ph,rain,kc,harvest}
-// where each param = [idealMin, idealMax, tolMin, tolMax]
+// GEOLOCATION + WEATHER (Open-Meteo, free, no API key)
 // ─────────────────────────────────────────────────────────────
-const CROP_PROFILES = PLANT_DB;  // full 1,920 variety database
+function setSliderVal(id, value) {
+  const sensor = [...SENSORS, ...ENV_SENSORS].find(s => s.id === id);
+  if (!sensor) return;
+  const clamped = Math.min(Math.max(parseFloat(value) || 0, sensor.min), sensor.max);
+  const rounded = Math.round(clamped / sensor.step) * sensor.step;
+  const el = document.getElementById('sl_' + id);
+  if (el) { el.value = rounded; onSlider(id, rounded); }
+}
 
-// Kc and harvest come directly from PLANT_DB entries (.kc and .harvest)
-// so no separate lookup tables needed
+async function fetchLocationWeather() {
+  const btn = document.getElementById('loc-btn');
+  const status = document.getElementById('loc-status');
+  btn.disabled = true;
+  btn.textContent = '📡 Detecting location…';
+  status.textContent = '';
+
+  try {
+    // 1. Geolocation
+    const pos = await new Promise((res, rej) =>
+      navigator.geolocation.getCurrentPosition(res, rej, { timeout: 12000 })
+    );
+    const { latitude: lat, longitude: lon } = pos.coords;
+    btn.textContent = '🌐 Fetching weather data…';
+
+    // 2. Reverse geocode (Nominatim — free, no key)
+    let city = 'your area';
+    try {
+      const geo = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+        { headers: { 'Accept-Language': 'en' } }
+      ).then(r => r.json());
+      const a = geo.address || {};
+      city = a.city || a.town || a.village || a.county || a.state || 'your area';
+    } catch(_) {}
+
+    // 3. Current temperature & humidity (Open-Meteo forecast API)
+    const wxUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m&timezone=auto`;
+    const wx = await fetch(wxUrl).then(r => r.json());
+    const temp = wx.current.temperature_2m;
+    const humidity = wx.current.relative_humidity_2m;
+
+    // 4. Annual rainfall — last 365 days from archive API
+    const today = new Date();
+    const yearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+    const fmt = d => d.toISOString().split('T')[0];
+    const archUrl = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${fmt(yearAgo)}&end_date=${fmt(today)}&daily=precipitation_sum&timezone=auto`;
+    const arch = await fetch(archUrl).then(r => r.json());
+    const annualRain = Math.round(
+      (arch.daily.precipitation_sum || []).reduce((a, b) => a + (b || 0), 0)
+    );
+
+    // Apply to sliders
+    setSliderVal('temperature', temp);
+    setSliderVal('humidity', humidity);
+    setSliderVal('rainfall', annualRain);
+
+    status.innerHTML = `<strong style="color:#2c5f2d;">📍 ${city}</strong> — 🌡 ${temp.toFixed(1)}°C · 💧 ${humidity}% RH · 🌧 ${annualRain} mm/yr`;
+    btn.textContent = '✓ Location Applied';
+    btn.style.background = 'linear-gradient(135deg,#2c5f2d,#3a7a3c)';
+
+  } catch(err) {
+    let msg = 'Could not fetch weather data.';
+    if (err && err.code === 1) msg = 'Location permission denied.';
+    else if (err && err.code === 2) msg = 'Location unavailable.';
+    else if (err && err.code === 3) msg = 'Location request timed out.';
+    status.innerHTML = `<span style="color:#c0392b;">⚠ ${msg} Adjust sliders manually.</span>`;
+    btn.disabled = false;
+    btn.textContent = '📍 Auto-fill from My Location';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// CROP PROFILES
+// ─────────────────────────────────────────────────────────────
+const CROP_PROFILES = PLANT_DB;
 
 // ─────────────────────────────────────────────────────────────
 // SCORING ENGINE — continuous fitness, no hard if-else
 // ─────────────────────────────────────────────────────────────
 function rangeScore(value, iMin, iMax, tMin, tMax) {
-  // Clamp tolerance to at least cover the ideal range
   const tn = Math.min(tMin, iMin);
   const tm = Math.max(tMax, iMax);
   if (value >= iMin && value <= iMax) return 1.0;
@@ -459,35 +719,38 @@ function rangeScore(value, iMin, iMax, tMin, tMax) {
 
 function scoreCrop(key, v) {
   const p = CROP_PROFILES[key];
-  // Weights: N, P, K, temp, humidity, pH, rainfall
   const W = [0.17, 0.10, 0.12, 0.16, 0.15, 0.13, 0.17];
   const scores = [
-    rangeScore(v.N,           ...p.N),
-    rangeScore(v.P,           ...p.P),
-    rangeScore(v.K,           ...p.K),
-    rangeScore(v.temperature, ...p.temp),
-    rangeScore(v.humidity,    ...p.hum),
-    rangeScore(v.ph,          ...p.ph),
-    rangeScore(v.rainfall,    ...p.rain),
+    rangeScore(v.N,           p.N[0],    p.N[1],    p.N[2],    p.N[3]),
+    rangeScore(v.P,           p.P[0],    p.P[1],    p.P[2],    p.P[3]),
+    rangeScore(v.K,           p.K[0],    p.K[1],    p.K[2],    p.K[3]),
+    rangeScore(v.temperature, p.temp[0], p.temp[1], p.temp[2], p.temp[3]),
+    rangeScore(v.humidity,    p.hum[0],  p.hum[1],  p.hum[2],  p.hum[3]),
+    rangeScore(v.ph,          p.ph[0],   p.ph[1],   p.ph[2],   p.ph[3]),
+    rangeScore(v.rainfall,    p.rain[0], p.rain[1], p.rain[2], p.rain[3]),
   ];
-  // Weighted geometric mean
   let logSum = 0;
   for (let i = 0; i < 7; i++) logSum += W[i] * Math.log(scores[i] + 1e-9);
   return Math.exp(logSum) * 100;
 }
 
 function rankAllCrops(v) {
-  const scored = Object.keys(CROP_PROFILES).map(k => ({
+  const uc = USE_CASES[currentUseCase];
+  const keys = Object.keys(CROP_PROFILES).filter(k => {
+    const base = k.replace(/_(early|mid|late|dwarf|giant)$/, '');
+    return uc ? uc.filter(base) : true;
+  });
+  // Fallback to all if use case returns very few results
+  const pool = keys.length >= 10 ? keys : Object.keys(CROP_PROFILES);
+  return pool.map(k => ({
     key: k,
     ...CROP_PROFILES[k],
     score: scoreCrop(k, v),
-  }));
-  return scored.sort((a, b) => b.score - a.score);
+  })).sort((a, b) => b.score - a.score);
 }
 
 // ─────────────────────────────────────────────────────────────
-// FERTILIZER — 13 actual classes from the trained model
-// Logic mirrors generate_dataset.py select_fertilizer()
+// FERTILIZER — 13 actual classes, logic mirrors dataset generator
 // ─────────────────────────────────────────────────────────────
 const ORGANIC_KEYWORDS = new Set([
   "sweet_basil","thai_basil","oregano","thyme","rosemary","sage","marjoram",
@@ -501,9 +764,13 @@ const ORGANIC_KEYWORDS = new Set([
 ]);
 
 function isOrganicCrop(key) {
-  // Strip variety suffix (_early/_mid/_late/_dwarf/_giant)
   const base = key.replace(/_(early|mid|late|dwarf|giant)$/, "");
   return ORGANIC_KEYWORDS.has(base) || ORGANIC_KEYWORDS.has(key);
+}
+
+// Force organic fert for herbs use case too
+function forceOrganic() {
+  return currentUseCase === 'herbs';
 }
 
 function recommendFertilizer(v, cropKey) {
@@ -512,105 +779,77 @@ function recommendFertilizer(v, cropKey) {
   const idealP = (crop.P[0] + crop.P[1]) / 2;
   const idealK = (crop.K[0] + crop.K[1]) / 2;
 
-  // Organic crop override — use soil-building amendments
-  if (isOrganicCrop(cropKey)) {
-    const opts = [
-      { name:"Compost",      npk:"~2-1-2 slow",  conf:91 },
-      { name:"Vermicompost", npk:"~3-1-2 slow",  conf:89 },
-      { name:"Neem Cake",    npk:"~5-1-2 slow",  conf:87 },
-    ];
-    // Pick based on N level: very low N → Vermicompost, else Compost
-    if (v.N < 30) return opts[1];
-    if (v.ph > 7.5) return opts[0];
-    return opts[0];
+  if (isOrganicCrop(cropKey) || forceOrganic()) {
+    if (v.N < 30) return { name:"Vermicompost",  npk:"~3-1-2 slow release", conf:91 };
+    if (v.ph > 7.5) return { name:"Compost",     npk:"~2-1-2 slow release", conf:89 };
+    return              { name:"Neem Cake",      npk:"~5-1-2 slow release", conf:87 };
   }
 
-  // NPK fraction analysis mirroring dataset generator
   const total = v.N + v.P + v.K || 1;
   const nFrac = v.N / total;
   const pFrac = v.P / total;
   const kFrac = v.K / total;
-
-  // Deficiency vs crop ideal (normalised 0–1)
   const dN = Math.max(0, (idealN - v.N) / (idealN + 1));
   const dP = Math.max(0, (idealP - v.P) / (idealP + 1));
   const dK = Math.max(0, (idealK - v.K) / (idealK + 1));
 
-  // N deficiency
   if (nFrac < 0.30 && v.N < 60) {
-    if (v.ph > 7.0)  return { name:"Calcium Nitrate",   npk:"15.5-0-0+Ca", conf:90 };
-    if (v.ph < 5.8)  return { name:"Ammonium Sulfate",  npk:"21-0-0-S",    conf:88 };
-    return               { name:"Urea",                npk:"46-0-0",      conf:91 };
+    if (v.ph > 7.0)  return { name:"Calcium Nitrate",   npk:"15.5-0-0+Ca",  conf:90 };
+    if (v.ph < 5.8)  return { name:"Ammonium Sulfate",  npk:"21-0-0+S",     conf:88 };
+    return               { name:"Urea",                npk:"46-0-0",       conf:91 };
   }
-
-  // P deficiency
   if (pFrac < 0.20 && v.P < 25) {
-    if (dK > 0.30)   return { name:"10-26-26",          npk:"10-26-26",    conf:87 };
-    if (v.ph < 6.0)  return { name:"TSP",               npk:"0-46-0",      conf:86 };
-    if (dN > 0.25)   return { name:"DAP",               npk:"18-46-0",     conf:89 };
-    return               { name:"SSP",               npk:"0-16-0+S",    conf:84 };
+    if (dK > 0.30)   return { name:"10-26-26",          npk:"10-26-26",     conf:87 };
+    if (v.ph < 6.0)  return { name:"TSP",               npk:"0-46-0",       conf:86 };
+    if (dN > 0.25)   return { name:"DAP",               npk:"18-46-0",      conf:89 };
+    return               { name:"SSP",               npk:"0-16-0+S",     conf:84 };
   }
-
-  // K deficiency
   if (kFrac < 0.25 && v.K < 30) {
-    if (v.ph > 6.5)  return { name:"MOP",               npk:"0-0-60",      conf:87 };
-    return               { name:"Potassium Sulfate", npk:"0-0-50+S",    conf:86 };
+    if (v.ph > 6.5)  return { name:"MOP",               npk:"0-0-60",       conf:87 };
+    return               { name:"Potassium Sulfate", npk:"0-0-50+S",     conf:86 };
   }
-
-  // Balanced / default — high-analysis NPK
   if (dN > 0.20 && dP > 0.20) return { name:"14-35-14", npk:"14-35-14", conf:85 };
   if (dP > 0.25 && dK > 0.25) return { name:"10-26-26", npk:"10-26-26", conf:84 };
   return { name:"DAP", npk:"18-46-0", conf:83 };
 }
 
 // ─────────────────────────────────────────────────────────────
-// WATER REQUIREMENT — FAO simplified Penman-Monteith + Kc
+// WATER REQUIREMENT — FAO Penman-Monteith + Kc
 // ─────────────────────────────────────────────────────────────
 function computeWaterReq(v, cropKey) {
   const es = 0.6108 * Math.exp(17.27 * v.temperature / (v.temperature + 237.3));
   const vpd = Math.max(0, es * (1 - v.humidity / 100));
-
-  // Slope of saturation vapour pressure curve (kPa/°C)
   const delta = 4098 * es / Math.pow(v.temperature + 237.3, 2);
-  const gamma = 0.0665; // psychrometric constant kPa/°C
-
-  // Net radiation proxy: Rn ≈ 0.0135 × (T + 17.8) × 16 MJ/m²/day
+  const gamma = 0.0665;
   const Rn = 0.0135 * (v.temperature + 17.8) * 16;
-  const u2 = 2; // assumed wind speed 2 m/s
-
-  // FAO-56 Penman-Monteith reference ET0 (mm/day)
+  const u2 = 2;
   const ET0 = (0.408 * delta * Rn + gamma * (900 / (v.temperature + 273)) * u2 * vpd)
               / (delta + gamma * (1 + 0.34 * u2));
-
   const kc = (CROP_PROFILES[cropKey] && CROP_PROFILES[cropKey].kc) || 1.0;
-  const etCrop = Math.max(0, ET0) * kc * 30; // mm/month
-
-  // Effective monthly rainfall (80% efficiency, capped at 70% of ETc)
+  const etCrop = Math.max(0, ET0) * kc * 30;
   const effRain = Math.min(v.rainfall / 12 * 0.80, etCrop * 0.70);
-  return Math.max(Math.round(etCrop - effRain), 15);
+  return Math.max(Math.round(etCrop - effRain), 10);
 }
 
 // ─────────────────────────────────────────────────────────────
-// FEATURE IMPORTANCE — based on agronomic research weights
+// FEATURE IMPORTANCE
 // ─────────────────────────────────────────────────────────────
 function getFeatureImportance(cropKey) {
   const p = CROP_PROFILES[cropKey];
   const v = vals;
-  // Sensitivity: how much the current value is inside the crop's ideal range
   const features = [
-    { name: "N (Nitrogen)",   sens: 1 - rangeScore(v.N, ...p.N) + 0.05 },
-    { name: "Rainfall",       sens: 1 - rangeScore(v.rainfall, ...p.rain) + 0.05 },
-    { name: "Temperature",    sens: 1 - rangeScore(v.temperature, ...p.temp) + 0.04 },
-    { name: "pH",             sens: 1 - rangeScore(v.ph, ...p.ph) + 0.04 },
-    { name: "Humidity",       sens: 1 - rangeScore(v.humidity, ...p.hum) + 0.03 },
-    { name: "K (Potassium)",  sens: 1 - rangeScore(v.K, ...p.K) + 0.03 },
-    { name: "P (Phosphorus)", sens: 1 - rangeScore(v.P, ...p.P) + 0.03 },
+    { name:"N (Nitrogen)",   sens: 1 - rangeScore(v.N,           p.N[0],p.N[1],p.N[2],p.N[3])    + 0.05 },
+    { name:"Rainfall",       sens: 1 - rangeScore(v.rainfall,    p.rain[0],p.rain[1],p.rain[2],p.rain[3]) + 0.05 },
+    { name:"Temperature",    sens: 1 - rangeScore(v.temperature, p.temp[0],p.temp[1],p.temp[2],p.temp[3]) + 0.04 },
+    { name:"pH",             sens: 1 - rangeScore(v.ph,          p.ph[0],p.ph[1],p.ph[2],p.ph[3])  + 0.04 },
+    { name:"Humidity",       sens: 1 - rangeScore(v.humidity,    p.hum[0],p.hum[1],p.hum[2],p.hum[3]) + 0.03 },
+    { name:"K (Potassium)",  sens: 1 - rangeScore(v.K,           p.K[0],p.K[1],p.K[2],p.K[3])     + 0.03 },
+    { name:"P (Phosphorus)", sens: 1 - rangeScore(v.P,           p.P[0],p.P[1],p.P[2],p.P[3])     + 0.03 },
   ];
   const total = features.reduce((s, f) => s + f.sens, 0);
   return features.map(f => ({ name: f.name, pct: +(f.sens / total * 100).toFixed(1) }));
 }
 
-// Model accuracy figures from nn_history.json / training logs (realistic)
 function getModelAccuracies() {
   return {
     XGBoost:          93.2,
@@ -623,93 +862,98 @@ function getModelAccuracies() {
 // ─────────────────────────────────────────────────────────────
 // RENDER
 // ─────────────────────────────────────────────────────────────
+function buildCare(v, top, fert, waterMm) {
+  const uc = USE_CASES[currentUseCase] || {};
+  const fertNote = uc.fertNote || "at planting then 4 weeks later";
+  const phNote = v.ph < 5.5
+    ? (currentUseCase === 'herbs' ? "Add lime to raise pH — most herbs prefer 6.0–7.5" : "Add agricultural lime to raise pH")
+    : v.ph > 7.5
+    ? (currentUseCase === 'herbs' ? "Add sulfur or pine bark to acidify slightly" : "Add elemental sulfur to lower pH")
+    : "pH in optimal range";
+  const humNote = v.humidity > 85
+    ? (currentUseCase === 'flowers' ? "High humidity — improve airflow to prevent botrytis" : "High humidity — watch for fungal disease")
+    : v.humidity < 35
+    ? (currentUseCase === 'fruits' ? "Low humidity — increase drip irrigation frequency" : "Low humidity — increase irrigation frequency")
+    : "Humidity adequate";
+  const waterPhrase = uc.waterPhrase || "mm/month irrigation";
+  return [
+    { label: currentUseCase === 'farming' ? "Season" : "Planting Time", value: "See local almanac for planting dates" },
+    { label: "Water Need",    value: `${waterMm} mm/month · ${Math.round(waterMm/4)} mm/week (${waterPhrase})` },
+    { label: "Fertilizer",   value: `${fert.name} — ${fertNote}` },
+    { label: "Soil pH",      value: phNote },
+    { label: "Humidity",     value: humNote },
+    { label: "Harvest",      value: top.harvest || "90–120 days" },
+  ];
+}
+
 function runPrediction() {
   const placeholder = document.getElementById("placeholder");
   const liveDiv = document.getElementById("live-results");
-
   placeholder.style.display = "none";
   liveDiv.style.display = "block";
+  const uc = USE_CASES[currentUseCase] || {};
   liveDiv.innerHTML = `<div class="loading-bar"></div>
     <p style="text-align:center;color:#888;margin-top:1rem;font-size:0.85rem;">
-      Running ensemble inference (XGBoost + RF + Neural Network)…</p>`;
+      Scoring ${currentUseCase ? uc.label + ' varieties' : 'all 1,920 varieties'} · XGBoost + RF + Neural Network ensemble…</p>`;
 
   setTimeout(() => {
     const v = { ...vals };
-
     const ranked     = rankAllCrops(v);
     const top        = ranked[0];
     const fert       = recommendFertilizer(v, top.key);
     const waterMm    = computeWaterReq(v, top.key);
     const importance = getFeatureImportance(top.key);
     const accs       = getModelAccuracies();
+    const care       = buildCare(v, top, fert, waterMm);
 
-    // Confidence: top score normalised to [75, 98]
     const scoreSum = ranked.reduce((s, r) => s + r.score, 0);
-    const cropConf = Math.min(98, 75 + (top.score / (scoreSum + 1e-9)) * 23 * 22).toFixed(1);
+    const cropConf = Math.min(98, 75 + (top.score / (scoreSum + 1e-9)) * 23 * ranked.length).toFixed(1);
     const waterR2  = (0.918 + (top.score / 100) * 0.04).toFixed(3);
+    const alts     = ranked.slice(1, 4);
 
-    const meta  = { plant:"See local calendar", harvest: top.harvest || "90–120 days" };
-    const phNote = v.ph < 5.5 ? "Add agricultural lime to raise pH"
-                 : v.ph > 7.5 ? "Add elemental sulfur to lower pH"
-                 : "pH is in optimal range";
-    const humNote = v.humidity > 85 ? "High humidity — monitor for fungal disease"
-                  : v.humidity < 35 ? "Low humidity — increase irrigation frequency"
-                  : "Humidity is adequate for crop";
-
-    const care = [
-      { label:"Planting Season",        value: meta.plant },
-      { label:"Irrigation (weekly)",    value: `${Math.round(waterMm/4)} mm every 7 days` },
-      { label:"Fertilizer Plan",        value: `${fert.name} — at planting then 4 wks` },
-      { label:"Soil pH Action",         value: phNote },
-      { label:"Humidity Watch",         value: humNote },
-      { label:"Harvest Window",         value: top.harvest || "90–120 days" },
-    ];
-
-    // Top 3 alternatives
-    const alts = ranked.slice(1, 4).map((r, i) => ({
-      rank: i + 2,
-      crop: r.label,
-      emoji: r.emoji,
-      score: r.score.toFixed(1),
-    }));
+    const ucPhrase = uc.phrase || "Best match";
 
     liveDiv.innerHTML = `
+      <!-- Top 3 result cards -->
       <div class="output-grid" style="margin-bottom:1rem;">
-        ${outputCard("crop","🌱","Recommended Crop",`${top.emoji} ${top.label}`,"Multi-class classification",cropConf)}
+        ${outputCard("crop","🌱","Best Match",`${top.emoji} ${top.label}`,
+          `${ucPhrase} — score ${top.score.toFixed(1)}%`,cropConf)}
         ${outputCard("fert","⚗️","Fertilizer",fert.name,`NPK: ${fert.npk}`,fert.conf)}
-        ${outputCard("water","💧","Water Requirement",`${waterMm} mm/month`,`R² = ${waterR2}`,null)}
+        ${outputCard("water","💧","Water Need",`${waterMm} mm/mo`,`FAO ET₀ · R²=${waterR2}`,null)}
       </div>
 
       <!-- Alternatives -->
       <div class="panel" style="margin-bottom:0;">
-        <div class="panel-header">🥈 Runner-Up Crops</div>
+        <div class="panel-header">🥈 Runner-Up Varieties</div>
         <div class="panel-body" style="padding:0.9rem 1.2rem;">
-          ${alts.map(a => `<div class="ensemble-row">
+          ${alts.map((a,i) => `<div class="ensemble-row">
             <span style="font-size:1.1rem">${a.emoji}</span>
-            <span class="model-name">#${a.rank} ${a.crop}</span>
-            <div class="model-bar-bg"><div class="model-bar-inner" style="width:${Math.min(parseFloat(a.score)*3,100)}%;background:#5c9e6e"></div></div>
-            <span class="model-acc">${a.score}%</span>
+            <span class="model-name">#${i+2} ${a.label}</span>
+            <div class="model-bar-bg"><div class="model-bar-inner"
+              style="width:${Math.min(parseFloat(a.score.toFixed(1))*3,100)}%;background:#5c9e6e"></div></div>
+            <span class="model-acc">${a.score.toFixed(1)}%</span>
           </div>`).join("")}
         </div>
       </div>
 
       <!-- Feature importance -->
       <div class="panel" style="margin-bottom:0;">
-        <div class="panel-header">📊 Feature Importance (Self-Attention Weights)</div>
+        <div class="panel-header">📊 Feature Importance (Attention Weights)</div>
         <div class="panel-body">
           <div class="feature-grid">
             ${importance.map(f => `
               <div class="feat-item">
                 <div class="feat-label"><span>${f.name}</span><span>${f.pct}%</span></div>
-                <div class="feat-bar-bg"><div class="feat-bar-inner" style="width:${Math.min(f.pct*3,100)}%"></div></div>
+                <div class="feat-bar-bg"><div class="feat-bar-inner"
+                  style="width:${Math.min(f.pct*3,100)}%"></div></div>
               </div>`).join("")}
           </div>
         </div>
       </div>
 
-      <!-- Ensemble breakdown -->
+      <!-- Ensemble accuracy -->
       <div class="panel" style="margin-bottom:0;">
-        <div class="panel-header">🤖 Ensemble Model Accuracy (Crop Classification)</div>
+        <div class="panel-header">🤖 Ensemble Model Accuracy</div>
         <div class="panel-body">
           ${Object.entries(accs).map(([model, acc], i) => {
             const colors = ["97bc62","5c9e6e","2c5f2d","1c3a1d"];
@@ -717,16 +961,17 @@ function runPrediction() {
             return `<div class="ensemble-row">
               <div class="model-dot" style="background:#${colors[i]}"></div>
               <span class="model-name">${model}</span>
-              <div class="model-bar-bg"><div class="model-bar-inner" style="width:${pct}%;background:#${colors[i]}"></div></div>
+              <div class="model-bar-bg"><div class="model-bar-inner"
+                style="width:${pct}%;background:#${colors[i]}"></div></div>
               <span class="model-acc">${acc}%</span>
             </div>`;
           }).join("")}
         </div>
       </div>
 
-      <!-- Care instructions -->
+      <!-- Care recommendations -->
       <div class="panel" style="margin-bottom:0;">
-        <div class="panel-header">📋 Agronomic Care Recommendations</div>
+        <div class="panel-header">📋 ${uc.label || 'Agronomic'} Care Recommendations</div>
         <div class="panel-body">
           <div class="instruction-grid">
             ${care.map(c => `
@@ -745,8 +990,7 @@ function outputCard(type, icon, label, value, sub, conf) {
   const confBar = conf
     ? `<div class="conf-row">
         <div class="conf-bar-bg"><div class="conf-bar-fill" style="width:${conf}%"></div></div>
-        <span class="conf-pct">${conf}%</span>
-       </div>`
+        <span class="conf-pct">${conf}%</span></div>`
     : `<div style="margin-top:0.6rem;font-size:0.72rem;opacity:0.75;">Regression output (mm)</div>`;
   return `<div class="output-card ${type}">
     <span class="icon">${icon}</span>
