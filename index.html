@@ -34,57 +34,52 @@
     a, button, input, [role="button"] { cursor:none !important; }
 
     /* ── CUSTOM CURSOR ────────────────────────────────── */
+    /* All cursor elements: anchored at top:0 left:0, moved by transform only */
+    #cursor, #cursor-follower, #cursor-glow {
+      position:fixed; top:0; left:0; pointer-events:none; will-change:transform;
+    }
     #cursor {
-      position:fixed; width:6px; height:6px; border-radius:50%;
-      background:var(--mint); pointer-events:none; z-index:99999;
-      left:-9999px; top:-9999px;
-      transform:translate(-50%,-50%);
-      opacity:0;
-      will-change:left,top;
+      width:8px; height:8px; border-radius:50%;
+      background:var(--mint); z-index:99999;
+      /* Start far off-screen; JS updates this via transform */
+      transform:translate(-9999px,-9999px) translate(-50%,-50%);
       box-shadow:0 0 10px var(--mint),0 0 24px rgba(0,229,160,.4);
       transition:width .2s cubic-bezier(.34,1.56,.64,1),
                  height .2s cubic-bezier(.34,1.56,.64,1),
-                 background .2s, opacity .15s ease, box-shadow .2s;
+                 background .2s, box-shadow .2s;
     }
     #cursor.is-hover {
       width:14px; height:14px;
-      background:var(--white);
-      box-shadow:0 0 20px rgba(255,255,255,.5);
+      background:rgba(255,255,255,.9);
+      box-shadow:0 0 18px rgba(255,255,255,.5);
     }
-    #cursor.is-click {
-      width:4px; height:4px;
-      background:var(--mint);
-    }
+    #cursor.is-click { width:4px; height:4px; }
+
     #cursor-follower {
-      position:fixed; width:38px; height:38px; border-radius:50%;
-      border:1.5px solid rgba(0,229,160,.45); pointer-events:none; z-index:99998;
-      left:-9999px; top:-9999px;
-      transform:translate(-50%,-50%);
-      opacity:0;
-      will-change:left,top,width,height;
-      background:transparent;
-      transition:width .4s cubic-bezier(.34,1.56,.64,1),
-                 height .4s cubic-bezier(.34,1.56,.64,1),
-                 border-color .25s, background .25s, opacity .2s ease;
+      width:36px; height:36px; border-radius:50%;
+      border:1.5px solid rgba(0,229,160,.5); background:transparent;
+      z-index:99998;
+      transform:translate(-9999px,-9999px) translate(-50%,-50%);
+      transition:width .35s cubic-bezier(.34,1.56,.64,1),
+                 height .35s cubic-bezier(.34,1.56,.64,1),
+                 border-color .25s, background .25s;
     }
     #cursor-follower.is-hover {
-      width:56px; height:56px;
-      border-color:rgba(0,229,160,.75);
+      width:52px; height:52px;
+      border-color:rgba(0,229,160,.8);
       background:rgba(0,229,160,.05);
     }
-    #cursor-follower.is-click {
-      width:28px; height:28px;
-    }
+    #cursor-follower.is-click { width:26px; height:26px; }
+
     #cursor-glow {
-      position:fixed; width:400px; height:400px; border-radius:50%;
-      background:radial-gradient(circle,rgba(0,229,160,.055) 0%,transparent 68%);
-      pointer-events:none; z-index:99997; transform:translate(-50%,-50%);
-      left:-9999px; top:-9999px;
-      opacity:0;
-      will-change:left,top;
+      width:400px; height:400px; border-radius:50%;
+      background:radial-gradient(circle,rgba(0,229,160,.06) 0%,transparent 68%);
+      z-index:99997; opacity:0;
+      transform:translate(-9999px,-9999px) translate(-50%,-50%);
       transition:opacity .4s;
     }
-    /* ripple on click */
+
+    /* ripple on click — uses left/top (ok: ephemeral element) */
     .cursor-ripple {
       position:fixed; border-radius:50%; pointer-events:none; z-index:99996;
       border:1.5px solid rgba(0,229,160,.6);
@@ -1035,60 +1030,61 @@
 
 <script>
 // ═══════════════════════════════════════════════════════
-// CUSTOM CURSOR — Spring physics + magnetic buttons
+// CUSTOM CURSOR — transform-only, spring follower
+// Uses transform exclusively (never left/top) so the browser
+// composites everything on the GPU — no layout recalculation.
+// translate(x,y) translate(-50%,-50%) keeps cursor centred
+// regardless of size changes from hover/click states.
 // ═══════════════════════════════════════════════════════
 const cursor   = document.getElementById('cursor');
 const follower = document.getElementById('cursor-follower');
 const glow     = document.getElementById('cursor-glow');
 
-// Current mouse position — start off-screen
-let mx = -9999, my = -9999;
-// Follower position + velocity (spring physics)
-let fx = -9999, fy = -9999, vx = 0, vy = 0;
-let cursorVisible = false;
-let followerRAF = null;
+let mx = -9999, my = -9999;          // mouse position
+let fx = -9999, fy = -9999;          // follower position
+let vx = 0, vy = 0;                  // follower velocity
+let cursorStarted = false;
 
-// Spring constants
-const SPRING  = 0.13;
-const DAMPING = 0.78;
+const SPRING  = 0.12;
+const DAMPING = 0.80;
 
-function animateFollower() {
-  const dx = mx - fx;
-  const dy = my - fy;
-  vx = (vx + dx * SPRING) * DAMPING;
-  vy = (vy + dy * SPRING) * DAMPING;
+// Set an element's position via transform (centred on x, y)
+function setXY(el, x, y) {
+  el.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%)`;
+}
+
+function tick() {
+  // Dot and glow snap to mouse each frame
+  setXY(cursor, mx, my);
+  setXY(glow,   mx, my);
+
+  // Follower springs toward mouse
+  vx = (vx + (mx - fx) * SPRING) * DAMPING;
+  vy = (vy + (my - fy) * SPRING) * DAMPING;
   fx += vx;
   fy += vy;
-  follower.style.left = fx + 'px';
-  follower.style.top  = fy + 'px';
-  followerRAF = requestAnimationFrame(animateFollower);
+  setXY(follower, fx, fy);
+
+  requestAnimationFrame(tick);
 }
 
 document.addEventListener('mousemove', e => {
   mx = e.clientX;
   my = e.clientY;
-  cursor.style.left = mx + 'px';
-  cursor.style.top  = my + 'px';
-  glow.style.left   = mx + 'px';
-  glow.style.top    = my + 'px';
-  if (!cursorVisible) {
-    cursorVisible = true;
-    // Snap follower to exact mouse position before revealing it
+  if (!cursorStarted) {
+    cursorStarted = true;
+    // Snap follower to cursor so it doesn't fly in from off-screen
     fx = mx; fy = my; vx = 0; vy = 0;
-    cursor.style.opacity   = '1';
-    follower.style.opacity = '1';
-    glow.style.opacity     = '1';
-    // Start spring animation only after position is correct
-    if (!followerRAF) animateFollower();
+    glow.style.opacity = '1';
+    tick();   // start the RAF loop only once
   }
 });
 
 // ── Hover states ──────────────────────────────────────
-const magneticEls = document.querySelectorAll(
+document.querySelectorAll(
   'a, button, .btn-large, .btn-primary, .btn-ghost, ' +
   '.problem-card, .spec-item, .metric-card, .eq-card, .step-num, .plant-chip'
-);
-magneticEls.forEach(el => {
+).forEach(el => {
   el.addEventListener('mouseenter', () => {
     cursor.classList.add('is-hover');
     follower.classList.add('is-hover');
@@ -1098,17 +1094,13 @@ magneticEls.forEach(el => {
     follower.classList.remove('is-hover');
     el.style.transform = '';
   });
-
-  // Magnetic pull — element moves slightly toward cursor
+  // Magnetic pull on compact elements
   el.addEventListener('mousemove', e => {
-    const rect = el.getBoundingClientRect();
-    const cx   = rect.left + rect.width  / 2;
-    const cy   = rect.top  + rect.height / 2;
-    const dx   = (e.clientX - cx) * 0.18;
-    const dy   = (e.clientY - cy) * 0.18;
-    // Only apply to compact elements so big sections don't shift
-    if (rect.width < 300) {
-      el.style.transform = `translate(${dx}px, ${dy}px)`;
+    const r  = el.getBoundingClientRect();
+    const dx = (e.clientX - r.left - r.width  / 2) * 0.18;
+    const dy = (e.clientY - r.top  - r.height / 2) * 0.18;
+    if (r.width < 300) {
+      el.style.transform = `translate(${dx}px,${dy}px)`;
       el.style.transition = 'transform 0.15s ease';
     }
   });
@@ -1122,11 +1114,9 @@ document.addEventListener('mousedown', () => {
 document.addEventListener('mouseup', () => {
   cursor.classList.remove('is-click');
   follower.classList.remove('is-click');
-
-  // Spawn a ripple ring at click position
   const ripple = document.createElement('div');
   ripple.className = 'cursor-ripple';
-  ripple.style.cssText = `left:${mx}px;top:${my}px;width:38px;height:38px;`;
+  ripple.style.cssText = `left:${mx}px;top:${my}px;width:36px;height:36px;`;
   document.body.appendChild(ripple);
   ripple.addEventListener('animationend', () => ripple.remove());
 });
