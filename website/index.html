@@ -23,37 +23,66 @@
       --glass: rgba(6,18,32,0.85);
     }
     *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior:smooth; font-size:16px; }
+    html { scroll-behavior:smooth; font-size:16px; cursor:none !important; }
     body {
       font-family:'Inter',system-ui,sans-serif;
       background:var(--bg);
       color:var(--white);
       overflow-x:hidden;
-      cursor:none;
+      cursor:none !important;
     }
+    a, button, input, [role="button"] { cursor:none !important; }
 
     /* ── CUSTOM CURSOR ────────────────────────────────── */
+    /* All cursor elements: anchored at top:0 left:0, moved by transform only */
+    #cursor, #cursor-follower, #cursor-glow {
+      position:fixed; top:0; left:0; pointer-events:none; will-change:transform;
+    }
     #cursor {
-      position:fixed; width:8px; height:8px; border-radius:50%;
-      background:var(--mint); pointer-events:none; z-index:9999;
-      transform:translate(-50%,-50%);
-      transition:width .15s,height .15s,background .15s;
+      width:8px; height:8px; border-radius:50%;
+      background:var(--mint); z-index:9999;
+      transform:translate(-9999px,-9999px) translate(-50%,-50%);
       box-shadow:0 0 12px var(--mint),0 0 30px rgba(0,229,160,.3);
+      transition:width .2s cubic-bezier(.34,1.56,.64,1),
+                 height .2s cubic-bezier(.34,1.56,.64,1),
+                 background .2s, box-shadow .2s;
     }
+    #cursor.is-hover {
+      width:14px; height:14px;
+      background:rgba(255,255,255,.9);
+      box-shadow:0 0 18px rgba(255,255,255,.5);
+    }
+    #cursor.is-click { width:4px; height:4px; }
     #cursor-follower {
-      position:fixed; width:36px; height:36px; border-radius:50%;
-      border:1px solid rgba(0,229,160,.4); pointer-events:none; z-index:9998;
-      transform:translate(-50%,-50%);
-      transition:transform .12s ease,width .3s,height .3s,border-color .3s;
+      width:36px; height:36px; border-radius:50%;
+      border:1px solid rgba(0,229,160,.4); background:transparent;
+      z-index:9998;
+      transform:translate(-9999px,-9999px) translate(-50%,-50%);
+      transition:width .35s cubic-bezier(.34,1.56,.64,1),
+                 height .35s cubic-bezier(.34,1.56,.64,1),
+                 border-color .25s, background .25s;
     }
+    #cursor-follower.is-hover {
+      width:52px; height:52px;
+      border-color:rgba(0,229,160,.8);
+      background:rgba(0,229,160,.05);
+    }
+    #cursor-follower.is-click { width:26px; height:26px; }
     #cursor-glow {
-      position:fixed; width:300px; height:300px; border-radius:50%;
+      width:300px; height:300px; border-radius:50%;
       background:radial-gradient(circle,rgba(0,229,160,.06) 0%,transparent 70%);
-      pointer-events:none; z-index:9997; transform:translate(-50%,-50%);
-      transition:transform .4s ease;
+      z-index:9997; opacity:0;
+      transform:translate(-9999px,-9999px) translate(-50%,-50%);
+      transition:opacity .4s;
     }
-    body:has(a:hover) #cursor, body:has(button:hover) #cursor {
-      width:16px; height:16px; background:var(--white);
+    .cursor-ripple {
+      position:fixed; border-radius:50%; pointer-events:none; z-index:9996;
+      border:1.5px solid rgba(0,229,160,.6);
+      transform:translate(-50%,-50%) scale(0);
+      animation:rippleOut .55s ease-out forwards;
+    }
+    @keyframes rippleOut {
+      to { transform:translate(-50%,-50%) scale(3.5); opacity:0; }
     }
 
     /* ── SCROLL PROGRESS ──────────────────────────────── */
@@ -994,25 +1023,82 @@
 
 <script>
 // ═══════════════════════════════════════════════════════
-// CUSTOM CURSOR
+// CUSTOM CURSOR — transform-only, spring follower
 // ═══════════════════════════════════════════════════════
-const cursor = document.getElementById('cursor');
+const cursor   = document.getElementById('cursor');
 const follower = document.getElementById('cursor-follower');
-const glow = document.getElementById('cursor-glow');
-let mx=0,my=0,fx=0,fy=0;
+const glow     = document.getElementById('cursor-glow');
+
+let mx = -9999, my = -9999;
+let fx = -9999, fy = -9999;
+let vx = 0, vy = 0;
+let cursorStarted = false;
+
+const SPRING  = 0.12;
+const DAMPING = 0.80;
+
+function setXY(el, x, y) {
+  el.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%)`;
+}
+
+function tick() {
+  setXY(cursor, mx, my);
+  setXY(glow,   mx, my);
+  vx = (vx + (mx - fx) * SPRING) * DAMPING;
+  vy = (vy + (my - fy) * SPRING) * DAMPING;
+  fx += vx; fy += vy;
+  setXY(follower, fx, fy);
+  requestAnimationFrame(tick);
+}
 
 document.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
-  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
-  glow.style.left = mx + 'px'; glow.style.top = my + 'px';
+  if (!cursorStarted) {
+    cursorStarted = true;
+    fx = mx; fy = my; vx = 0; vy = 0;
+    glow.style.opacity = '1';
+    tick();
+  }
 });
 
-function animateFollower() {
-  fx += (mx - fx) * 0.1; fy += (my - fy) * 0.1;
-  follower.style.left = fx + 'px'; follower.style.top = fy + 'px';
-  requestAnimationFrame(animateFollower);
-}
-animateFollower();
+document.querySelectorAll(
+  'a, button, .btn-large, .btn-primary, .btn-ghost, ' +
+  '.problem-card, .spec-item, .metric-card, .eq-card, .step-num, .plant-chip'
+).forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.classList.add('is-hover');
+    follower.classList.add('is-hover');
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.classList.remove('is-hover');
+    follower.classList.remove('is-hover');
+    el.style.transform = '';
+    el.style.transition = '';
+  });
+  el.addEventListener('mousemove', e => {
+    const r  = el.getBoundingClientRect();
+    const dx = (e.clientX - r.left - r.width  / 2) * 0.18;
+    const dy = (e.clientY - r.top  - r.height / 2) * 0.18;
+    if (r.width < 300) {
+      el.style.transform = `translate(${dx}px,${dy}px)`;
+      el.style.transition = 'transform 0.15s ease';
+    }
+  });
+});
+
+document.addEventListener('mousedown', () => {
+  cursor.classList.add('is-click');
+  follower.classList.add('is-click');
+});
+document.addEventListener('mouseup', () => {
+  cursor.classList.remove('is-click');
+  follower.classList.remove('is-click');
+  const ripple = document.createElement('div');
+  ripple.className = 'cursor-ripple';
+  ripple.style.cssText = `left:${mx}px;top:${my}px;width:36px;height:36px;`;
+  document.body.appendChild(ripple);
+  ripple.addEventListener('animationend', () => ripple.remove());
+});
 
 // ═══════════════════════════════════════════════════════
 // SCROLL PROGRESS + NAV
