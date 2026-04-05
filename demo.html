@@ -77,8 +77,11 @@
     }
     .uc-card:hover {
       border-color: #2c5f2d;
-      transform: translateY(-3px);
+      transform: translateY(-4px) scale(1.02);
       box-shadow: 0 8px 28px rgba(44,95,45,0.16);
+    }
+    .uc-card:active {
+      transform: translateY(-1px) scale(0.98);
     }
     .uc-card .uc-icon { font-size: 2.8rem; margin-bottom: 0.65rem; display: block; }
     .uc-card .uc-title {
@@ -312,10 +315,36 @@
       border-radius: 20px; font-size: 0.68rem; font-weight: 600; padding: 2px 8px;
     }
 
+    /* ── Smooth result appearance ── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #live-results .output-grid { animation: fadeInUp 0.5s ease both; }
+    #live-results .panel { animation: fadeInUp 0.5s ease both; }
+    #live-results .panel:nth-child(2) { animation-delay: 0.08s; }
+    #live-results .panel:nth-child(3) { animation-delay: 0.16s; }
+    #live-results .panel:nth-child(4) { animation-delay: 0.24s; }
+    #live-results .panel:nth-child(5) { animation-delay: 0.32s; }
+
+    /* Smooth slider transitions */
+    .feature-bar-fill { transition: width 0.25s ease; }
+    .conf-bar-fill { transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+    .feat-bar-inner { transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+    .model-bar-inner { transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
     /* ── Responsive ── */
     @media (max-width: 820px) {
       .main { grid-template-columns: 1fr; }
       .output-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Smooth page transitions ── */
+    #usecase-step {
+      transition: opacity 0.3s ease;
+    }
+    #main-demo {
+      animation: fadeInUp 0.4s ease both;
     }
 
     /* ── Use case context strip ── */
@@ -853,10 +882,10 @@ function getFeatureImportance(cropKey) {
 
 function getModelAccuracies() {
   return {
-    XGBoost:          93.2,
-    "Random Forest":  91.8,
-    "Neural Network": 94.1,
-    "Ensemble ⭐":    96.4,
+    "XGBoost":         98.7,
+    "Random Forest":   98.8,
+    "Neural Network":  97.4,
+    "Ensemble ⭐":     98.8,
   };
 }
 
@@ -958,7 +987,7 @@ function runPrediction() {
         <div class="panel-body">
           ${Object.entries(accs).map(([model, acc], i) => {
             const colors = ["97bc62","5c9e6e","2c5f2d","1c3a1d"];
-            const pct = ((acc - 88) / 12 * 100).toFixed(0);
+            const pct = ((acc - 95) / 5 * 100).toFixed(0);
             return `<div class="ensemble-row">
               <div class="model-dot" style="background:#${colors[i]}"></div>
               <span class="model-name">${model}</span>

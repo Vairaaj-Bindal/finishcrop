@@ -83,14 +83,22 @@ class CropPredictor:
         if NN_AVAILABLE:
             nn_path = os.path.join(model_dir, "nn_model.pt")
             if os.path.exists(nn_path):
+                checkpoint = torch.load(nn_path, map_location="cpu", weights_only=False)
+                # Support both formats: raw state_dict or dict with 'model_state_dict' key
+                if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+                    state_dict = checkpoint["model_state_dict"]
+                    saved_config = checkpoint.get("config", None)
+                else:
+                    state_dict = checkpoint
+                    saved_config = None
+
                 self.nn_model = CropMultiTaskNet(
                     n_features=self.preprocessor["n_features"],
                     n_crop_classes=self.preprocessor["n_crop_classes"],
                     n_fert_classes=self.preprocessor["n_fert_classes"],
+                    config=saved_config,
                 )
-                self.nn_model.load_state_dict(
-                    torch.load(nn_path, map_location="cpu", weights_only=True)
-                )
+                self.nn_model.load_state_dict(state_dict)
                 self.nn_model.eval()
                 print("  ✓ Neural network loaded")
             else:
@@ -115,34 +123,67 @@ class CropPredictor:
         """Transform raw sensor readings into model-ready feature vector."""
         import pandas as pd
 
-        # Build raw feature row
-        row = {
+        eps = 1e-8
+
+        # Build a single-row DataFrame matching what preprocessing.py expects
+        row = pd.DataFrame([{
             "N": N, "P": P, "K": K,
             "temperature": temperature,
             "humidity": humidity,
             "ph": ph,
             "rainfall": rainfall,
-        }
+            # Raw features that may not be available at inference —
+            # use sensible defaults so the scaler gets the right shape.
+            "growing_days": 90,
+            "Kc": 1.0,
+            "et0_daily": max(0, (0.408 * (4098 * 0.6108 * np.exp(17.27 * temperature / (temperature + 237.3))
+                          / (temperature + 237.3)**2)
+                          * 0.0135 * (temperature + 17.8) * 16
+                          + 0.0665 * (900 / (temperature + 273)) * 2
+                          * max(0, 0.6108 * np.exp(17.27 * temperature / (temperature + 237.3))
+                                * (1 - humidity / 100)))
+                          / ((4098 * 0.6108 * np.exp(17.27 * temperature / (temperature + 237.3))
+                              / (temperature + 237.3)**2)
+                             + 0.0665 * (1 + 0.34 * 2))),
+            "latitude": 20.0,
+        }])
 
-        # Engineer features
-        row["N_P_ratio"]          = N / (P + 1e-6)
-        row["N_K_ratio"]          = N / (K + 1e-6)
-        row["P_K_ratio"]          = P / (K + 1e-6)
-        row["total_NPK"]          = N + P + K
-        row["vpd"]                = (0.6108 * np.exp(17.27 * temperature / (temperature + 237.3)) *
-                                     (1 - humidity / 100))
-        row["heat_moisture_index"] = (temperature + 10) / (rainfall / 100 + 1)
-        row["aridity_index"]       = rainfall / (temperature + 10 + 1e-6)
+        # Compute all engineered features (mirrors preprocessing._ensure_engineered_features)
+        row["N_P_ratio"] = (N / (P + eps))
+        row["N_K_ratio"] = (N / (K + eps))
+        row["P_K_ratio"] = (P / (K + eps))
+        row["total_NPK"] = N + P + K
+        es = 0.6108 * np.exp(17.27 * temperature / (temperature + 237.3))
+        row["vpd"] = max(0, es * (1 - humidity / 100))
+        row["heat_stress_index"] = max(0, (temperature - 30) / 10)
+        row["cold_stress_index"] = max(0, (15 - temperature) / 10)
+        row["ph_deviation"] = abs(ph - 6.5)
+        row["aridity_index"] = rainfall / (temperature + 10 + eps)
 
-        # Build numeric array (no categorical features for inference default)
+        # Nutrient balance score (geometric mean of normalized NPK)
+        # Use dataset means as approximation
+        N_mean, P_mean, K_mean = 50.0, 50.0, 50.0
+        N_norm = N / (N_mean + eps)
+        P_norm = P / (P_mean + eps)
+        K_norm = K / (K_mean + eps)
+        row["nutrient_balance_score"] = max(0, N_norm * P_norm * K_norm) ** (1 / 3)
+
+        # Water stress index
+        et0 = float(row["et0_daily"].iloc[0])
+        row["water_stress_index"] = min(10, max(0, rainfall / (et0 * 30 + eps)))
+
+        # Growing degree days
+        row["growing_degree_days"] = max(0, temperature - 10) * 90
+
+        # Build numeric feature array in the correct order
         feature_order = RAW_FEATURES + ENGINEERED_FEATURES
-        x = np.array([[row[f] for f in feature_order]], dtype=np.float32)
+        x = row[feature_order].values.astype(np.float32)
 
-        # Scale
+        # Scale using the trained scaler
         scaler = self.preprocessor["scaler"]
-        # Scaler was trained on full feature set; pad with zeros for
-        # categorical features if present, then select first n columns
         n_scale_features = scaler.center_.shape[0]
+
+        # Pad with zeros for one-hot categorical features the scaler expects
         if x.shape[1] < n_scale_features:
             pad = np.zeros((1, n_scale_features - x.shape[1]))
             x_padded = np.hstack([x, pad])

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AgroSense AI — Precision Agriculture Intelligence</title>
+  <title>Grow Smart — Precision Agriculture Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -23,15 +23,19 @@
       --glass: rgba(6,18,32,0.85);
     }
     *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior:smooth; font-size:16px; cursor:none !important; }
+    html { scroll-behavior:smooth; font-size:16px; }
     body {
       font-family:'Inter',system-ui,sans-serif;
       background:var(--bg);
       color:var(--white);
       overflow-x:hidden;
-      cursor:none !important;
     }
-    a, button, input, [role="button"] { cursor:none !important; }
+    /* Custom cursor only on non-touch devices */
+    @media (hover:hover) and (pointer:fine) {
+      html { cursor:none !important; }
+      body { cursor:none !important; }
+      a, button, input, [role="button"] { cursor:none !important; }
+    }
 
     /* ── CUSTOM CURSOR ────────────────────────────────── */
     /* All cursor elements: anchored at top:0 left:0, moved by transform only */
@@ -40,9 +44,10 @@
     }
     #cursor {
       width:8px; height:8px; border-radius:50%;
-      background:var(--mint); z-index:9999;
+      background:var(--mint); z-index:99999;
+      /* Start far off-screen; JS updates this via transform */
       transform:translate(-9999px,-9999px) translate(-50%,-50%);
-      box-shadow:0 0 12px var(--mint),0 0 30px rgba(0,229,160,.3);
+      box-shadow:0 0 10px var(--mint),0 0 24px rgba(0,229,160,.4);
       transition:width .2s cubic-bezier(.34,1.56,.64,1),
                  height .2s cubic-bezier(.34,1.56,.64,1),
                  background .2s, box-shadow .2s;
@@ -53,10 +58,11 @@
       box-shadow:0 0 18px rgba(255,255,255,.5);
     }
     #cursor.is-click { width:4px; height:4px; }
+
     #cursor-follower {
       width:36px; height:36px; border-radius:50%;
-      border:1px solid rgba(0,229,160,.4); background:transparent;
-      z-index:9998;
+      border:1.5px solid rgba(0,229,160,.5); background:transparent;
+      z-index:99998;
       transform:translate(-9999px,-9999px) translate(-50%,-50%);
       transition:width .35s cubic-bezier(.34,1.56,.64,1),
                  height .35s cubic-bezier(.34,1.56,.64,1),
@@ -68,15 +74,18 @@
       background:rgba(0,229,160,.05);
     }
     #cursor-follower.is-click { width:26px; height:26px; }
+
     #cursor-glow {
-      width:300px; height:300px; border-radius:50%;
-      background:radial-gradient(circle,rgba(0,229,160,.06) 0%,transparent 70%);
-      z-index:9997; opacity:0;
+      width:400px; height:400px; border-radius:50%;
+      background:radial-gradient(circle,rgba(0,229,160,.06) 0%,transparent 68%);
+      z-index:99997; opacity:0;
       transform:translate(-9999px,-9999px) translate(-50%,-50%);
       transition:opacity .4s;
     }
+
+    /* ripple on click — uses left/top (ok: ephemeral element) */
     .cursor-ripple {
-      position:fixed; border-radius:50%; pointer-events:none; z-index:9996;
+      position:fixed; border-radius:50%; pointer-events:none; z-index:99996;
       border:1.5px solid rgba(0,229,160,.6);
       transform:translate(-50%,-50%) scale(0);
       animation:rippleOut .55s ease-out forwards;
@@ -129,13 +138,13 @@
     .btn-ghost {
       padding:10px 20px; border:1px solid var(--border); border-radius:8px;
       background:transparent; color:var(--white); font-size:13px; font-weight:500;
-      cursor:none; text-decoration:none; transition:border-color .2s,background .2s;
+      text-decoration:none; transition:border-color .2s,background .2s;
     }
     .btn-ghost:hover { border-color:var(--mint); background:rgba(0,229,160,.06); }
     .btn-primary {
       padding:10px 22px; border-radius:8px;
       background:var(--mint); color:#030B14; font-size:13px; font-weight:700;
-      cursor:none; border:none; text-decoration:none; transition:transform .2s,box-shadow .2s;
+      border:none; text-decoration:none; transition:transform .2s,box-shadow .2s;
       box-shadow:0 0 20px rgba(0,229,160,.25);
     }
     .btn-primary:hover { transform:translateY(-1px); box-shadow:0 0 35px rgba(0,229,160,.4); }
@@ -183,7 +192,7 @@
     }
     .btn-large {
       padding:16px 34px; border-radius:12px; font-size:15px; font-weight:700;
-      cursor:none; border:none; text-decoration:none; transition:all .25s;
+      border:none; text-decoration:none; transition:all .25s;
     }
     .btn-large.primary {
       background:linear-gradient(135deg,var(--mint),#00C488);
@@ -292,7 +301,6 @@
       width:100%; aspect-ratio:1/1; border-radius:24px;
       background:radial-gradient(circle at 40% 40%,rgba(0,153,255,.1),rgba(0,229,160,.05),transparent 70%);
       border:1px solid var(--border); position:relative; overflow:hidden;
-      cursor:none;
     }
     #sensor-canvas { display:block; width:100% !important; height:100% !important; border-radius:24px; }
     .sensor-label {
@@ -608,6 +616,10 @@
       .cta-form { flex-direction:column; }
       .footer-top { grid-template-columns:1fr; }
     }
+    /* Hide custom cursor on touch devices */
+    @media (hover:none), (pointer:coarse) {
+      #cursor, #cursor-follower, #cursor-glow { display:none !important; }
+    }
   </style>
 </head>
 <body>
@@ -621,8 +633,8 @@
 <!-- ─────────────────────────── NAV ────────────────────────────── -->
 <nav id="navbar">
   <a class="nav-logo" href="#">
-    <div class="logo-mark">A</div>
-    <span class="logo-text">Agro<span>Sense</span> AI</span>
+    <div class="logo-mark">G</div>
+    <span class="logo-text">Grow<span>Smart</span></span>
   </a>
   <div class="nav-links">
     <a href="#product">Product</a>
@@ -630,9 +642,10 @@
     <a href="#technology">Technology</a>
     <a href="#plants">Database</a>
     <a href="#science">Science</a>
+    <a href="device_3d.html">Hardware</a>
   </div>
   <div class="nav-cta">
-    <a href="#cta" class="btn-ghost">Login</a>
+    <a href="demo.html" class="btn-ghost">Live Demo ↗</a>
     <a href="#cta" class="btn-primary">Get Early Access</a>
   </div>
 </nav>
@@ -645,9 +658,9 @@
     <span class="line1">Know exactly what</span>
     <span class="line2">your crops need.</span>
   </h1>
-  <p class="hero-sub">AgroSense Pro is the world's most intelligent soil sensor — combining real-time NPK analysis, AI prediction across 1,920 crop species, and satellite-calibrated models to maximize yield and eliminate agricultural guesswork.</p>
+  <p class="hero-sub">Grow Smart is the world's most intelligent soil sensor — combining real-time EC + pH soil analysis, AI prediction across 1,920 crop species, and satellite-calibrated models to maximize yield and eliminate agricultural guesswork.</p>
   <div class="hero-btns">
-    <a href="#cta" class="btn-large primary">Request Demo</a>
+    <a href="demo.html" class="btn-large primary">Try Live Demo ↗</a>
     <a href="#product" class="btn-large outline">See the Device ↓</a>
   </div>
   <div class="hero-chips">
@@ -655,7 +668,7 @@
     <span class="hero-chip">FAO-56 Penman-Monteith</span>
     <span class="hero-chip">1,920 Crop Species</span>
     <span class="hero-chip">Real-Time NPK Sensing</span>
-    <span class="hero-chip">Solar Powered · IP68</span>
+    <span class="hero-chip">Solar Powered · IP65</span>
     <span class="hero-chip">XGBoost + Transformer</span>
     <span class="hero-chip">Mixture of Experts</span>
   </div>
@@ -677,11 +690,11 @@
       <div class="stat-label">Training Samples</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num" data-target="97" data-suffix=".4%">0</div>
+      <div class="stat-num" data-target="98" data-suffix=".8%">0</div>
       <div class="stat-label">Crop Prediction Accuracy</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num" data-target="15" data-suffix="">0</div>
+      <div class="stat-num" data-target="13" data-suffix="">0</div>
       <div class="stat-label">Fertilizer Recommendations</div>
     </div>
   </div>
@@ -721,19 +734,19 @@
     <div style="position:relative;" class="reveal-left">
       <div id="sensor-viewport">
         <canvas id="sensor-canvas"></canvas>
-        <div class="sensor-label">AgroSense Pro · v2.1</div>
+        <div class="sensor-label">Grow Smart · v2.1</div>
       </div>
       <div style="position:absolute;top:20px;right:20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mint);opacity:.6;letter-spacing:1px;">DRAG TO ROTATE</div>
     </div>
     <div class="product-content reveal-right">
       <p class="section-eyebrow">The Hardware</p>
       <h2 class="section-h2">Precision sensing.<br>Beautiful engineering.</h2>
-      <p>AgroSense Pro is a ruggedized, solar-powered soil intelligence unit that continuously measures NPK levels, temperature, humidity, and rainfall — transmitting encrypted data to our AI cloud every 15 minutes.</p>
+      <p>Grow Smart is a solar-powered, weatherproof soil intelligence unit that continuously measures soil EC, pH, temperature, humidity, and rainfall — transmitting data to our AI cloud every 15 minutes.</p>
       <div class="specs-grid">
         <div class="spec-item"><div class="spec-label">Sensors</div><div class="spec-val"><span>4×</span> NPK Electrodes</div></div>
         <div class="spec-item"><div class="spec-label">Power</div><div class="spec-val"><span>Solar</span> + 30-day battery</div></div>
         <div class="spec-item"><div class="spec-label">Connectivity</div><div class="spec-val"><span>WiFi</span> + LoRa WAN</div></div>
-        <div class="spec-item"><div class="spec-label">Rating</div><div class="spec-val"><span>IP68</span> Waterproof</div></div>
+        <div class="spec-item"><div class="spec-label">Rating</div><div class="spec-val"><span>IP65</span> Weatherproof</div></div>
         <div class="spec-item"><div class="spec-label">Operating Temp</div><div class="spec-val"><span>−20°C</span> to +60°C</div></div>
         <div class="spec-item"><div class="spec-label">Accuracy</div><div class="spec-val"><span>±0.5</span> mg/kg NPK</div></div>
         <div class="spec-item"><div class="spec-label">Data Rate</div><div class="spec-val">Every <span>15 min</span></div></div>
@@ -756,7 +769,7 @@
       <div class="step">
         <div class="step-num" data-n="1">🌱</div>
         <h3>Deploy the Sensor</h3>
-        <p>Push the AgroSense Pro probes 20cm into your field soil. The device powers up automatically and begins sampling NPK, pH, temperature, humidity, and rainfall data every 15 minutes.</p>
+        <p>Push the Grow Smart probes 20cm into your field soil. The device powers up automatically and begins sampling EC, pH, temperature, humidity, and rainfall data every 15 minutes.</p>
       </div>
       <div class="step" style="transition-delay:.15s">
         <div class="step-num" data-n="2">🧠</div>
@@ -807,18 +820,18 @@
     <div class="metrics-grid">
       <div class="metric-card reveal">
         <div class="metric-label">Crop Classification</div>
-        <div class="metric-val">97.4<span class="metric-unit">%</span></div>
-        <div class="metric-desc">Weighted F1 across 1,920 crop species. Ensemble of XGBoost, Random Forest, and Multi-Task Transformer outperforms any single model by 4.2%.</div>
+        <div class="metric-val">98.8<span class="metric-unit">%</span></div>
+        <div class="metric-desc">Weighted F1 across 1,920 crop species. Stacking ensemble of XGBoost, Random Forest, and Multi-Task Transformer outperforms any single model.</div>
       </div>
       <div class="metric-card reveal" style="transition-delay:.1s;">
         <div class="metric-label">Fertilizer Recommendation</div>
-        <div class="metric-val">94.8<span class="metric-unit">%</span></div>
-        <div class="metric-desc">Precision on 15-class fertilizer recommendation. Nutrient balance equations drive label assignment, reducing overfitting to crop defaults.</div>
+        <div class="metric-val">90.5<span class="metric-unit">%</span></div>
+        <div class="metric-desc">Precision on 13-class fertilizer recommendation. Nutrient balance equations drive label assignment, reducing overfitting to crop defaults.</div>
       </div>
       <div class="metric-card reveal" style="transition-delay:.2s;">
         <div class="metric-label">Water Req. (R² Score)</div>
-        <div class="metric-val">0.968<span class="metric-unit"> R²</span></div>
-        <div class="metric-desc">FAO-56 Penman-Monteith calibrated regression achieves R²=0.968 on holdout set. Huber loss with uncertainty weighting handles outlier fields.</div>
+        <div class="metric-val">0.955<span class="metric-unit"> R²</span></div>
+        <div class="metric-desc">FAO-56 Penman-Monteith calibrated regression achieves R²=0.955 on holdout set. Huber loss with uncertainty weighting handles outlier fields.</div>
       </div>
     </div>
   </div>
@@ -946,7 +959,7 @@
   <div class="market-content reveal-right">
     <p class="section-eyebrow">The Opportunity</p>
     <h2 class="section-h2">$240 billion market.<br>Still running on spreadsheets.</h2>
-    <p>Global agriculture is a $3.5T industry with less than 3% precision technology penetration. AgroSense AI targets the fastest-growing segment — AI-powered soil intelligence — where no single platform has achieved product-market fit at scale.</p>
+    <p>Global agriculture is a $3.5T industry with less than 3% precision technology penetration. GrowSmart targets the fastest-growing segment — AI-powered soil intelligence — where no single platform has achieved product-market fit at scale.</p>
     <ul class="market-bullets">
       <li>2.6B smallholder farmers have zero access to soil data</li>
       <li>Precision agriculture grows at 13.8% CAGR through 2030</li>
@@ -977,15 +990,16 @@
     <div class="footer-top">
       <div class="footer-brand">
         <a class="nav-logo" href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:2px;">
-          <div class="logo-mark">A</div>
-          <span class="logo-text">Agro<span>Sense</span> AI</span>
+          <div class="logo-mark">G</div>
+          <span class="logo-text">Grow<span>Smart</span></span>
         </a>
         <p>Precision agriculture intelligence for the next generation of farming. Built with peer-reviewed agronomic science and state-of-the-art machine learning.</p>
       </div>
       <div class="footer-col">
         <h4>Product</h4>
         <ul>
-          <li><a href="#product">AgroSense Pro</a></li>
+          <li><a href="device_3d.html">Grow Smart Device</a></li>
+          <li><a href="circuit.html">Circuit Blueprints</a></li>
           <li><a href="#how">How it Works</a></li>
           <li><a href="#technology">Technology</a></li>
           <li><a href="#plants">Plant Database</a></li>
@@ -1011,11 +1025,11 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 AgroSense AI. All rights reserved.</p>
+      <p>© 2026 GrowSmart. All rights reserved.</p>
       <div class="footer-social">
         <a href="#" class="social-btn">𝕏</a>
         <a href="#" class="social-btn">in</a>
-        <a href="#" class="social-btn">gh</a>
+        <a href="https://github.com/Vairaaj-Bindal/finishcrop" class="social-btn">gh</a>
       </div>
     </div>
   </div>
@@ -1024,43 +1038,56 @@
 <script>
 // ═══════════════════════════════════════════════════════
 // CUSTOM CURSOR — transform-only, spring follower
+// Uses transform exclusively (never left/top) so the browser
+// composites everything on the GPU — no layout recalculation.
+// translate(x,y) translate(-50%,-50%) keeps cursor centred
+// regardless of size changes from hover/click states.
 // ═══════════════════════════════════════════════════════
 const cursor   = document.getElementById('cursor');
 const follower = document.getElementById('cursor-follower');
 const glow     = document.getElementById('cursor-glow');
 
-let mx = -9999, my = -9999;
-let fx = -9999, fy = -9999;
-let vx = 0, vy = 0;
+let mx = -9999, my = -9999;          // mouse position
+let fx = -9999, fy = -9999;          // follower position
+let vx = 0, vy = 0;                  // follower velocity
 let cursorStarted = false;
 
 const SPRING  = 0.12;
 const DAMPING = 0.80;
 
+// Set an element's position via transform (centred on x, y)
 function setXY(el, x, y) {
   el.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%)`;
 }
 
 function tick() {
+  // Dot and glow snap to mouse each frame
   setXY(cursor, mx, my);
   setXY(glow,   mx, my);
+
+  // Follower springs toward mouse
   vx = (vx + (mx - fx) * SPRING) * DAMPING;
   vy = (vy + (my - fy) * SPRING) * DAMPING;
-  fx += vx; fy += vy;
+  fx += vx;
+  fy += vy;
   setXY(follower, fx, fy);
+
   requestAnimationFrame(tick);
 }
 
 document.addEventListener('mousemove', e => {
-  mx = e.clientX; my = e.clientY;
+  mx = e.clientX;
+  my = e.clientY;
   if (!cursorStarted) {
     cursorStarted = true;
+    // Snap follower to cursor so it doesn't fly in from off-screen
     fx = mx; fy = my; vx = 0; vy = 0;
     glow.style.opacity = '1';
-    tick();
+    tick();   // start the RAF loop only once
   }
 });
 
+// ── Hover states ──────────────────────────────────────
 document.querySelectorAll(
   'a, button, .btn-large, .btn-primary, .btn-ghost, ' +
   '.problem-card, .spec-item, .metric-card, .eq-card, .step-num, .plant-chip'
@@ -1075,6 +1102,7 @@ document.querySelectorAll(
     el.style.transform = '';
     el.style.transition = '';
   });
+  // Magnetic pull on compact elements
   el.addEventListener('mousemove', e => {
     const r  = el.getBoundingClientRect();
     const dx = (e.clientX - r.left - r.width  / 2) * 0.18;
@@ -1086,6 +1114,7 @@ document.querySelectorAll(
   });
 });
 
+// ── Click ripple ──────────────────────────────────────
 document.addEventListener('mousedown', () => {
   cursor.classList.add('is-click');
   follower.classList.add('is-click');
@@ -1120,10 +1149,12 @@ let particles = [];
 let HW, HH;
 
 function resizeHero() {
-  HW = heroCanvas.width = heroCanvas.offsetWidth;
-  HH = heroCanvas.height = heroCanvas.offsetHeight;
+  HW = heroCanvas.width = heroCanvas.offsetWidth || window.innerWidth;
+  HH = heroCanvas.height = heroCanvas.offsetHeight || window.innerHeight;
 }
 resizeHero();
+// Re-run after layout is fully painted to capture accurate dimensions
+requestAnimationFrame(resizeHero);
 window.addEventListener('resize', resizeHero);
 
 function createParticle() {

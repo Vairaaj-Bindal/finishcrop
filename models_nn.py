@@ -394,6 +394,11 @@ class CropMultiTaskNet(nn.Module):
         exp_drop = config.get("expert_dropout", 0.1)
         attn_h   = config.get("attention_heads", 8)
 
+        # Feature flags — backward-compatible with older configs
+        self._use_moe        = config.get("n_experts", 0) > 0 and "n_experts" in config
+        self._use_cross_attn = config.get("use_cross_attention", "n_experts" in config)
+        self._use_task_ffn   = config.get("use_per_task_ffn", "n_experts" in config)
+
         # 1. Feature Gating
         self.feature_gate = FeatureGating(n_features)
 
@@ -405,9 +410,11 @@ class CropMultiTaskNet(nn.Module):
             nn.Dropout(dropout),
         )
 
-        # 3. Mixture of Experts: hdims[0] → hdims[0]
-        self.moe = MixtureOfExperts(hdims[0], hdims[0], n_experts=n_exp,
-                                    top_k=top_k, dropout=exp_drop)
+        # 3. Mixture of Experts: hdims[0] → hdims[0] (optional)
+        self.moe = None
+        if self._use_moe:
+            self.moe = MixtureOfExperts(hdims[0], hdims[0], n_experts=n_exp,
+                                        top_k=top_k, dropout=exp_drop)
 
         # 4. Shared Backbone: series of dimension transitions + residual blocks
         backbone = []
@@ -424,22 +431,34 @@ class CropMultiTaskNet(nn.Module):
         shared_dim = hdims[-1]  # 128
 
         # 5. Multi-Head Self-Attention
+        # Support both old name 'self_attention' and new name 'self_attn'
         self.self_attn = None
+        self.self_attention = None
         if config.get("use_self_attention", True):
-            # attention_heads must divide shared_dim
             h = attn_h
             while shared_dim % h != 0 and h > 1:
                 h //= 2
-            self.self_attn = MultiHeadSelfAttention(shared_dim, num_heads=h, dropout=dropout)
+            attn_module = MultiHeadSelfAttention(shared_dim, num_heads=h, dropout=dropout)
+            # Use 'self_attention' name for backward compat with old checkpoints
+            if not self._use_moe:
+                self.self_attention = attn_module
+            else:
+                self.self_attn = attn_module
 
-        # 6. Per-task Transformer FFN blocks (pre cross-task attention)
-        self.crop_ffn  = TransformerFFNBlock(shared_dim, expansion=4, dropout=dropout)
-        self.fert_ffn  = TransformerFFNBlock(shared_dim, expansion=4, dropout=dropout)
-        self.water_ffn = TransformerFFNBlock(shared_dim, expansion=4, dropout=dropout)
+        # 6. Per-task Transformer FFN blocks (optional)
+        self.crop_ffn  = None
+        self.fert_ffn  = None
+        self.water_ffn = None
+        if self._use_task_ffn:
+            self.crop_ffn  = TransformerFFNBlock(shared_dim, expansion=4, dropout=dropout)
+            self.fert_ffn  = TransformerFFNBlock(shared_dim, expansion=4, dropout=dropout)
+            self.water_ffn = TransformerFFNBlock(shared_dim, expansion=4, dropout=dropout)
 
-        # 7. Cross-Task Attention
-        self.cross_attn = CrossTaskAttention(shared_dim, num_heads=max(1, shared_dim // 32),
-                                             dropout=dropout)
+        # 7. Cross-Task Attention (optional)
+        self.cross_attn = None
+        if self._use_cross_attn:
+            self.cross_attn = CrossTaskAttention(shared_dim, num_heads=max(1, shared_dim // 32),
+                                                 dropout=dropout)
 
         # 8. Task-specific Prediction Heads
         neck = shared_dim // 2  # 64
@@ -491,24 +510,31 @@ class CropMultiTaskNet(nn.Module):
         # Input projection
         h = self.input_proj(x_gated)
 
-        # Mixture of Experts
-        h, moe_aux = self.moe(h)
+        # Mixture of Experts (optional)
+        moe_aux = torch.tensor(0.0, device=x.device)
+        if self.moe is not None:
+            h, moe_aux = self.moe(h)
 
         # Shared backbone
         h = self.backbone(h)
 
-        # Self-attention
+        # Self-attention (support both naming conventions)
         attn_weights = None
-        if self.self_attn is not None:
-            h, attn_weights = self.self_attn(h)
+        attn_module = self.self_attn if self.self_attn is not None else self.self_attention
+        if attn_module is not None:
+            h, attn_weights = attn_module(h)
 
-        # Per-task FFN refinement
-        h_c = self.crop_ffn(h)
-        h_f = self.fert_ffn(h)
-        h_w = self.water_ffn(h)
+        # Per-task FFN refinement (optional)
+        if self.crop_ffn is not None:
+            h_c = self.crop_ffn(h)
+            h_f = self.fert_ffn(h)
+            h_w = self.water_ffn(h)
+        else:
+            h_c = h_f = h_w = h
 
-        # Cross-task attention
-        h_c, h_f, h_w = self.cross_attn(h_c, h_f, h_w)
+        # Cross-task attention (optional)
+        if self.cross_attn is not None:
+            h_c, h_f, h_w = self.cross_attn(h_c, h_f, h_w)
 
         # Prediction heads
         crop_logits = self.crop_head(h_c)

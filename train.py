@@ -179,9 +179,10 @@ class NNTrainer:
 
             self.optimizer.zero_grad()
 
-            crop_logits, fert_logits, water_pred, _, _ = self.model(X)
+            crop_logits, fert_logits, water_pred, _, _, moe_aux = self.model(X)
             loss, loss_dict = self.criterion(
-                crop_logits, fert_logits, water_pred, yc, yf, yw
+                crop_logits, fert_logits, water_pred, yc, yf, yw,
+                moe_aux_loss=moe_aux
             )
 
             loss.backward()
@@ -218,9 +219,10 @@ class NNTrainer:
             yf = yf.to(self.device)
             yw = yw.to(self.device)
 
-            crop_logits, fert_logits, water_pred, _, _ = self.model(X)
+            crop_logits, fert_logits, water_pred, _, _, moe_aux = self.model(X)
             loss, loss_dict = self.criterion(
-                crop_logits, fert_logits, water_pred, yc, yf, yw
+                crop_logits, fert_logits, water_pred, yc, yf, yw,
+                moe_aux_loss=moe_aux
             )
 
             total_loss += loss.item() * X.size(0)
@@ -317,15 +319,9 @@ class NNTrainer:
         """Save the PyTorch model and training history."""
         os.makedirs(MODEL_DIR, exist_ok=True)
 
-        # Save model
+        # Save model state dict directly (compatible with predict.py load)
         model_path = os.path.join(MODEL_DIR, "nn_model.pt")
-        torch.save({
-            "model_state_dict": self.model.state_dict(),
-            "config": self.config,
-            "n_features": self.model.n_features,
-            "n_crop_classes": self.model.n_crop_classes,
-            "n_fert_classes": self.model.n_fert_classes,
-        }, model_path)
+        torch.save(self.model.state_dict(), model_path)
 
         # Save training history
         hist_path = os.path.join(MODEL_DIR, "nn_history.json")
@@ -340,7 +336,7 @@ class NNTrainer:
         self.model.to(self.device)
         with torch.no_grad():
             X = torch.FloatTensor(X_test).to(self.device)
-            crop_logits, fert_logits, water_pred, gates, attn = self.model(X)
+            crop_logits, fert_logits, water_pred, gates, attn, _ = self.model(X)
 
             crop_pred = crop_logits.argmax(1).cpu().numpy()
             fert_pred = fert_logits.argmax(1).cpu().numpy()

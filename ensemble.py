@@ -71,7 +71,7 @@ class StackingEnsemble:
         model.to(device)
         with torch.no_grad():
             x = X_tensor.to(device) if isinstance(X_tensor, torch.Tensor) else torch.FloatTensor(X_tensor).to(device)
-            crop_logits, fert_logits, water_pred, _, _ = model(x)
+            crop_logits, fert_logits, water_pred, _, _, _ = model(x)
 
             crop_proba = torch.softmax(crop_logits, dim=1).cpu().numpy()
             fert_proba = torch.softmax(fert_logits, dim=1).cpu().numpy()

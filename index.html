@@ -23,15 +23,19 @@
       --glass: rgba(6,18,32,0.85);
     }
     *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior:smooth; font-size:16px; cursor:none !important; }
+    html { scroll-behavior:smooth; font-size:16px; }
     body {
       font-family:'Inter',system-ui,sans-serif;
       background:var(--bg);
       color:var(--white);
       overflow-x:hidden;
-      cursor:none !important;
     }
-    a, button, input, [role="button"] { cursor:none !important; }
+    /* Custom cursor only on non-touch devices */
+    @media (hover:hover) and (pointer:fine) {
+      html { cursor:none !important; }
+      body { cursor:none !important; }
+      a, button, input, [role="button"] { cursor:none !important; }
+    }
 
     /* ── CUSTOM CURSOR ────────────────────────────────── */
     /* All cursor elements: anchored at top:0 left:0, moved by transform only */
@@ -134,13 +138,13 @@
     .btn-ghost {
       padding:10px 20px; border:1px solid var(--border); border-radius:8px;
       background:transparent; color:var(--white); font-size:13px; font-weight:500;
-      cursor:none; text-decoration:none; transition:border-color .2s,background .2s;
+      text-decoration:none; transition:border-color .2s,background .2s;
     }
     .btn-ghost:hover { border-color:var(--mint); background:rgba(0,229,160,.06); }
     .btn-primary {
       padding:10px 22px; border-radius:8px;
       background:var(--mint); color:#030B14; font-size:13px; font-weight:700;
-      cursor:none; border:none; text-decoration:none; transition:transform .2s,box-shadow .2s;
+      border:none; text-decoration:none; transition:transform .2s,box-shadow .2s;
       box-shadow:0 0 20px rgba(0,229,160,.25);
     }
     .btn-primary:hover { transform:translateY(-1px); box-shadow:0 0 35px rgba(0,229,160,.4); }
@@ -188,7 +192,7 @@
     }
     .btn-large {
       padding:16px 34px; border-radius:12px; font-size:15px; font-weight:700;
-      cursor:none; border:none; text-decoration:none; transition:all .25s;
+      border:none; text-decoration:none; transition:all .25s;
     }
     .btn-large.primary {
       background:linear-gradient(135deg,var(--mint),#00C488);
@@ -297,7 +301,6 @@
       width:100%; aspect-ratio:1/1; border-radius:24px;
       background:radial-gradient(circle at 40% 40%,rgba(0,153,255,.1),rgba(0,229,160,.05),transparent 70%);
       border:1px solid var(--border); position:relative; overflow:hidden;
-      cursor:none;
     }
     #sensor-canvas { display:block; width:100% !important; height:100% !important; border-radius:24px; }
     .sensor-label {
@@ -613,6 +616,10 @@
       .cta-form { flex-direction:column; }
       .footer-top { grid-template-columns:1fr; }
     }
+    /* Hide custom cursor on touch devices */
+    @media (hover:none), (pointer:coarse) {
+      #cursor, #cursor-follower, #cursor-glow { display:none !important; }
+    }
   </style>
 </head>
 <body>
@@ -683,11 +690,11 @@
       <div class="stat-label">Training Samples</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num" data-target="97" data-suffix=".4%">0</div>
+      <div class="stat-num" data-target="98" data-suffix=".8%">0</div>
       <div class="stat-label">Crop Prediction Accuracy</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num" data-target="15" data-suffix="">0</div>
+      <div class="stat-num" data-target="13" data-suffix="">0</div>
       <div class="stat-label">Fertilizer Recommendations</div>
     </div>
   </div>
@@ -813,18 +820,18 @@
     <div class="metrics-grid">
       <div class="metric-card reveal">
         <div class="metric-label">Crop Classification</div>
-        <div class="metric-val">97.4<span class="metric-unit">%</span></div>
-        <div class="metric-desc">Weighted F1 across 1,920 crop species. Ensemble of XGBoost, Random Forest, and Multi-Task Transformer outperforms any single model by 4.2%.</div>
+        <div class="metric-val">98.8<span class="metric-unit">%</span></div>
+        <div class="metric-desc">Weighted F1 across 1,920 crop species. Stacking ensemble of XGBoost, Random Forest, and Multi-Task Transformer outperforms any single model.</div>
       </div>
       <div class="metric-card reveal" style="transition-delay:.1s;">
         <div class="metric-label">Fertilizer Recommendation</div>
-        <div class="metric-val">94.8<span class="metric-unit">%</span></div>
+        <div class="metric-val">90.5<span class="metric-unit">%</span></div>
         <div class="metric-desc">Precision on 13-class fertilizer recommendation. Nutrient balance equations drive label assignment, reducing overfitting to crop defaults.</div>
       </div>
       <div class="metric-card reveal" style="transition-delay:.2s;">
         <div class="metric-label">Water Req. (R² Score)</div>
-        <div class="metric-val">0.968<span class="metric-unit"> R²</span></div>
-        <div class="metric-desc">FAO-56 Penman-Monteith calibrated regression achieves R²=0.968 on holdout set. Huber loss with uncertainty weighting handles outlier fields.</div>
+        <div class="metric-val">0.955<span class="metric-unit"> R²</span></div>
+        <div class="metric-desc">FAO-56 Penman-Monteith calibrated regression achieves R²=0.955 on holdout set. Huber loss with uncertainty weighting handles outlier fields.</div>
       </div>
     </div>
   </div>
