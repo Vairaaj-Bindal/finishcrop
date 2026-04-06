@@ -77,10 +77,31 @@
       border:1px solid rgba(255,215,0,.2);border-radius:4px;
       padding:1px 5px;font-size:.7rem;font-family:'JetBrains Mono',monospace;}
 
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .sch-section {
+      opacity:0; transform:translateY(20px);
+      transition:opacity .6s cubic-bezier(0.4,0,0.2,1),transform .6s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sch-section.visible { opacity:1; transform:translateY(0); }
+    .hero { animation: fadeUp 0.6s cubic-bezier(0.4,0,0.2,1) both; }
+    .legend-bar { animation: fadeUp 0.6s cubic-bezier(0.4,0,0.2,1) 0.1s both; }
+
+    /* Hover states for pin table */
+    .pin-table tr { transition: background .2s; }
+    .pin-table tr:hover td { background: rgba(0,229,160,0.04); }
+
+    /* Part card hover improvements */
+    .sch-section:hover { border-color: rgba(0,229,160,0.25); }
+
     footer{padding:2rem 5%;border-top:1px solid var(--border);
       display:flex;justify-content:space-between;align-items:center;
       color:var(--muted);font-size:.78rem;flex-wrap:wrap;gap:.8rem;}
-    footer a{color:var(--mint);text-decoration:none;}
+    footer a{color:var(--mint);text-decoration:none;transition:opacity .2s;}
+    footer a:hover{opacity:0.7;}
   </style>
 </head>
 <body>
@@ -831,5 +852,17 @@
   </div>
 </footer>
 
+<script>
+// Scroll-reveal for schematic sections
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e,i) => {
+    if(e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+      obs.unobserve(e.target);
+    }
+  });
+}, {threshold:0.1, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.sch-section').forEach(el => obs.observe(el));
+</script>
 </body>
 </html>
