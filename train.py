@@ -41,7 +41,7 @@ from config import (
     RANDOM_STATE
 )
 from preprocessing import DataPreprocessor
-from models_nn import CropMultiTaskNet, MultiTaskLoss, print_model_summary
+from models_nn import CropMultiTaskNet, MultiTaskLoss, print_model_summary, mixup_data
 from models_traditional import TraditionalModels
 from ensemble import StackingEnsemble
 
@@ -145,9 +145,19 @@ class NNTrainer:
             weight_decay=config["weight_decay"]
         )
 
-        # Learning rate scheduler
-        self.scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        # Learning rate scheduler with linear warmup + cosine annealing
+        warmup_epochs = config.get("warmup_epochs", 5)
+        self.warmup_epochs = warmup_epochs
+        cosine_scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
             self.optimizer, T_0=20, T_mult=2, eta_min=1e-6
+        )
+        warmup_scheduler = optim.lr_scheduler.LinearLR(
+            self.optimizer, start_factor=0.01, total_iters=warmup_epochs
+        )
+        self.scheduler = optim.lr_scheduler.SequentialLR(
+            self.optimizer,
+            schedulers=[warmup_scheduler, cosine_scheduler],
+            milestones=[warmup_epochs]
         )
 
         # Training history
@@ -163,13 +173,14 @@ class NNTrainer:
         self.patience_counter = 0
         self.best_model_state = None
 
-    def train_epoch(self, train_loader):
-        """Train for one epoch."""
+    def train_epoch(self, train_loader, use_mixup=True):
+        """Train for one epoch with optional Mixup augmentation."""
         self.model.train()
         total_loss = 0
         crop_correct = 0
         fert_correct = 0
         n_samples = 0
+        mixup_alpha = self.config.get("mixup_alpha", 0.2)
 
         for X, yc, yf, yw in train_loader:
             X = X.to(self.device)
@@ -179,14 +190,33 @@ class NNTrainer:
 
             self.optimizer.zero_grad()
 
-            crop_logits, fert_logits, water_pred, _, _, moe_aux = self.model(X)
-            loss, loss_dict = self.criterion(
-                crop_logits, fert_logits, water_pred, yc, yf, yw,
-                moe_aux_loss=moe_aux
-            )
+            if use_mixup and mixup_alpha > 0:
+                X_mix, yc_a, yc_b, yf_a, yf_b, yw_mix, lam = mixup_data(
+                    X, yc, yf, yw, alpha=mixup_alpha
+                )
+                crop_logits, fert_logits, water_pred, _, _, moe_aux = self.model(X_mix)
+                # Mixup loss: weighted combination of losses for both label sets
+                loss_a, _ = self.criterion(
+                    crop_logits, fert_logits, water_pred, yc_a, yf_a, yw_mix,
+                    moe_aux_loss=moe_aux
+                )
+                loss_b, _ = self.criterion(
+                    crop_logits, fert_logits, water_pred, yc_b, yf_b, yw_mix,
+                    moe_aux_loss=moe_aux
+                )
+                loss = lam * loss_a + (1 - lam) * loss_b
+            else:
+                crop_logits, fert_logits, water_pred, _, _, moe_aux = self.model(X)
+                loss, _ = self.criterion(
+                    crop_logits, fert_logits, water_pred, yc, yf, yw,
+                    moe_aux_loss=moe_aux
+                )
 
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+            torch.nn.utils.clip_grad_norm_(
+                self.model.parameters(),
+                max_norm=self.config.get("grad_clip_norm", 1.5)
+            )
             self.optimizer.step()
 
             total_loss += loss.item() * X.size(0)
@@ -292,12 +322,20 @@ class NNTrainer:
             epoch_time = time.time() - epoch_start
             if verbose and (epoch % log_interval == 0 or epoch == 1 or marker):
                 lr = self.optimizer.param_groups[0]['lr']
+                # Log uncertainty sigmas from the loss function
+                sigma_info = ""
+                if hasattr(self.criterion, 'log_var_crop'):
+                    import torch as _t
+                    sc = _t.exp(0.5 * self.criterion.log_var_crop).item()
+                    sf = _t.exp(0.5 * self.criterion.log_var_fert).item()
+                    sw = _t.exp(0.5 * self.criterion.log_var_water).item()
+                    sigma_info = f" │ σ: {sc:.2f}/{sf:.2f}/{sw:.2f}"
                 print(f"  Epoch {epoch:>4}/{epochs} │ "
                       f"Loss: {train_metrics['loss']:.4f}/{val_metrics['loss']:.4f} │ "
                       f"Crop: {val_metrics['crop_acc']:.3f} │ "
                       f"Fert: {val_metrics['fert_acc']:.3f} │ "
                       f"Water R²: {val_metrics['water_r2']:.3f} │ "
-                      f"LR: {lr:.6f} │ "
+                      f"LR: {lr:.6f}{sigma_info} │ "
                       f"{epoch_time:.1f}s{marker}")
 
             # Early stopping

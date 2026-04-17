@@ -110,6 +110,10 @@ NN_CONFIG = {
     "label_smoothing": 0.05,
     # Gradient clipping
     "grad_clip_norm": 1.5,
+    # Learning rate warmup
+    "warmup_epochs": 5,
+    # Mixup augmentation (0 to disable)
+    "mixup_alpha": 0.2,
 }
 
 # ============================================================================

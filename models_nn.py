@@ -32,6 +32,33 @@ from config import NN_CONFIG, MODEL_DIR
 
 
 # ============================================================================
+# UTILITY: Mixup data augmentation for tabular data
+# ============================================================================
+
+def mixup_data(x, y_crop, y_fert, y_water, alpha=0.2):
+    """
+    Mixup augmentation (Zhang et al., 2018) adapted for multi-task learning.
+    Interpolates input features and regression targets; returns mixed inputs
+    plus original labels for classification loss with the lambda weight.
+
+    Returns: mixed_x, y_crop_a, y_crop_b, y_fert_a, y_fert_b, y_water_mixed, lam
+    """
+    if alpha > 0:
+        lam = np.random.beta(alpha, alpha)
+        lam = max(lam, 1 - lam)  # Ensure lam >= 0.5 for stability
+    else:
+        lam = 1.0
+
+    batch_size = x.size(0)
+    index = torch.randperm(batch_size, device=x.device)
+
+    mixed_x = lam * x + (1 - lam) * x[index]
+    y_water_mixed = lam * y_water + (1 - lam) * y_water[index]
+
+    return mixed_x, y_crop, y_crop[index], y_fert, y_fert[index], y_water_mixed, lam
+
+
+# ============================================================================
 # UTILITY: Activation factory
 # ============================================================================
 
@@ -487,11 +514,19 @@ class CropMultiTaskNet(nn.Module):
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
-            nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
+            # Use GELU-appropriate init (close to tanh nonlinearity)
+            nn.init.kaiming_normal_(m.weight, mode="fan_in", nonlinearity="linear")
+            # Scale down final projection layers for stable training
+            if m.out_features == self.n_crop_classes or m.out_features == self.n_fert_classes:
+                m.weight.data *= 0.1
             if m.bias is not None:
                 nn.init.zeros_(m.bias)
         elif isinstance(m, nn.BatchNorm1d):
-            nn.init.ones_(m.weight); nn.init.zeros_(m.bias)
+            nn.init.ones_(m.weight)
+            nn.init.zeros_(m.bias)
+        elif isinstance(m, nn.LayerNorm):
+            nn.init.ones_(m.weight)
+            nn.init.zeros_(m.bias)
 
     def forward(self, x):
         """
@@ -602,6 +637,12 @@ class MultiTaskLoss(nn.Module):
         """
         Compute composite multi-task loss.
 
+        Kendall et al. 2018 formulation:
+          Classification: L = exp(-s) * L_task + s
+          Regression:     L = 0.5 * exp(-s) * L_task + 0.5 * s
+
+        Log-variance parameters are clamped to [-6, 6] for numerical stability.
+
         Returns: (total_loss, loss_dict)
         """
         l_crop  = self.crop_loss(crop_logits, y_crop)
@@ -609,14 +650,20 @@ class MultiTaskLoss(nn.Module):
         l_water = self.water_loss(water_pred.squeeze(-1), y_water)
 
         if use_uncertainty:
-            # Uncertainty-weighted loss (Kendall & Gal 2018)
-            # L = exp(−s)·L + s  where s = log σ²
-            prec_crop  = torch.exp(-self.log_var_crop)
-            prec_fert  = torch.exp(-self.log_var_fert)
-            prec_water = torch.exp(-self.log_var_water)
-            total = (prec_crop  * l_crop  + self.log_var_crop  +
-                     prec_fert  * l_fert  + self.log_var_fert  +
-                     prec_water * l_water + self.log_var_water)
+            # Clamp log-variance for numerical stability
+            s_crop  = self.log_var_crop.clamp(-6.0, 6.0)
+            s_fert  = self.log_var_fert.clamp(-6.0, 6.0)
+            s_water = self.log_var_water.clamp(-6.0, 6.0)
+
+            # Classification tasks: L = exp(-s) * L_task + s
+            prec_crop  = torch.exp(-s_crop)
+            prec_fert  = torch.exp(-s_fert)
+            # Regression task: L = 0.5 * exp(-s) * L_task + 0.5 * s
+            prec_water = torch.exp(-s_water)
+
+            total = (prec_crop  * l_crop  + s_crop  +
+                     prec_fert  * l_fert  + s_fert  +
+                     0.5 * prec_water * l_water + 0.5 * s_water)
         else:
             total = (self.w_crop  * l_crop +
                      self.w_fert  * l_fert +
@@ -631,6 +678,9 @@ class MultiTaskLoss(nn.Module):
             "fertilizer": l_fert.item(),
             "water":      l_water.item(),
             "moe_aux":    moe_aux_loss.item() if moe_aux_loss is not None else 0.0,
+            "sigma_crop":  torch.exp(0.5 * self.log_var_crop).item(),
+            "sigma_fert":  torch.exp(0.5 * self.log_var_fert).item(),
+            "sigma_water": torch.exp(0.5 * self.log_var_water).item(),
         }
         return total, loss_dict
 
