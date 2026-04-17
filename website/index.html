@@ -10,663 +10,460 @@
   <style>
     :root {
       --bg: #FAFAF8;
-      --bg-alt: #F4F4F0;
-      --bg-dark: #EDEDEA;
-      --green: #1B7A3D;
-      --green-hover: #239B4E;
-      --green-bg: #EDF7F0;
-      --blue: #2563A0;
-      --text: #111B11;
-      --text-mid: #3D4A3D;
-      --text-muted: #6B7B6B;
-      --border: #D8DDD8;
-      --border-hover: #B8C4B8;
-      --card: #FFFFFF;
-      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
-      --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+      --bg-alt: #F5F5F2;
+      --surface: #FFFFFF;
+      --green: #1A6B35;
+      --green-hover: #1F8042;
+      --green-muted: #E9F3EC;
+      --text-primary: #0F1A0F;
+      --text-secondary: #3A4A3A;
+      --text-tertiary: #6B7A6B;
+      --border: #DFE3DF;
+      --border-light: #EAEDEA;
+      --radius: 8px;
     }
-    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior:smooth; font-size:16px; -webkit-font-smoothing:antialiased; }
-    body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.5}
 
     /* ── NAV ── */
-    nav {
-      position:fixed; top:0; left:0; right:0; z-index:1000;
-      padding:0 5%; height:56px; display:flex;
-      align-items:center; justify-content:space-between;
-      background:rgba(250,250,248,0.92);
-      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-      border-bottom:1px solid var(--border);
-    }
-    .nav-logo { display:flex; align-items:center; gap:8px; text-decoration:none; }
-    .logo-mark {
-      width:28px; height:28px; border-radius:6px;
-      background:var(--green); display:grid; place-items:center;
-      font-size:14px; font-weight:700; color:#fff;
-    }
-    .logo-text { font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:700; color:var(--text); }
-    .logo-text span { color:var(--green); }
-    .nav-links { display:flex; gap:28px; }
-    .nav-links a {
-      text-decoration:none; color:var(--text-muted); font-size:13px; font-weight:500;
-      transition:color .15s;
-    }
-    .nav-links a:hover { color:var(--text); }
-    .nav-cta { display:flex; align-items:center; gap:8px; }
-    .btn-ghost {
-      padding:7px 16px; border:1px solid var(--border); border-radius:6px;
-      background:transparent; color:var(--text-mid); font-size:13px; font-weight:500;
-      text-decoration:none; transition:all .15s;
-    }
-    .btn-ghost:hover { border-color:var(--border-hover); background:var(--bg-alt); }
-    .btn-primary {
-      padding:7px 18px; border-radius:6px;
-      background:var(--green); color:#fff; font-size:13px; font-weight:600;
-      border:none; text-decoration:none; transition:all .15s;
-    }
-    .btn-primary:hover { background:var(--green-hover); }
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 max(24px,5%);background:rgba(250,250,248,.88);
+      backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+      border-bottom:1px solid transparent;transition:border-color .2s}
+    .nav.scrolled{border-bottom-color:var(--border)}
+    .nav-left{display:flex;align-items:center;gap:6px;text-decoration:none}
+    .nav-mark{width:24px;height:24px;border-radius:5px;background:var(--green);
+      display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff}
+    .nav-wordmark{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary)}
+    .nav-wordmark b{color:var(--green)}
+    .nav-center{display:flex;gap:24px}
+    .nav-center a{font-size:13px;font-weight:500;color:var(--text-tertiary);text-decoration:none;transition:color .15s}
+    .nav-center a:hover{color:var(--text-primary)}
+    .nav-right{display:flex;align-items:center;gap:8px}
+    .nav-btn{padding:6px 14px;font-size:12px;font-weight:600;border-radius:6px;
+      text-decoration:none;transition:all .15s}
+    .nav-btn.outline{border:1px solid var(--border);background:transparent;color:var(--text-secondary)}
+    .nav-btn.outline:hover{border-color:var(--border);background:var(--bg-alt)}
+    .nav-btn.filled{border:none;background:var(--green);color:#fff}
+    .nav-btn.filled:hover{background:var(--green-hover)}
 
     /* ── HERO ── */
-    #hero {
-      padding:140px 5% 100px;
-      max-width:1080px; margin:0 auto;
-    }
-    .hero-inner {
-      display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
-    }
-    .hero-text { }
-    .hero-tag {
-      display:inline-block; padding:4px 10px; border-radius:4px;
-      background:var(--green-bg); color:var(--green);
-      font-size:11px; font-weight:600; letter-spacing:.5px;
-      text-transform:uppercase; margin-bottom:20px;
-    }
-    .hero-h1 {
-      font-size:clamp(32px,4.5vw,52px); font-weight:800; line-height:1.12;
-      letter-spacing:-1.5px; margin-bottom:20px; color:var(--text);
-    }
-    .hero-sub {
-      font-size:16px; line-height:1.7; color:var(--text-muted);
-      margin-bottom:32px; max-width:420px;
-    }
-    .hero-actions { display:flex; gap:10px; }
-    .hero-actions .btn-large {
-      padding:12px 24px; border-radius:6px; font-size:14px; font-weight:600;
-      text-decoration:none; transition:all .15s; border:none;
-    }
-    .hero-actions .btn-large.primary {
-      background:var(--green); color:#fff;
-    }
-    .hero-actions .btn-large.primary:hover { background:var(--green-hover); }
-    .hero-actions .btn-large.secondary {
-      background:var(--card); color:var(--text-mid); border:1px solid var(--border);
-    }
-    .hero-actions .btn-large.secondary:hover { border-color:var(--border-hover); background:var(--bg-alt); }
-    .hero-3d {
-      width:100%; aspect-ratio:1; border-radius:8px; position:relative;
-      background:var(--bg-alt); border:1px solid var(--border);
-      overflow:hidden;
-    }
-    #sensor-canvas { display:block; width:100% !important; height:100% !important; }
+    .hero{max-width:1120px;margin:0 auto;padding:120px 24px 80px;
+      display:grid;grid-template-columns:1fr 480px;gap:64px;align-items:center}
+    .hero-content{}
+    .hero-label{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 6px;
+      border:1px solid var(--border);border-radius:5px;font-size:11px;font-weight:600;
+      color:var(--text-tertiary);margin-bottom:24px;letter-spacing:.2px}
+    .hero-label .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+    .hero-h1{font-size:clamp(36px,5vw,56px);font-weight:800;line-height:1.08;
+      letter-spacing:-2px;color:var(--text-primary);margin-bottom:20px}
+    .hero-p{font-size:17px;line-height:1.65;color:var(--text-tertiary);max-width:440px;margin-bottom:36px}
+    .hero-ctas{display:flex;gap:10px;align-items:center}
+    .cta-main{padding:11px 24px;border-radius:7px;font-size:14px;font-weight:600;
+      background:var(--green);color:#fff;text-decoration:none;transition:background .15s;border:none}
+    .cta-main:hover{background:var(--green-hover)}
+    .cta-secondary{padding:11px 24px;border-radius:7px;font-size:14px;font-weight:600;
+      background:var(--surface);color:var(--text-secondary);text-decoration:none;
+      border:1px solid var(--border);transition:all .15s}
+    .cta-secondary:hover{background:var(--bg-alt);border-color:var(--border)}
+    .hero-proof{margin-top:40px;display:flex;gap:24px}
+    .proof-item{display:flex;flex-direction:column}
+    .proof-val{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--text-primary);line-height:1}
+    .proof-label{font-size:11px;color:var(--text-tertiary);margin-top:2px}
+    .hero-visual{position:relative}
+    .hero-viewport{width:100%;aspect-ratio:1;border-radius:var(--radius);
+      background:linear-gradient(145deg,#F0F2EE 0%,#E8EBE5 50%,#DDE2D8 100%);
+      border:1px solid var(--border);overflow:hidden;cursor:grab}
+    .hero-viewport:active{cursor:grabbing}
+    #sensor-canvas{display:block;width:100%!important;height:100%!important}
 
-    /* ── NUMBERS BAR ── */
-    #numbers {
-      padding:40px 5%;
-      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-      background:var(--card);
-    }
-    .numbers-grid {
-      max-width:1080px; margin:0 auto;
-      display:grid; grid-template-columns:repeat(4,1fr); gap:0;
-    }
-    .number-item {
-      text-align:center; padding:16px;
-      border-right:1px solid var(--border);
-    }
-    .number-item:last-child { border-right:none; }
-    .number-val {
-      font-family:'Space Grotesk',sans-serif;
-      font-size:clamp(28px,3vw,40px); font-weight:700; color:var(--green);
-      line-height:1; margin-bottom:4px;
-    }
-    .number-label { font-size:12px; color:var(--text-muted); font-weight:500; }
+    /* ── METRICS BAR ── */
+    .metrics{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface)}
+    .metrics-inner{max-width:1120px;margin:0 auto;padding:0 24px;
+      display:grid;grid-template-columns:repeat(4,1fr)}
+    .metric{padding:28px 0;text-align:center;border-right:1px solid var(--border-light)}
+    .metric:last-child{border-right:none}
+    .metric-value{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,3vw,36px);
+      font-weight:700;color:var(--text-primary);line-height:1}
+    .metric-value span{color:var(--green)}
+    .metric-desc{font-size:12px;color:var(--text-tertiary);margin-top:4px}
 
-    /* ── SECTION SHARED ── */
-    .section-label {
-      font-size:11px; font-weight:700; letter-spacing:1.2px;
-      text-transform:uppercase; color:var(--green); margin-bottom:12px;
-    }
-    .section-title {
-      font-size:clamp(24px,3vw,36px); font-weight:800; line-height:1.2;
-      letter-spacing:-.8px; color:var(--text); margin-bottom:12px;
-    }
-    .section-desc {
-      font-size:15px; color:var(--text-muted); line-height:1.7; max-width:480px;
-    }
+    /* ── SECTION SYSTEM ── */
+    .s{padding:96px 24px;max-width:1120px;margin:0 auto}
+    .s-wide{padding:96px 0}
+    .s-bg{background:var(--bg-alt);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+    .s-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+    .s-title{font-size:clamp(24px,3vw,36px);font-weight:800;line-height:1.15;letter-spacing:-.8px;color:var(--text-primary);margin-bottom:12px}
+    .s-desc{font-size:15px;line-height:1.65;color:var(--text-tertiary);max-width:480px}
+    .s-center{text-align:center}
+    .s-center .s-desc{margin:0 auto}
 
     /* ── HOW IT WORKS ── */
-    #how {
-      padding:80px 5%; max-width:1080px; margin:0 auto;
-    }
-    .how-header { text-align:center; margin-bottom:60px; }
-    .how-header .section-desc { margin:0 auto; }
-    .steps {
-      display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
-      background:var(--border); border:1px solid var(--border); border-radius:6px;
-      overflow:hidden;
-    }
-    .step-card {
-      background:var(--card); padding:36px 28px;
-      position:relative;
-    }
-    .step-number {
-      font-family:'Space Grotesk',sans-serif;
-      font-size:11px; font-weight:700; color:var(--green);
-      letter-spacing:.5px; margin-bottom:16px;
-    }
-    .step-card h3 { font-size:16px; font-weight:700; margin-bottom:8px; color:var(--text); }
-    .step-card p { font-size:13px; color:var(--text-muted); line-height:1.65; }
+    .how-grid{display:grid;grid-template-columns:repeat(3,1fr);margin-top:56px}
+    .how-card{padding:40px 32px;border-right:1px solid var(--border-light);position:relative}
+    .how-card:last-child{border-right:none}
+    .how-num{font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:800;
+      color:var(--border);line-height:1;margin-bottom:20px}
+    .how-card h3{font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:8px}
+    .how-card p{font-size:13px;color:var(--text-tertiary);line-height:1.6}
 
     /* ── DEVICE ── */
-    #device {
-      padding:80px 5%; background:var(--bg-alt);
-      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-    }
-    .device-inner {
-      max-width:1080px; margin:0 auto;
-      display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center;
-    }
-    .device-viewport {
-      width:100%; aspect-ratio:1; border-radius:8px;
-      background:var(--bg); border:1px solid var(--border);
-      position:relative; overflow:hidden;
-    }
-    #device-canvas { display:block; width:100% !important; height:100% !important; }
-    .specs-table { margin-top:24px; }
-    .specs-table .spec-row {
-      display:flex; justify-content:space-between; align-items:center;
-      padding:10px 0; border-bottom:1px solid var(--border);
-      font-size:13px;
-    }
-    .specs-table .spec-row:last-child { border-bottom:none; }
-    .spec-key { color:var(--text-muted); font-weight:500; }
-    .spec-value { color:var(--text); font-weight:600; }
+    .device-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+    .device-viewport{width:100%;aspect-ratio:1;border-radius:var(--radius);
+      background:linear-gradient(145deg,#F0F2EE,#E3E7DF);
+      border:1px solid var(--border);overflow:hidden;cursor:grab}
+    .device-viewport:active{cursor:grabbing}
+    #device-canvas{display:block;width:100%!important;height:100%!important}
+    .spec-list{margin-top:28px}
+    .spec-row{display:flex;justify-content:space-between;padding:11px 0;
+      border-bottom:1px solid var(--border-light);font-size:13px}
+    .spec-row:last-child{border-bottom:none}
+    .spec-k{color:var(--text-tertiary)}
+    .spec-v{color:var(--text-primary);font-weight:600}
 
     /* ── FEATURES ── */
-    #features {
-      padding:80px 5%; max-width:1080px; margin:0 auto;
-    }
-    .features-header { margin-bottom:48px; }
-    .features-grid {
-      display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
-      background:var(--border); border:1px solid var(--border); border-radius:6px;
-      overflow:hidden;
-    }
-    .feature-card {
-      background:var(--card); padding:32px 24px;
-    }
-    .feature-icon {
-      width:36px; height:36px; border-radius:6px; margin-bottom:16px;
-      display:flex; align-items:center; justify-content:center;
-      font-size:16px; font-weight:800; color:var(--green);
-      background:var(--green-bg);
-    }
-    .feature-card h3 { font-size:15px; font-weight:700; margin-bottom:6px; color:var(--text); }
-    .feature-card p { font-size:13px; color:var(--text-muted); line-height:1.6; }
+    .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+      background:var(--border);border:1px solid var(--border);border-radius:var(--radius);
+      overflow:hidden;margin-top:56px}
+    .feat-card{background:var(--surface);padding:36px 28px}
+    .feat-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;
+      color:var(--green);margin-bottom:16px;letter-spacing:.5px}
+    .feat-card h3{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+    .feat-card p{font-size:13px;color:var(--text-tertiary);line-height:1.6}
 
-    /* ── ACCURACY ── */
-    #accuracy {
-      padding:80px 5%; background:var(--bg-alt);
-      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-    }
-    .accuracy-inner { max-width:1080px; margin:0 auto; }
-    .accuracy-header { text-align:center; margin-bottom:48px; }
-    .accuracy-header .section-desc { margin:0 auto; }
-    .accuracy-grid {
-      display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
-      background:var(--border); border:1px solid var(--border); border-radius:6px;
-      overflow:hidden;
-    }
-    .accuracy-card {
-      background:var(--card); padding:32px 28px;
-    }
-    .accuracy-card .a-label {
-      font-size:11px; font-weight:700; color:var(--text-muted);
-      letter-spacing:.5px; text-transform:uppercase; margin-bottom:8px;
-    }
-    .accuracy-card .a-value {
-      font-family:'Space Grotesk',sans-serif;
-      font-size:36px; font-weight:800; color:var(--text); line-height:1;
-    }
-    .accuracy-card .a-unit { font-size:14px; font-weight:600; color:var(--green); }
-    .accuracy-card .a-desc { font-size:12px; color:var(--text-muted); margin-top:8px; line-height:1.5; }
+    /* ── PERFORMANCE ── */
+    .perf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+      background:var(--border);border:1px solid var(--border);border-radius:var(--radius);
+      overflow:hidden;margin-top:56px}
+    .perf-card{background:var(--surface);padding:36px 28px}
+    .perf-card .perf-label{font-size:11px;font-weight:600;color:var(--text-tertiary);
+      letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px}
+    .perf-card .perf-val{font-family:'Space Grotesk',sans-serif;font-size:40px;
+      font-weight:800;color:var(--text-primary);line-height:1}
+    .perf-card .perf-unit{font-size:14px;font-weight:600;color:var(--green)}
+    .perf-card .perf-note{font-size:12px;color:var(--text-tertiary);margin-top:10px;line-height:1.5}
 
     /* ── PIPELINE ── */
-    #pipeline {
-      padding:80px 5%; max-width:1080px; margin:0 auto;
-    }
-    .pipeline-header { text-align:center; margin-bottom:48px; }
-    .pipeline-header .section-desc { margin:0 auto; }
-    .pipeline-flow {
-      display:flex; align-items:stretch; gap:0;
-      border:1px solid var(--border); border-radius:6px; overflow:hidden;
-      background:var(--border);
-    }
-    .pipeline-block {
-      flex:1; background:var(--card); padding:24px 20px; text-align:center;
-    }
-    .pipeline-arrow {
-      display:flex; align-items:center; padding:0 2px;
-      font-size:16px; color:var(--text-muted); background:var(--card);
-    }
-    .pipeline-block .p-name {
-      font-size:12px; font-weight:700; color:var(--text); margin-bottom:4px;
-    }
-    .pipeline-block .p-detail {
-      font-size:11px; color:var(--text-muted); line-height:1.4;
-    }
+    .pipe{display:flex;align-items:stretch;border:1px solid var(--border);
+      border-radius:var(--radius);overflow:hidden;margin-top:48px;background:var(--border)}
+    .pipe-block{flex:1;background:var(--surface);padding:28px 20px;text-align:center}
+    .pipe-sep{width:1px;background:var(--border);display:flex;align-items:center;
+      padding:0;position:relative}
+    .pipe-sep::after{content:'\2192';position:absolute;left:50%;top:50%;
+      transform:translate(-50%,-50%);font-size:14px;color:var(--text-tertiary);
+      background:var(--bg-alt);padding:4px 2px;line-height:1}
+    .pipe-name{font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+    .pipe-detail{font-size:11px;color:var(--text-tertiary);line-height:1.4}
 
     /* ── CROPS ── */
-    #crops {
-      padding:80px 5%; background:var(--bg-alt);
-      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-      overflow:hidden;
-    }
-    .crops-inner { max-width:1080px; margin:0 auto; }
-    .crops-header { margin-bottom:36px; }
-    .marquee-wrap { position:relative; overflow:hidden; margin-bottom:10px; }
-    .marquee-wrap::before,.marquee-wrap::after {
-      content:''; position:absolute; top:0; bottom:0; width:60px; z-index:1;
-    }
-    .marquee-wrap::before { left:0; background:linear-gradient(to right,var(--bg-alt),transparent); }
-    .marquee-wrap::after { right:0; background:linear-gradient(to left,var(--bg-alt),transparent); }
-    .marquee-track {
-      display:flex; gap:6px; width:max-content;
-      animation:marquee 50s linear infinite;
-    }
-    .marquee-track.reverse { animation-direction:reverse; animation-duration:60s; }
-    .crop-tag {
-      padding:5px 12px; white-space:nowrap;
-      border:1px solid var(--border); background:var(--card);
-      font-size:12px; color:var(--text-muted); font-weight:500;
-      border-radius:4px;
-    }
-    .crop-tag.hl { border-color:var(--green); color:var(--green); background:var(--green-bg); }
-    .crop-families {
-      display:grid; grid-template-columns:repeat(5,1fr); gap:1px;
-      background:var(--border); border:1px solid var(--border); border-radius:6px;
-      overflow:hidden; margin-top:32px;
-    }
-    .crop-family {
-      background:var(--card); padding:20px 16px; text-align:center;
-    }
-    .crop-family .cf-name { font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px; }
-    .crop-family .cf-count { font-size:11px; color:var(--text-muted); }
+    .marquee-wrap{position:relative;overflow:hidden;margin-bottom:8px}
+    .marquee-wrap::before,.marquee-wrap::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:1}
+    .marquee-wrap::before{left:0;background:linear-gradient(to right,var(--bg-alt),transparent)}
+    .marquee-wrap::after{right:0;background:linear-gradient(to left,var(--bg-alt),transparent)}
+    .marquee-track{display:flex;gap:6px;width:max-content;animation:marquee 55s linear infinite}
+    .marquee-track.rev{animation-direction:reverse;animation-duration:65s}
+    .crop-tag{padding:5px 12px;white-space:nowrap;border:1px solid var(--border);
+      background:var(--surface);font-size:12px;color:var(--text-tertiary);
+      font-weight:500;border-radius:5px}
+    .crop-tag.hl{border-color:var(--green);color:var(--green);background:var(--green-muted)}
+    .families{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;
+      background:var(--border);border:1px solid var(--border);border-radius:var(--radius);
+      overflow:hidden;margin-top:36px;max-width:1120px;margin-left:auto;margin-right:auto}
+    .family{background:var(--surface);padding:20px 12px;text-align:center}
+    .family-name{font-size:13px;font-weight:700;color:var(--text-primary)}
+    .family-count{font-size:11px;color:var(--text-tertiary);margin-top:1px}
 
     /* ── SCIENCE ── */
-    #science {
-      padding:80px 5%; max-width:1080px; margin:0 auto;
-    }
-    .science-header { text-align:center; margin-bottom:48px; }
-    .science-header .section-desc { margin:0 auto; }
-    .eq-grid {
-      display:grid; grid-template-columns:1fr 1fr; gap:1px;
-      background:var(--border); border:1px solid var(--border); border-radius:6px;
-      overflow:hidden;
-    }
-    .eq-card { background:var(--card); padding:28px 24px; }
-    .eq-name { font-size:12px; font-weight:700; color:var(--green); letter-spacing:.4px; text-transform:uppercase; margin-bottom:12px; }
-    .eq-code {
-      font-family:'JetBrains Mono',monospace; font-size:13px;
-      color:var(--text); line-height:1.8; padding:12px 16px;
-      background:var(--bg-alt); border:1px solid var(--border); border-radius:4px;
-      margin-bottom:10px; overflow-x:auto; white-space:nowrap;
-    }
-    .eq-code .v { color:var(--green); }
-    .eq-code .o { color:var(--blue); }
-    .eq-code .n { color:#C2590A; }
-    .eq-note { font-size:12px; color:var(--text-muted); line-height:1.6; }
+    .eq-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;
+      background:var(--border);border:1px solid var(--border);border-radius:var(--radius);
+      overflow:hidden;margin-top:48px}
+    .eq-card{background:var(--surface);padding:28px 24px}
+    .eq-name{font-size:11px;font-weight:700;color:var(--green);letter-spacing:.4px;
+      text-transform:uppercase;margin-bottom:12px}
+    .eq-code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-primary);
+      line-height:1.8;padding:12px 14px;background:var(--bg-alt);border:1px solid var(--border-light);
+      border-radius:5px;margin-bottom:10px;overflow-x:auto;white-space:nowrap}
+    .eq-code .v{color:var(--green)} .eq-code .o{color:#2563A0} .eq-code .n{color:#B45309}
+    .eq-note{font-size:12px;color:var(--text-tertiary);line-height:1.55}
 
     /* ── CTA ── */
-    #cta {
-      padding:80px 5%; text-align:center;
-      border-top:1px solid var(--border);
-    }
-    .cta-inner { max-width:440px; margin:0 auto; }
-    .cta-inner .section-title { margin-bottom:12px; }
-    .cta-inner p { font-size:15px; color:var(--text-muted); line-height:1.7; margin-bottom:28px; }
-    .cta-form { display:flex; gap:8px; }
-    .cta-input {
-      flex:1; padding:10px 14px; border-radius:6px;
-      background:var(--card); border:1px solid var(--border);
-      color:var(--text); font-size:14px; outline:none;
-      transition:border-color .15s;
-    }
-    .cta-input::placeholder { color:var(--text-muted); }
-    .cta-input:focus { border-color:var(--green); }
-    .cta-note { font-size:11px; color:var(--text-muted); margin-top:10px; }
+    .cta-section{padding:96px 24px;text-align:center}
+    .cta-box{max-width:420px;margin:0 auto}
+    .cta-box .s-title{margin-bottom:10px}
+    .cta-box p{font-size:15px;color:var(--text-tertiary);line-height:1.6;margin-bottom:24px}
+    .cta-form{display:flex;gap:8px}
+    .cta-input{flex:1;padding:10px 14px;border-radius:6px;background:var(--surface);
+      border:1px solid var(--border);color:var(--text-primary);font-size:14px;outline:none;
+      transition:border-color .15s}
+    .cta-input::placeholder{color:var(--text-tertiary)}
+    .cta-input:focus{border-color:var(--green)}
+    .cta-note{font-size:11px;color:var(--text-tertiary);margin-top:8px}
 
     /* ── FOOTER ── */
-    footer {
-      padding:40px 5% 28px; border-top:1px solid var(--border);
-      background:var(--bg-alt);
-    }
-    .footer-inner { max-width:1080px; margin:0 auto; }
-    .footer-top {
-      display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px; margin-bottom:40px;
-    }
-    .footer-brand p { font-size:13px; color:var(--text-muted); line-height:1.6; margin-top:8px; max-width:240px; }
-    .footer-col h4 { font-size:12px; font-weight:700; color:var(--text); margin-bottom:12px; letter-spacing:.3px; }
-    .footer-col ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
-    .footer-col ul li a { font-size:13px; color:var(--text-muted); text-decoration:none; transition:color .15s; }
-    .footer-col ul li a:hover { color:var(--green); }
-    .footer-bottom {
-      display:flex; justify-content:space-between; align-items:center;
-      padding-top:20px; border-top:1px solid var(--border);
-    }
-    .footer-bottom p { font-size:12px; color:var(--text-muted); }
-    .footer-social { display:flex; gap:8px; }
-    .social-link {
-      width:32px; height:32px; border-radius:6px;
-      background:var(--card); border:1px solid var(--border);
-      display:grid; place-items:center; text-decoration:none;
-      font-size:12px; color:var(--text-muted); font-weight:600;
-      transition:all .15s;
-    }
-    .social-link:hover { border-color:var(--border-hover); color:var(--green); }
+    .footer{padding:48px 24px 28px;border-top:1px solid var(--border);background:var(--bg-alt)}
+    .footer-inner{max-width:1120px;margin:0 auto}
+    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+    .footer-brand p{font-size:13px;color:var(--text-tertiary);line-height:1.55;margin-top:8px;max-width:240px}
+    .footer-col h5{font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:10px}
+    .footer-col a{display:block;font-size:13px;color:var(--text-tertiary);text-decoration:none;
+      padding:3px 0;transition:color .15s}
+    .footer-col a:hover{color:var(--green)}
+    .footer-bottom{display:flex;justify-content:space-between;align-items:center;
+      padding-top:20px;border-top:1px solid var(--border)}
+    .footer-bottom p{font-size:11px;color:var(--text-tertiary)}
+    .footer-links{display:flex;gap:12px}
+    .footer-links a{font-size:12px;color:var(--text-tertiary);text-decoration:none;font-weight:600;transition:color .15s}
+    .footer-links a:hover{color:var(--green)}
 
     /* ── ANIMATIONS ── */
-    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-    .reveal {
-      opacity:0; transform:translateY(16px);
-      transition:opacity .5s ease,transform .5s ease;
-    }
-    .reveal.visible { opacity:1; transform:translateY(0); }
+    @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .reveal{opacity:0;transform:translateY(12px);transition:opacity .5s,transform .5s}
+    .reveal.visible{opacity:1;transform:none}
 
     /* ── RESPONSIVE ── */
-    @media (max-width:900px) {
-      .hero-inner { grid-template-columns:1fr; gap:40px; }
-      .hero-3d { max-width:400px; margin:0 auto; }
-      .numbers-grid,.steps,.features-grid,.accuracy-grid { grid-template-columns:1fr; }
-      .device-inner { grid-template-columns:1fr; }
-      .eq-grid { grid-template-columns:1fr; }
-      .pipeline-flow { flex-direction:column; }
-      .pipeline-arrow { justify-content:center; padding:4px 0; }
-      .footer-top { grid-template-columns:1fr 1fr; gap:24px; }
-      .nav-links { display:none; }
-      .crop-families { grid-template-columns:repeat(3,1fr); }
+    @media(max-width:960px){
+      .hero{grid-template-columns:1fr;gap:40px;padding-top:100px}
+      .hero-viewport{max-width:420px;margin:0 auto}
+      .how-grid,.feat-grid,.perf-grid,.eq-grid{grid-template-columns:1fr}
+      .how-card{border-right:none;border-bottom:1px solid var(--border-light)}
+      .how-card:last-child{border-bottom:none}
+      .device-grid{grid-template-columns:1fr}
+      .pipe{flex-direction:column}
+      .pipe-sep{width:100%;height:1px}
+      .pipe-sep::after{content:'\2193'}
+      .nav-center{display:none}
+      .footer-grid{grid-template-columns:1fr 1fr;gap:24px}
+      .families{grid-template-columns:repeat(3,1fr)}
+      .metrics-inner{grid-template-columns:repeat(2,1fr)}
+      .metric{border-bottom:1px solid var(--border-light)}
     }
-    @media (max-width:600px) {
-      .hero-h1 { letter-spacing:-.8px; }
-      .hero-actions { flex-direction:column; }
-      .cta-form { flex-direction:column; }
-      .footer-top { grid-template-columns:1fr; }
-      .crop-families { grid-template-columns:repeat(2,1fr); }
-      .number-item { border-right:none; border-bottom:1px solid var(--border); }
-      .numbers-grid { grid-template-columns:1fr 1fr; }
+    @media(max-width:600px){
+      .hero-h1{letter-spacing:-1px}
+      .hero-ctas{flex-direction:column;align-items:flex-start}
+      .hero-proof{flex-direction:column;gap:12px}
+      .cta-form{flex-direction:column}
+      .footer-grid{grid-template-columns:1fr}
+      .families{grid-template-columns:repeat(2,1fr)}
+      .metrics-inner{grid-template-columns:1fr 1fr}
+      .metric:nth-child(odd){border-right:1px solid var(--border-light)}
     }
   </style>
 </head>
 <body>
 
-<nav>
-  <a class="nav-logo" href="#">
-    <div class="logo-mark">G</div>
-    <span class="logo-text">Grow<span>Smart</span></span>
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a class="nav-left" href="#">
+    <div class="nav-mark">G</div>
+    <div class="nav-wordmark">Grow<b>Smart</b></div>
   </a>
-  <div class="nav-links">
+  <div class="nav-center">
     <a href="#how">How It Works</a>
     <a href="#device">Device</a>
     <a href="#features">Features</a>
-    <a href="#accuracy">Performance</a>
+    <a href="#performance">Performance</a>
     <a href="#crops">Crops</a>
     <a href="#science">Science</a>
   </div>
-  <div class="nav-cta">
-    <a href="demo.html" class="btn-ghost">Demo</a>
-    <a href="#cta" class="btn-primary">Get Started</a>
+  <div class="nav-right">
+    <a href="demo.html" class="nav-btn outline">Demo</a>
+    <a href="#cta" class="nav-btn filled">Get Started</a>
   </div>
 </nav>
 
-<!-- ── HERO ── -->
-<section id="hero">
-  <div class="hero-inner">
-    <div class="hero-text">
-      <div class="hero-tag">Precision Agriculture</div>
-      <h1 class="hero-h1">Know exactly what your crops need.</h1>
-      <p class="hero-sub">Grow Smart reads your soil and tells you the right crop, the right fertilizer, and the right amount of water. 1,920 species. 98.8% accuracy.</p>
-      <div class="hero-actions">
-        <a href="demo.html" class="btn-large primary">Try the Demo</a>
-        <a href="#how" class="btn-large secondary">How It Works</a>
-      </div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-label"><span class="dot"></span> AI-powered soil analysis</div>
+    <h1 class="hero-h1">Know exactly what your crops need.</h1>
+    <p class="hero-p">One sensor reads your soil. Three AI models tell you the best crop, the right fertilizer, and how much water to use. Accurate to 98.8%.</p>
+    <div class="hero-ctas">
+      <a href="demo.html" class="cta-main">Try the Demo</a>
+      <a href="#how" class="cta-secondary">How It Works</a>
     </div>
-    <div class="hero-3d">
+    <div class="hero-proof">
+      <div class="proof-item"><div class="proof-val">1,920</div><div class="proof-label">Crop species</div></div>
+      <div class="proof-item"><div class="proof-val">98.8%</div><div class="proof-label">Accuracy</div></div>
+      <div class="proof-item"><div class="proof-val">7</div><div class="proof-label">Sensors built in</div></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-viewport">
       <canvas id="sensor-canvas"></canvas>
     </div>
   </div>
 </section>
 
-<!-- ── NUMBERS ── -->
-<section id="numbers">
-  <div class="numbers-grid">
-    <div class="number-item">
-      <div class="number-val" data-target="1920" data-suffix="">0</div>
-      <div class="number-label">Crop species supported</div>
+<!-- METRICS -->
+<section class="metrics">
+  <div class="metrics-inner">
+    <div class="metric"><div class="metric-value" data-target="1920" data-suffix="">0</div><div class="metric-desc">Crop species and varieties</div></div>
+    <div class="metric"><div class="metric-value">98.8<span>%</span></div><div class="metric-desc">Crop prediction accuracy</div></div>
+    <div class="metric"><div class="metric-value">0.955</div><div class="metric-desc">Water requirement R&sup2;</div></div>
+    <div class="metric"><div class="metric-value">13</div><div class="metric-desc">Fertilizer recommendations</div></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="s" id="how">
+  <div class="s-center reveal">
+    <p class="s-label">How It Works</p>
+    <h2 class="s-title">Soil to recommendation in three steps.</h2>
+    <p class="s-desc">No agronomist needed. Place the sensor and follow the report.</p>
+  </div>
+  <div class="how-grid reveal">
+    <div class="how-card">
+      <div class="how-num">01</div>
+      <h3>Deploy the sensor</h3>
+      <p>Push the probes 20cm into your soil. The device begins reading nitrogen, phosphorus, potassium, pH, temperature, humidity, and rainfall every 15 minutes.</p>
     </div>
-    <div class="number-item">
-      <div class="number-val" data-target="98" data-suffix=".8%">0</div>
-      <div class="number-label">Prediction accuracy</div>
+    <div class="how-card">
+      <div class="how-num">02</div>
+      <h3>AI processes your data</h3>
+      <p>Three models &mdash; XGBoost, Random Forest, and a multi-task Transformer &mdash; cross-reference your readings against 120,000 training samples.</p>
     </div>
-    <div class="number-item">
-      <div class="number-val" data-target="13" data-suffix="">0</div>
-      <div class="number-label">Fertilizer types</div>
-    </div>
-    <div class="number-item">
-      <div class="number-val" data-target="7" data-suffix="">0</div>
-      <div class="number-label">Built-in sensors</div>
+    <div class="how-card">
+      <div class="how-num">03</div>
+      <h3>Act on precise advice</h3>
+      <p>Receive a clear report: best crop match, exact fertilizer type and dosage, and a weekly water schedule calibrated to your field conditions.</p>
     </div>
   </div>
 </section>
 
-<!-- ── HOW IT WORKS ── -->
-<section id="how">
-  <div class="how-header reveal">
-    <p class="section-label">How It Works</p>
-    <h2 class="section-title">Three steps. No expertise needed.</h2>
-    <p class="section-desc">Place the sensor, wait for the analysis, act on the recommendations.</p>
-  </div>
-  <div class="steps reveal">
-    <div class="step-card">
-      <div class="step-number">Step 01</div>
-      <h3>Place the Sensor</h3>
-      <p>Push the probes 20cm into your soil. The device starts reading NPK, pH, temperature, humidity, and rainfall every 15 minutes automatically.</p>
-    </div>
-    <div class="step-card">
-      <div class="step-number">Step 02</div>
-      <h3>AI Analyzes Your Soil</h3>
-      <p>Three AI models cross-reference your readings against 120,000 training samples to identify the optimal crop, fertilizer, and irrigation plan.</p>
-    </div>
-    <div class="step-card">
-      <div class="step-number">Step 03</div>
-      <h3>Follow the Report</h3>
-      <p>Receive a clear report with the best crop match, exact fertilizer type and dosage, and a weekly water schedule calibrated to your field.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ── DEVICE ── -->
-<section id="device">
-  <div class="device-inner">
-    <div class="reveal">
-      <div class="device-viewport">
+<!-- DEVICE -->
+<section class="s-bg" id="device">
+  <div class="s" style="padding-top:96px;padding-bottom:96px">
+    <div class="device-grid">
+      <div class="device-viewport reveal">
         <canvas id="device-canvas"></canvas>
       </div>
-    </div>
-    <div class="reveal">
-      <p class="section-label">The Device</p>
-      <h2 class="section-title">One sensor. Complete soil intelligence.</h2>
-      <p class="section-desc" style="margin-bottom:24px;">Solar-powered, weatherproof, zero maintenance. Place it and forget it.</p>
-      <div class="specs-table">
-        <div class="spec-row"><span class="spec-key">Sensors</span><span class="spec-value">7 built-in (NPK, pH, temp, humidity, rain)</span></div>
-        <div class="spec-row"><span class="spec-key">Power</span><span class="spec-value">Solar + 30-day battery backup</span></div>
-        <div class="spec-row"><span class="spec-key">Connectivity</span><span class="spec-value">WiFi + LoRa WAN</span></div>
-        <div class="spec-row"><span class="spec-key">Weather rating</span><span class="spec-value">IP65 weatherproof</span></div>
-        <div class="spec-row"><span class="spec-key">Operating range</span><span class="spec-value">-20 to +60 C</span></div>
-        <div class="spec-row"><span class="spec-key">NPK accuracy</span><span class="spec-value">+/- 0.5 mg/kg</span></div>
-        <div class="spec-row"><span class="spec-key">Data interval</span><span class="spec-value">Every 15 minutes</span></div>
-        <div class="spec-row"><span class="spec-key">Crop coverage</span><span class="spec-value">1,920 species and varieties</span></div>
+      <div class="reveal">
+        <p class="s-label">The Sensor</p>
+        <h2 class="s-title">One device. Complete soil intelligence.</h2>
+        <p class="s-desc" style="margin-bottom:0">Solar-powered and weatherproof. Place it once, get continuous readings with zero maintenance.</p>
+        <div class="spec-list">
+          <div class="spec-row"><span class="spec-k">Sensors</span><span class="spec-v">7 built-in (NPK, pH, temp, humidity, rain)</span></div>
+          <div class="spec-row"><span class="spec-k">Power</span><span class="spec-v">Solar + 30-day battery backup</span></div>
+          <div class="spec-row"><span class="spec-k">Connectivity</span><span class="spec-v">WiFi + LoRa WAN</span></div>
+          <div class="spec-row"><span class="spec-k">Weather rating</span><span class="spec-v">IP65</span></div>
+          <div class="spec-row"><span class="spec-k">Operating range</span><span class="spec-v">&minus;20&deg;C to +60&deg;C</span></div>
+          <div class="spec-row"><span class="spec-k">NPK accuracy</span><span class="spec-v">&plusmn;0.5 mg/kg</span></div>
+          <div class="spec-row"><span class="spec-k">Data interval</span><span class="spec-v">Every 15 minutes</span></div>
+          <div class="spec-row"><span class="spec-k">Crop coverage</span><span class="spec-v">1,920 species</span></div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── FEATURES ── -->
-<section id="features">
-  <div class="features-header reveal">
-    <p class="section-label">Features</p>
-    <h2 class="section-title">What Grow Smart does for you.</h2>
+<!-- FEATURES -->
+<section class="s" id="features">
+  <div class="reveal">
+    <p class="s-label">Capabilities</p>
+    <h2 class="s-title">What Grow Smart delivers.</h2>
   </div>
-  <div class="features-grid reveal">
-    <div class="feature-card">
-      <div class="feature-icon">C</div>
-      <h3>Crop Selection</h3>
-      <p>Identifies the best crop for your soil from 1,920 species with 98.8% accuracy. Ranked alternatives with confidence scores.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">F</div>
-      <h3>Fertilizer Advice</h3>
-      <p>Recommends the exact fertilizer type from 13 options based on NPK ratios and soil nutrient balance. No more guesswork.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">W</div>
-      <h3>Water Scheduling</h3>
-      <p>Calculates irrigation needs using FAO-56 Penman-Monteith evapotranspiration. Saves water, reduces costs.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">S</div>
-      <h3>Solar Powered</h3>
-      <p>30-day battery backup with solar charging. No wires, no outlets, no maintenance. Place it and forget it.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">D</div>
-      <h3>Clear Dashboard</h3>
-      <p>All your field data in one view. Plain-language recommendations you can act on today. No technical jargon.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">G</div>
-      <h3>Global Coverage</h3>
-      <p>Works in all climates from tropical to arid. Covers cereals, fruits, vegetables, legumes, herbs, and specialty crops.</p>
-    </div>
+  <div class="feat-grid reveal">
+    <div class="feat-card"><div class="feat-num">01</div><h3>Crop selection</h3><p>Identifies the best crop from 1,920 species with 98.8% accuracy. Provides ranked alternatives with confidence scores for each.</p></div>
+    <div class="feat-card"><div class="feat-num">02</div><h3>Fertilizer recommendation</h3><p>Selects the optimal fertilizer from 13 types based on NPK ratios and soil nutrient balance. Dosage included.</p></div>
+    <div class="feat-card"><div class="feat-num">03</div><h3>Water scheduling</h3><p>Calculates irrigation using FAO-56 Penman-Monteith evapotranspiration. Precise daily and weekly water requirements.</p></div>
+    <div class="feat-card"><div class="feat-num">04</div><h3>Continuous monitoring</h3><p>Reads soil every 15 minutes. Tracks changes over time and updates recommendations as conditions shift.</p></div>
+    <div class="feat-card"><div class="feat-num">05</div><h3>Zero maintenance</h3><p>Solar powered with 30-day battery backup. No wires, no refills. IP65 rated for all weather conditions.</p></div>
+    <div class="feat-card"><div class="feat-num">06</div><h3>Global coverage</h3><p>Trained on data from all climate zones. Covers cereals, fruits, vegetables, legumes, herbs, and specialty crops.</p></div>
   </div>
 </section>
 
-<!-- ── ACCURACY ── -->
-<section id="accuracy">
-  <div class="accuracy-inner">
-    <div class="accuracy-header reveal">
-      <p class="section-label">Performance</p>
-      <h2 class="section-title">Tested on 18,000 holdout samples.</h2>
-      <p class="section-desc">Three AI models (XGBoost, Random Forest, Transformer) combined via stacking ensemble.</p>
+<!-- PERFORMANCE -->
+<section class="s-bg" id="performance">
+  <div class="s" style="padding-top:96px;padding-bottom:96px">
+    <div class="s-center reveal">
+      <p class="s-label">Performance</p>
+      <h2 class="s-title">Validated on 18,000 holdout samples.</h2>
+      <p class="s-desc">Three models combined via stacking ensemble. Every metric measured on data the models never saw during training.</p>
     </div>
-    <div class="accuracy-grid reveal">
-      <div class="accuracy-card">
-        <div class="a-label">Crop Prediction</div>
-        <div class="a-value">98.8<span class="a-unit">%</span></div>
-        <div class="a-desc">Weighted F1 score across 1,920 crop species. Ensemble outperforms any single model.</div>
+    <div class="perf-grid reveal">
+      <div class="perf-card">
+        <div class="perf-label">Crop prediction</div>
+        <div class="perf-val">98.8<span class="perf-unit">%</span></div>
+        <div class="perf-note">Weighted F1 across 1,920 species. Ensemble outperforms any single model by 1.2&ndash;3.4 points.</div>
       </div>
-      <div class="accuracy-card">
-        <div class="a-label">Fertilizer Match</div>
-        <div class="a-value">90.5<span class="a-unit">%</span></div>
-        <div class="a-desc">13-class recommendation driven by soil nutrient balance equations, not just crop defaults.</div>
+      <div class="perf-card">
+        <div class="perf-label">Fertilizer match</div>
+        <div class="perf-val">90.5<span class="perf-unit">%</span></div>
+        <div class="perf-note">13-class accuracy driven by nutrient balance equations, not crop-label heuristics.</div>
       </div>
-      <div class="accuracy-card">
-        <div class="a-label">Water Prediction</div>
-        <div class="a-value">0.955<span class="a-unit"> R&sup2;</span></div>
-        <div class="a-desc">FAO-56 calibrated regression with Huber loss and learned uncertainty weighting.</div>
+      <div class="perf-card">
+        <div class="perf-label">Water prediction</div>
+        <div class="perf-val">0.955<span class="perf-unit"> R&sup2;</span></div>
+        <div class="perf-note">FAO-56 calibrated regression with Huber loss and learned uncertainty weighting.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── PIPELINE ── -->
-<section id="pipeline">
-  <div class="pipeline-header reveal">
-    <p class="section-label">Architecture</p>
-    <h2 class="section-title">How the AI works.</h2>
-    <p class="section-desc">Sensor data flows through feature engineering, three parallel models, and a stacking ensemble.</p>
+<!-- PIPELINE -->
+<section class="s" id="pipeline">
+  <div class="s-center reveal">
+    <p class="s-label">Architecture</p>
+    <h2 class="s-title">How the AI works.</h2>
+    <p class="s-desc">Sensor data flows through engineered features, three parallel models, and a stacking ensemble.</p>
   </div>
-  <div class="pipeline-flow reveal">
-    <div class="pipeline-block">
-      <div class="p-name">Soil Data</div>
-      <div class="p-detail">N, P, K, pH, temp, humidity, rainfall</div>
+  <div class="pipe reveal">
+    <div class="pipe-block"><div class="pipe-name">Soil readings</div><div class="pipe-detail">N, P, K, pH, temp, humidity, rainfall</div></div>
+    <div class="pipe-sep"></div>
+    <div class="pipe-block"><div class="pipe-name">Feature engine</div><div class="pipe-detail">14 derived indicators + adaptive gating</div></div>
+    <div class="pipe-sep"></div>
+    <div class="pipe-block"><div class="pipe-name">AI ensemble</div><div class="pipe-detail">XGBoost + Random Forest + Transformer</div></div>
+    <div class="pipe-sep"></div>
+    <div class="pipe-block"><div class="pipe-name">Report</div><div class="pipe-detail">Crop, fertilizer, water recommendation</div></div>
+  </div>
+</section>
+
+<!-- CROPS -->
+<section class="s-bg" id="crops">
+  <div class="s" style="padding-top:96px;padding-bottom:0">
+    <div class="reveal" style="margin-bottom:32px">
+      <p class="s-label">Crop Database</p>
+      <h2 class="s-title">1,920 species. Whatever you grow.</h2>
+      <p class="s-desc">20 botanical families across all climate zones.</p>
     </div>
-    <div class="pipeline-arrow">&rarr;</div>
-    <div class="pipeline-block">
-      <div class="p-name">Feature Engine</div>
-      <div class="p-detail">14 derived indicators + adaptive gating</div>
-    </div>
-    <div class="pipeline-arrow">&rarr;</div>
-    <div class="pipeline-block">
-      <div class="p-name">AI Ensemble</div>
-      <div class="p-detail">XGBoost + RF + Multi-Task Transformer</div>
-    </div>
-    <div class="pipeline-arrow">&rarr;</div>
-    <div class="pipeline-block">
-      <div class="p-name">Your Report</div>
-      <div class="p-detail">Crop, fertilizer, water recommendation</div>
+  </div>
+  <div class="marquee-wrap"><div class="marquee-track" id="row1"></div></div>
+  <div class="marquee-wrap"><div class="marquee-track rev" id="row2"></div></div>
+  <div class="s" style="padding-top:0;padding-bottom:96px">
+    <div class="families reveal">
+      <div class="family"><div class="family-name">Cereals</div><div class="family-count">25 species</div></div>
+      <div class="family"><div class="family-name">Legumes</div><div class="family-count">30 species</div></div>
+      <div class="family"><div class="family-name">Vegetables</div><div class="family-count">120 species</div></div>
+      <div class="family"><div class="family-name">Fruits &amp; Nuts</div><div class="family-count">75 species</div></div>
+      <div class="family"><div class="family-name">Herbs &amp; Spices</div><div class="family-count">70 species</div></div>
     </div>
   </div>
 </section>
 
-<!-- ── CROPS ── -->
-<section id="crops">
-  <div class="crops-inner">
-    <div class="crops-header reveal">
-      <p class="section-label">Crop Database</p>
-      <h2 class="section-title">1,920 species. Whatever you grow.</h2>
-      <p class="section-desc">From staple grains to rare herbs. 20 botanical families across all climate zones.</p>
-    </div>
-  </div>
-  <div class="marquee-wrap" style="margin-bottom:8px;">
-    <div class="marquee-track" id="row1"></div>
-  </div>
-  <div class="marquee-wrap">
-    <div class="marquee-track reverse" id="row2"></div>
-  </div>
-  <div class="crops-inner">
-    <div class="crop-families reveal">
-      <div class="crop-family"><div class="cf-name">Cereals</div><div class="cf-count">25 species</div></div>
-      <div class="crop-family"><div class="cf-name">Legumes</div><div class="cf-count">30 species</div></div>
-      <div class="crop-family"><div class="cf-name">Vegetables</div><div class="cf-count">120 species</div></div>
-      <div class="crop-family"><div class="cf-name">Fruits &amp; Nuts</div><div class="cf-count">75 species</div></div>
-      <div class="crop-family"><div class="cf-name">Herbs &amp; Spices</div><div class="cf-count">70 species</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ── SCIENCE ── -->
-<section id="science">
-  <div class="science-header reveal">
-    <p class="section-label">Science</p>
-    <h2 class="section-title">Grounded in peer-reviewed research.</h2>
-    <p class="section-desc">Every recommendation uses established agronomic formulas and validated ML techniques.</p>
+<!-- SCIENCE -->
+<section class="s" id="science">
+  <div class="s-center reveal">
+    <p class="s-label">Science</p>
+    <h2 class="s-title">Grounded in peer-reviewed research.</h2>
+    <p class="s-desc">Every recommendation uses established agronomic formulas and validated ML techniques.</p>
   </div>
   <div class="eq-grid reveal">
     <div class="eq-card">
       <div class="eq-name">FAO-56 Penman-Monteith</div>
       <div class="eq-code">ET&#8320; = (<span class="v">0.408&middot;&Delta;&middot;Rn</span> <span class="o">+</span> <span class="v">&gamma;</span>&middot;(<span class="n">900</span>/<span class="v">T+273</span>)&middot;<span class="v">u&#8322;</span>&middot;<span class="v">vpd</span>) / (<span class="v">&Delta;</span> <span class="o">+</span> <span class="v">&gamma;</span>&middot;(<span class="n">1</span> <span class="o">+</span> <span class="n">0.34</span>&middot;<span class="v">u&#8322;</span>))</div>
-      <p class="eq-note">Reference evapotranspiration. The standard formula used by agricultural agencies worldwide for water requirement calculations.</p>
+      <p class="eq-note">Reference evapotranspiration. The standard used by agricultural agencies worldwide for water calculations.</p>
     </div>
     <div class="eq-card">
       <div class="eq-name">Uncertainty-Weighted MTL</div>
       <div class="eq-code">&Lscr; = &sum;&#7522; [ <span class="v">exp</span>(<span class="o">&minus;</span><span class="v">s&#7522;</span>)&middot;<span class="v">&Lscr;&#7522;</span> <span class="o">+</span> <span class="v">s&#7522;</span> ] &nbsp; <span class="v">s&#7522;</span> = <span class="v">log &sigma;&#7522;&sup2;</span></div>
-      <p class="eq-note">Kendall et al. 2018. Automatically balances crop, fertilizer, and water prediction losses via learned uncertainty.</p>
+      <p class="eq-note">Kendall et al. 2018. Automatically balances crop, fertilizer, and water losses via learned task uncertainty.</p>
     </div>
     <div class="eq-card">
       <div class="eq-name">Focal Loss</div>
       <div class="eq-code">FL(<span class="v">p&#8346;</span>) = <span class="o">&minus;</span><span class="v">&alpha;</span>&middot;(<span class="n">1</span><span class="o">&minus;</span><span class="v">p&#8346;</span>)^<span class="v">&gamma;</span>&middot;<span class="v">log</span>(<span class="v">p&#8346;</span>)</div>
-      <p class="eq-note">Lin et al. 2017. Handles extreme class imbalance across 1,920 crop varieties by down-weighting easy examples.</p>
+      <p class="eq-note">Lin et al. 2017. Handles extreme class imbalance across 1,920 crop varieties by focusing on hard examples.</p>
     </div>
     <div class="eq-card">
       <div class="eq-name">Nutrient Balance Score</div>
@@ -676,218 +473,235 @@
   </div>
 </section>
 
-<!-- ── CTA ── -->
-<section id="cta">
-  <div class="cta-inner">
-    <h2 class="section-title">Get early access.</h2>
-    <p>Sign up to be notified when Grow Smart is available in your region.</p>
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="cta-box">
+    <h2 class="s-title">Get early access.</h2>
+    <p>Be notified when Grow Smart ships to your region.</p>
     <div class="cta-form">
-      <input class="cta-input" type="email" placeholder="your@email.com" />
-      <a href="#" class="btn-primary" style="padding:10px 20px;font-size:14px;white-space:nowrap;display:inline-block;">Sign Up</a>
+      <input class="cta-input" type="email" placeholder="you@email.com" />
+      <a href="#" class="cta-main" style="padding:10px 20px;font-size:13px;white-space:nowrap">Sign Up</a>
     </div>
-    <p class="cta-note">Free. No credit card required.</p>
+    <p class="cta-note">Free. No credit card.</p>
   </div>
 </section>
 
-<!-- ── FOOTER ── -->
-<footer>
+<!-- FOOTER -->
+<footer class="footer">
   <div class="footer-inner">
-    <div class="footer-top">
+    <div class="footer-grid">
       <div class="footer-brand">
-        <a class="nav-logo" href="#" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
-          <div class="logo-mark">G</div>
-          <span class="logo-text">Grow<span>Smart</span></span>
+        <a class="nav-left" href="#" style="text-decoration:none;margin-bottom:2px">
+          <div class="nav-mark">G</div><div class="nav-wordmark">Grow<b>Smart</b></div>
         </a>
-        <p>Precision agriculture intelligence. Better crops, less waste.</p>
+        <p>Precision agriculture intelligence. Better crops, less waste, higher yields.</p>
       </div>
-      <div class="footer-col">
-        <h4>Product</h4>
-        <ul>
-          <li><a href="#how">How It Works</a></li>
-          <li><a href="#device">The Sensor</a></li>
-          <li><a href="demo.html">Live Demo</a></li>
-          <li><a href="#accuracy">Performance</a></li>
-        </ul>
+      <div class="footer-col"><h5>Product</h5>
+        <a href="#how">How It Works</a><a href="#device">Sensor</a><a href="demo.html">Live Demo</a><a href="#performance">Performance</a>
       </div>
-      <div class="footer-col">
-        <h4>Resources</h4>
-        <ul>
-          <li><a href="#crops">Crop Database</a></li>
-          <li><a href="#science">Science</a></li>
-          <li><a href="device_3d.html">Hardware</a></li>
-          <li><a href="circuit.html">Circuit Design</a></li>
-        </ul>
+      <div class="footer-col"><h5>Resources</h5>
+        <a href="#crops">Crop Database</a><a href="#science">Science</a><a href="device_3d.html">Hardware</a><a href="circuit.html">Circuits</a>
       </div>
-      <div class="footer-col">
-        <h4>Company</h4>
-        <ul>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Blog</a></li>
-          <li><a href="#cta">Contact</a></li>
-          <li><a href="#">Privacy</a></li>
-        </ul>
+      <div class="footer-col"><h5>Company</h5>
+        <a href="#">About</a><a href="#">Blog</a><a href="#cta">Contact</a><a href="#">Privacy</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2026 GrowSmart. All rights reserved.</p>
-      <div class="footer-social">
-        <a href="#" class="social-link">X</a>
-        <a href="#" class="social-link">in</a>
-        <a href="https://github.com/Vairaaj-Bindal/finishcrop" class="social-link">gh</a>
+      <p>&copy; 2026 GrowSmart</p>
+      <div class="footer-links">
+        <a href="#">X</a><a href="#">LinkedIn</a><a href="https://github.com/Vairaaj-Bindal/finishcrop">GitHub</a>
       </div>
     </div>
   </div>
 </footer>
 
 <script>
-// ── NAV SCROLL ──
-const navbar = document.getElementById('navbar') || document.querySelector('nav');
-window.addEventListener('scroll', () => {
-  if(navbar) navbar.style.borderBottomColor = window.scrollY > 30 ? 'var(--border)' : 'transparent';
-});
+// NAV
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>20));
 
-// ── STAT COUNTER ──
-function animateCounter(el) {
-  const target = parseInt(el.dataset.target);
-  const suffix = el.dataset.suffix;
-  const duration = 1800;
-  const start = performance.now();
-  function update(now) {
-    const t = Math.min((now-start)/duration,1);
-    const ease = 1-Math.pow(1-t,3);
-    el.textContent = Math.round(ease*target).toLocaleString() + suffix;
-    if(t<1) requestAnimationFrame(update);
-  }
-  requestAnimationFrame(update);
+// COUNTER
+function counter(el){
+  const t=+el.dataset.target,s=el.dataset.suffix,d=1600,st=performance.now();
+  (function u(n){const p=Math.min((n-st)/d,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(e*t).toLocaleString()+s;if(p<1)requestAnimationFrame(u)})(st)
 }
-const statsObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(e.isIntersecting) {
-      e.target.querySelectorAll('.number-val').forEach(animateCounter);
-      statsObs.unobserve(e.target);
-    }
-  });
-},{threshold:0.3});
-statsObs.observe(document.getElementById('numbers'));
+new IntersectionObserver(e=>e.forEach(x=>{
+  if(x.isIntersecting){x.target.querySelectorAll('[data-target]').forEach(counter);x.target._counted=1}
+}),{threshold:.3}).observe(document.querySelector('.metrics'));
 
-// ── REVEAL ──
-const revealObs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
-},{threshold:0.1,rootMargin:'0px 0px -30px 0px'});
-document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+// REVEAL
+const ro=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')}),{threshold:.08,rootMargin:'0px 0px -20px 0px'});
+document.querySelectorAll('.reveal').forEach(x=>ro.observe(x));
 
-// ── CROP MARQUEE ──
-const r1 = ["Wheat","Rice","Maize","Barley","Oats","Rye","Quinoa","Sorghum","Soybean","Chickpea","Lentil","Kidney Bean","Peanut","Mung Bean","Cowpea","Tomato","Bell Pepper","Eggplant","Potato","Sweet Potato","Carrot","Beet","Cassava","Cabbage","Kale","Broccoli","Cauliflower","Onion","Garlic","Leek"];
-const r2 = ["Cucumber","Zucchini","Pumpkin","Watermelon","Lettuce","Spinach","Banana","Mango","Papaya","Pineapple","Coconut","Guava","Avocado","Apple","Pear","Peach","Grape","Strawberry","Blueberry","Orange","Lemon","Almond","Walnut","Basil","Oregano","Thyme","Rosemary","Ginger","Coffee","Aloe Vera"];
-function buildMarquee(id,items,highlights){
-  const el=document.getElementById(id); if(!el) return;
-  const d=[...items,...items];
-  el.innerHTML=d.map(p=>`<span class="crop-tag${highlights.includes(p)?' hl':''}">${p}</span>`).join('');
-}
-buildMarquee('row1',r1,['Wheat','Rice','Tomato','Soybean','Potato']);
-buildMarquee('row2',r2,['Coffee','Mango','Avocado','Aloe Vera','Grape']);
+// MARQUEE
+const r1=["Wheat","Rice","Maize","Barley","Oats","Rye","Quinoa","Sorghum","Soybean","Chickpea","Lentil","Kidney Bean","Peanut","Mung Bean","Cowpea","Tomato","Bell Pepper","Eggplant","Potato","Sweet Potato","Carrot","Beet","Cassava","Cabbage","Kale","Broccoli","Cauliflower","Onion","Garlic","Leek"];
+const r2=["Cucumber","Zucchini","Pumpkin","Watermelon","Lettuce","Spinach","Banana","Mango","Papaya","Pineapple","Coconut","Guava","Avocado","Apple","Pear","Peach","Grape","Strawberry","Blueberry","Orange","Lemon","Almond","Walnut","Basil","Oregano","Thyme","Rosemary","Ginger","Coffee","Aloe Vera"];
+function bm(id,a,hl){const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=[...a,...a].map(p=>`<span class="crop-tag${hl.includes(p)?' hl':''}">${p}</span>`).join('')}
+bm('row1',r1,['Wheat','Rice','Tomato','Soybean','Potato']);
+bm('row2',r2,['Coffee','Mango','Avocado','Aloe Vera','Grape']);
 
-// ── THREE.JS SENSOR (Hero + Device section) ──
-function createSensor(canvasId, containerSelector) {
-  const canvas = document.getElementById(canvasId);
-  if(!canvas || !window.THREE) return;
-  const container = canvas.parentElement;
-  const W = container.clientWidth, H = container.clientHeight;
+// 3D SENSOR — full detailed model
+function buildSensor(canvasId){
+  const cv=document.getElementById(canvasId);
+  if(!cv||!window.THREE)return;
+  const box=cv.parentElement,W=box.clientWidth,H=box.clientHeight;
 
-  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  renderer.setSize(W,H);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.6;
-  renderer.setClearColor(0x000000,0);
+  const r=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(W,H);
+  r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.8;
+  r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;
+  r.setClearColor(0,0);
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(38,W/H,0.1,100);
-  camera.position.set(0,1,5.5);
-  camera.lookAt(0,0,0);
+  const sc=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(36,W/H,.1,100);
+  cam.position.set(0,0.8,5.8);cam.lookAt(0,-.1,0);
 
-  scene.add(new THREE.AmbientLight(0xfff8f0,0.7));
-  const dir = new THREE.DirectionalLight(0xffffff,1.0);
-  dir.position.set(3,5,3); scene.add(dir);
-  const gPt = new THREE.PointLight(0x2D8F4E,1.5,8);
-  gPt.position.set(-1.5,0.5,2); scene.add(gPt);
-  const wPt = new THREE.PointLight(0xD4A04A,1,6);
-  wPt.position.set(2,1,-1); scene.add(wPt);
+  // Lighting: 3-point + fill
+  sc.add(new THREE.AmbientLight(0xfff8ee,.55));
+  const key=new THREE.DirectionalLight(0xffffff,1.1);
+  key.position.set(4,6,4);key.castShadow=true;
+  key.shadow.mapSize.set(1024,1024);sc.add(key);
+  const fill=new THREE.DirectionalLight(0xe8eeFF,.4);
+  fill.position.set(-3,2,-2);sc.add(fill);
+  const rim=new THREE.PointLight(0x1A6B35,1.2,10);
+  rim.position.set(-2,.5,3);sc.add(rim);
+  const warm=new THREE.PointLight(0xC49A3C,.6,8);
+  warm.position.set(3,1,-2);sc.add(warm);
 
-  const matBody = new THREE.MeshStandardMaterial({color:0x3A5A3A,metalness:0.5,roughness:0.35});
-  const matSolar = new THREE.MeshStandardMaterial({color:0x1A2A1A,metalness:0.9,roughness:0.1});
-  const matProbe = new THREE.MeshStandardMaterial({color:0xC0CCC0,metalness:0.9,roughness:0.15});
-  const matDisplay = new THREE.MeshStandardMaterial({color:0x0A1A0A,emissive:0x1B7A3D,emissiveIntensity:0.6,metalness:0.1,roughness:0.5});
-  const matLED = new THREE.MeshStandardMaterial({color:0x00aa44,emissive:0x00aa44,emissiveIntensity:2});
-  const matAntenna = new THREE.MeshStandardMaterial({color:0x909A90,metalness:0.85,roughness:0.2});
+  // Materials
+  const mBody=new THREE.MeshStandardMaterial({color:0x2E4A2E,metalness:.55,roughness:.32});
+  const mTop=new THREE.MeshStandardMaterial({color:0x243824,metalness:.6,roughness:.28});
+  const mSolar=new THREE.MeshStandardMaterial({color:0x101810,metalness:.92,roughness:.08});
+  const mCell=new THREE.MeshStandardMaterial({color:0x0A140A,metalness:.85,roughness:.12});
+  const mProbe=new THREE.MeshStandardMaterial({color:0xB8C8B8,metalness:.92,roughness:.1});
+  const mDisp=new THREE.MeshStandardMaterial({color:0x060E06,emissive:0x1A6B35,emissiveIntensity:.5,metalness:.1,roughness:.5});
+  const mLed=new THREE.MeshStandardMaterial({color:0x00883A,emissive:0x00883A,emissiveIntensity:2.5});
+  const mLed2=new THREE.MeshStandardMaterial({color:0x2563A0,emissive:0x2563A0,emissiveIntensity:1.5});
+  const mAnt=new THREE.MeshStandardMaterial({color:0x889888,metalness:.88,roughness:.18});
+  const mAccent=new THREE.MeshStandardMaterial({color:0x1A6B35,emissive:0x1A6B35,emissiveIntensity:.2});
+  const mDark=new THREE.MeshStandardMaterial({color:0x0A1A0A,metalness:.5,roughness:.5});
+  const mRing=new THREE.MeshStandardMaterial({color:0x7A9A7A,metalness:.95,roughness:.05});
 
-  const g = new THREE.Group();
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(2.4,1.5,0.75,2,2,2),matBody));
+  const g=new THREE.Group();
 
-  const disp = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.52,0.04),matDisplay);
-  disp.position.set(-0.3,0.28,0.39); g.add(disp);
+  // Main body
+  const body=new THREE.Mesh(new THREE.BoxGeometry(2.4,1.5,.75,2,2,2),mBody);
+  body.castShadow=true;body.receiveShadow=true;g.add(body);
 
-  const led = new THREE.Mesh(new THREE.SphereGeometry(0.05,12,12),matLED);
-  led.position.set(0.7,0.5,0.39); g.add(led);
+  // Edge bevels
+  const cr=.07;
+  [[-1,1],[1,1],[1,-1],[-1,-1]].forEach(([sx,sy])=>{
+    const c=new THREE.Mesh(new THREE.CylinderGeometry(cr,cr,.75,8),mBody);
+    c.position.set(sx*1.16,sy*.67,0);g.add(c)});
 
-  const bar = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.05,0.02),
-    new THREE.MeshStandardMaterial({color:0x1B7A3D,emissive:0x1B7A3D,emissiveIntensity:0.2}));
-  bar.position.set(-0.3,-0.2,0.39); g.add(bar);
+  // Front panel details
+  // Display
+  const disp=new THREE.Mesh(new THREE.BoxGeometry(1.1,.52,.04),mDisp);
+  disp.position.set(-.3,.28,.39);g.add(disp);
+  // Display bezel
+  const bezel=new THREE.Mesh(new THREE.BoxGeometry(1.18,.6,.02),
+    new THREE.MeshStandardMaterial({color:0x1A2A1A,metalness:.7,roughness:.2}));
+  bezel.position.set(-.3,.28,.38);g.add(bezel);
+  // Scanlines
+  for(let i=0;i<6;i++){
+    const sl=new THREE.Mesh(new THREE.BoxGeometry(1.06,.008,.01),
+      new THREE.MeshBasicMaterial({color:0x1A6B35,transparent:true,opacity:.1}));
+    sl.position.set(-.3,.52-i*.12,.42);g.add(sl)}
 
-  const solar = new THREE.Mesh(new THREE.BoxGeometry(2.1,0.06,0.6),matSolar);
-  solar.position.set(0,0.8,-0.05); solar.rotation.x=0.18; g.add(solar);
+  // LEDs
+  const led=new THREE.Mesh(new THREE.SphereGeometry(.05,16,16),mLed);
+  led.position.set(.7,.5,.39);g.add(led);
+  const ledR=new THREE.Mesh(new THREE.TorusGeometry(.08,.012,8,24),
+    new THREE.MeshStandardMaterial({color:0x1A6B35,transparent:true,opacity:.25}));
+  ledR.position.set(.7,.5,.38);g.add(ledR);
+  const led2=new THREE.Mesh(new THREE.SphereGeometry(.035,12,12),mLed2);
+  led2.position.set(.9,.5,.39);g.add(led2);
 
-  [-0.7,-0.25,0.25,0.7].forEach(px => {
-    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.025,0.85,8),matProbe);
-    p.position.set(px,-1.17,0); g.add(p);
-    const t = new THREE.Mesh(new THREE.ConeGeometry(0.025,0.12,8),matProbe);
-    t.position.set(px,-1.63,0); g.add(t);
-  });
+  // Logo bar
+  const logo=new THREE.Mesh(new THREE.BoxGeometry(.5,.05,.02),mAccent);
+  logo.position.set(-.3,-.2,.39);g.add(logo);
 
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(2.1,0.06,0.6),matBody)).position.set(0,-0.76,0);
+  // Vent grille
+  for(let i=0;i<6;i++){
+    const v=new THREE.Mesh(new THREE.BoxGeometry(.005,.38,.02),mDark);
+    v.position.set(.64+i*.04,-.08,.39);g.add(v)}
 
-  const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.025,0.55,6),matAntenna);
-  ant.position.set(0.95,1.05,0.15); g.add(ant);
-  const antT = new THREE.Mesh(new THREE.SphereGeometry(0.03,8,8),matAntenna);
-  antT.position.set(0.95,1.35,0.15); g.add(antT);
+  // Solar panel
+  const solar=new THREE.Mesh(new THREE.BoxGeometry(2.1,.06,.6),mSolar);
+  solar.position.set(0,.8,-.05);solar.rotation.x=.18;g.add(solar);
+  // Solar cells grid
+  for(let row=0;row<4;row++)for(let col=0;col<5;col++){
+    const c=new THREE.Mesh(new THREE.BoxGeometry(.34,.02,.1),mCell);
+    c.position.set(-.9+col*.45,.84,-.05+row*.13-.2);
+    c.rotation.x=.18;g.add(c)}
 
-  g.position.y = 0.2;
-  scene.add(g);
+  // Probes
+  [-.7,-.25,.25,.7].forEach(px=>{
+    const p=new THREE.Mesh(new THREE.CylinderGeometry(.04,.025,.85,12),mProbe);
+    p.position.set(px,-1.17,0);p.castShadow=true;g.add(p);
+    const t=new THREE.Mesh(new THREE.ConeGeometry(.025,.12,12),mProbe);
+    t.position.set(px,-1.63,0);g.add(t)});
+  // Base plate
+  const bp=new THREE.Mesh(new THREE.BoxGeometry(2.1,.06,.6),mTop);
+  bp.position.set(0,-.76,0);g.add(bp);
 
-  let targetRY=0.3, targetRX=-0.1, curRY=0.3, curRX=-0.1;
-  let dragging=false, lx=0, ly=0, auto=true;
+  // USB-C port
+  const usb=new THREE.Mesh(new THREE.BoxGeometry(.04,.11,.2),mDark);
+  usb.position.set(1.22,-.4,0);g.add(usb);
+  const usbR=new THREE.Mesh(new THREE.BoxGeometry(.02,.13,.22),mRing);
+  usbR.position.set(1.22,-.4,0);g.add(usbR);
 
-  container.addEventListener('mousedown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;auto=false;});
-  window.addEventListener('mouseup',()=>{dragging=false;});
-  window.addEventListener('mousemove',e=>{
-    if(dragging){
-      targetRY+=(e.clientX-lx)*0.008; targetRX+=(e.clientY-ly)*0.005;
-      targetRX=Math.max(-0.5,Math.min(0.5,targetRX)); lx=e.clientX;ly=e.clientY;
-    }
-  });
-  container.addEventListener('mouseleave',()=>{if(!dragging) auto=true;});
+  // Antenna
+  const ant=new THREE.Mesh(new THREE.CylinderGeometry(.018,.022,.55,8),mAnt);
+  ant.position.set(.95,1.05,.15);g.add(ant);
+  const antT=new THREE.Mesh(new THREE.SphereGeometry(.028,8,8),mAnt);
+  antT.position.set(.95,1.35,.15);g.add(antT);
+  const antB=new THREE.Mesh(new THREE.CylinderGeometry(.038,.038,.1,8),mTop);
+  antB.position.set(.95,.8,.15);g.add(antB);
+
+  // Shadow disc
+  const shd=new THREE.Mesh(new THREE.CircleGeometry(2.2,64),
+    new THREE.MeshStandardMaterial({color:0,transparent:true,opacity:.08}));
+  shd.rotation.x=-Math.PI/2;shd.position.y=-1.9;shd.receiveShadow=true;sc.add(shd);
+
+  g.position.y=.15;sc.add(g);
+
+  // Interaction
+  let tRY=.35,tRX=-.08,cRY=.35,cRX=-.08;
+  let drag=false,lx=0,ly=0,autoR=true;
+  box.addEventListener('mousedown',e=>{drag=true;lx=e.clientX;ly=e.clientY;autoR=false});
+  window.addEventListener('mouseup',()=>{drag=false});
+  window.addEventListener('mousemove',e=>{if(drag){
+    tRY+=(e.clientX-lx)*.007;tRX+=(e.clientY-ly)*.004;
+    tRX=Math.max(-.4,Math.min(.4,tRX));lx=e.clientX;ly=e.clientY}});
+  box.addEventListener('mouseleave',()=>{if(!drag)autoR=true});
+
+  // Touch
+  box.addEventListener('touchstart',e=>{if(e.touches.length===1){drag=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;autoR=false}},{passive:true});
+  window.addEventListener('touchend',()=>{drag=false});
+  window.addEventListener('touchmove',e=>{if(drag&&e.touches.length===1){
+    tRY+=(e.touches[0].clientX-lx)*.007;tRX+=(e.touches[0].clientY-ly)*.004;
+    tRX=Math.max(-.4,Math.min(.4,tRX));lx=e.touches[0].clientX;ly=e.touches[0].clientY}},{passive:true});
 
   let t=0;
-  function animate(){
-    requestAnimationFrame(animate); t+=0.01;
-    if(auto&&!dragging) targetRY+=0.003;
-    curRY+=(targetRY-curRY)*0.06; curRX+=(targetRX-curRX)*0.06;
-    g.rotation.y=curRY; g.rotation.x=curRX;
-    g.position.y=0.2+Math.sin(t*0.8)*0.04;
-    led.material.emissiveIntensity=1.5+Math.sin(t*2)*0.5;
-    gPt.position.x=Math.sin(t*0.5)*2.5; gPt.position.z=Math.cos(t*0.5)*2.5;
-    renderer.render(scene,camera);
-  }
-  animate();
+  !function anim(){requestAnimationFrame(anim);t+=.008;
+    if(autoR&&!drag)tRY+=.0025;
+    cRY+=(tRY-cRY)*.05;cRX+=(tRX-cRX)*.05;
+    g.rotation.y=cRY;g.rotation.x=cRX;
+    g.position.y=.15+Math.sin(t*.7)*.03;
+    led.material.emissiveIntensity=1.8+Math.sin(t*1.8)*.7;
+    ledR.material.opacity=.15+Math.sin(t*1.8)*.1;
+    rim.position.x=Math.sin(t*.4)*2.5;rim.position.z=Math.cos(t*.4)*2.5;
+    r.render(sc,cam)}();
 
-  new ResizeObserver(()=>{
-    const w=container.clientWidth,h=container.clientHeight;
-    renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix();
-  }).observe(container);
+  new ResizeObserver(()=>{const w=box.clientWidth,h=box.clientHeight;
+    r.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix()}).observe(box);
 }
 
-createSensor('sensor-canvas');
-createSensor('device-canvas');
+buildSensor('sensor-canvas');
+buildSensor('device-canvas');
 </script>
 </body>
 </html>
